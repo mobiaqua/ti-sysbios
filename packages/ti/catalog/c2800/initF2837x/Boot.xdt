@@ -1,0 +1,87 @@
+%%{
+/*
+ *  Copyright (c) 2015 by Texas Instruments and others.
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  which accompanies this distribution, and is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ *
+ *  Contributors:
+ *      Texas Instruments - initial implementation
+ *
+ * */
+
+%%}
+%/*
+% *  ======== Boot.xdt ========
+% *
+% *! Revision History
+% *! ================
+% *! 18-Dec-2013 jv    created
+% */
+% /* Don't generate Boot funcs if this is a romimage */
+% if (!Program.$$isrom && (Program.build.rtsName !== null)) {
+%var Boot = xdc.module("ti.catalog.c2800.initF2837x.Boot");
+    extern ti_catalog_c2800_initF2837x_Boot_disableWatchdog(xdc_Void);
+    extern ti_catalog_c2800_initF2837x_Boot_initSharedRAMs(xdc_UInt sharedRamMask);
+    extern ti_catalog_c2800_initF2837x_Boot_configurePllDivs(xdc_UInt iMult, xdc_UInt fMult, xdc_UInt sysDiv, xdc_UInt oscClkSrcVal);
+    extern ti_catalog_c2800_initF2837x_Boot_bootCPU2(xdc_Void);
+    extern ti_catalog_c2800_initF2837x_Boot_initFlash(xdc_Bool configWaitStates, xdc_UInt waitStates, xdc_Bool enableProgramCache, xdc_Bool enableDataCache);
+
+#if defined(__ti__)
+#pragma CODE_SECTION(ti_catalog_c2800_initF2837x_Boot_init, ".text:.bootCodeSection")
+#pragma CODE_SECTION(ti_catalog_c2800_initF2837x_Boot_initStartup, ".text:.bootCodeSection")
+#pragma CODE_SECTION(ti_catalog_c2800_initF2837x_Boot_limpAbort, ".text:.bootCodeSection")
+#endif
+
+/*
+ *  ======== ti_catalog_arm_cortexm3_concertoInit_Boot_init ========
+ *  Boot initialization run as an xdc.runtime.Reset function.
+ */
+xdc_Void ti_catalog_c2800_initF2837x_Boot_init(xdc_Void)
+{
+%if (Boot.disableWatchdog == true) {
+    ti_catalog_c2800_initF2837x_Boot_disableWatchdog();
+%}
+%if (Boot.configureClocks == true) {
+    ti_catalog_c2800_initF2837x_Boot_configurePllDivs(`Boot.SPLLIMULT`, `Boot.SPLLFMULT`, `Boot.SYSCLKDIVSEL`, `Boot.OSCCLKSRCSEL`);
+%}
+%if (Boot.configSharedRAMs == true) {
+
+    ti_catalog_c2800_initF2837x_Boot_initSharedRAMs(`Boot.sharedMemoryOwnerMask`);
+%}
+%if (Boot.bootCPU2 == true) {
+    ti_catalog_c2800_initF2837x_Boot_bootCPU2();
+%}
+}
+
+/*
+ *  ======== ti_catalog_c2800_initF2837x_Boot_initStartup ========
+ *  Boot initialization run as an xdc.runtime.Startup first function.
+ */
+xdc_Void ti_catalog_c2800_initF2837x_Boot_initStartup(xdc_Void)
+{
+%if (Boot.configureFlashController == true) {
+    ti_catalog_c2800_initF2837x_Boot_initFlash(`Number(Boot.configureFlashWaitStates)`, `Number(Boot.flashWaitStates)`, `Number(Boot.enableFlashProgramCache)`, `Number(Boot.enableFlashDataCache)`);
+%}
+}
+
+/*
+ *  ======== ti_catalog_c2800_initF2837x_Boot_limpAbort ========
+ */
+xdc_Void ti_catalog_c2800_initF2837x_Boot_limpAbort(xdc_Void)
+{
+%var cname;
+%       cname = String(Boot.limpAbortFunction);
+%       cname = cname.substr(1);
+    extern `cname`();
+    `cname`();
+}
+%}
+
+%%{
+/*
+ * @(#) ti.catalog.c2800.initF2837x; 1, 0, 0,; 12-4-2015 21:40:03; /db/ztree/library/trees/platform/platform-q16/src/
+ */
+
+%%}
