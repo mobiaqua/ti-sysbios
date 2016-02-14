@@ -41,7 +41,7 @@ SECTIONS {
 `_utils.genSections(prog)`
 }
 
-%    if (!prog.build.target.noStdLinkScript
+%    if (prog.build.target.noStdLinkScript
 %        && prog.build.target.BINVERS >= "2.19") {
 INSERT BEFORE .gnu.attributes
 %    }
