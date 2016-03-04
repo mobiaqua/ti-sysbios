@@ -91,9 +91,15 @@ function run(cmdr, args)
 
     /* execute xdc.tools.configuro */
     var configuro = xdc.useModule('xdc.tools.configuro.Main');
-    configuro.exec(["-o",  opts["output"], "-t", opts["t"], "-p",  opts["p"],
-        "-r", opts["profile"], "-c", opts["rootDir"], "--compileOptions",
-        cOpts, "--linkOptions", opts["linkOptions"], cfg]);
+    var optArray = ["-o",  opts["output"], "-t", opts["t"], "-p", opts["p"],
+        "-r", opts["profile"], "-c", opts["rootDir"], "--compileOptions", cOpts,
+        "--linkOptions", opts["linkOptions"], cfg]
+    if (opts["cfgArgs"] != "") {
+        /* add these two right after opts["rootDir"] */
+        optArray.splice(10, 0, "--cfgArgs", opts["cfgArgs"]);
+    }
+
+    configuro.exec(optArray);
 }
 
 /*
@@ -378,6 +384,6 @@ function mappings(cmdr)
     }
 }
 /*
- *  @(#) iar.tools.configuro; 1, 0, 0,58; 12-8-2015 17:33:02; /db/ztree/library/trees/xdctools/xdctools-g03x/src/
+ *  @(#) iar.tools.configuro; 1, 0, 0,62; 2-13-2016 16:55:42; /db/ztree/library/trees/xdctools/xdctools-g06x/src/
  */
 

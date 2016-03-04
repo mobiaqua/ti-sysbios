@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -130,6 +130,8 @@ typedef struct pthread_attr_t {
 
 typedef uint32_t pthread_barrierattr_t;
 typedef uint32_t pthread_condattr_t;
+
+typedef void *pthread_key_t;
 
 typedef struct pthread_mutexattr_t {
     int type;

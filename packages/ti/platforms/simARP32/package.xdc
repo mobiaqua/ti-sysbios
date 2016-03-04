@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 by Texas Instruments and others.
+ *  Copyright (c) 2016 by Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -35,6 +35,6 @@ package ti.platforms.simARP32 [1,0,1,0] {
     module Platform;
 }
 /*
- *  @(#) ti.platforms.simARP32; 1, 0, 1, 0,; 12-4-2015 21:42:39; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.platforms.simARP32; 1, 0, 1, 0,; 1-29-2016 10:03:11; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

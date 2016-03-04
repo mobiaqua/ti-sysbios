@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008 Texas Instruments and others.
+ *  Copyright (c) 2008-2016 Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -24,10 +24,11 @@ package gnu.targets.arm [1,0,0] {
     module GCArmv5T, GCArmv6, GCArmv7A, GCArmv7AF;
     module M3, M4, M4F;
     module A8F, A9F, A15F;
+    module A53F;
 }
 
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 12-11-2015 16:22:02; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 1-29-2016 16:37:04; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

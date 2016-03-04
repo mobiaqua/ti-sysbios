@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 by Texas Instruments and others.
+ *  Copyright (c) 2016 by Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -28,6 +28,6 @@ metaonly module TMS320CDRI300 inherits ITMS320C64_512K
 
 };
 /*
- *  @(#) ti.catalog.c6000; 1, 0, 0, 0,; 12-4-2015 21:40:09; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.catalog.c6000; 1, 0, 0, 0,2; 1-29-2016 10:00:47; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@ function getCFiles(targetName)
     return (["pthread.c",
              "pthread_barrier.c",
              "pthread_cond.c",
+             "pthread_key.c",
              "pthread_mutex.c",
              "pthread_rwlock.c",
              "clock.c",

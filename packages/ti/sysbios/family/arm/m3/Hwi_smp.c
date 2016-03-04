@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Texas Instruments Incorporated
+ * Copyright (c) 2015-2016 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,8 @@
 
 #include <ti/sysbios/BIOS.h>
 
+#include <string.h>
+
 #include "package/internal/Hwi.xdc.h"
 
 extern Char *ti_sysbios_family_xxx_Hwi_switchToIsrStack();
@@ -82,6 +84,7 @@ extern UInt32 ti_sysbios_family_arm_m3_Hwi_dispatchTable[];
 #endif
 
 volatile Hwi_NVIC ti_sysbios_family_arm_m3_Hwi_vnvic;
+Bool ti_sysbios_family_arm_m3_Hwi_vnvicInitialized = FALSE;
 
 /*
  *  ======== Hwi_Module_startup ========
@@ -366,6 +369,12 @@ Void Hwi_initNVIC()
     UInt i;
     UInt intNum;
     UInt32 *ramVectors;
+
+    /* Initialize VNVIC data structure */
+    if (!ti_sysbios_family_arm_m3_Hwi_vnvicInitialized) {
+        memset((void *)&Hwi_vnvic, 0, sizeof(Hwi_vnvic));
+        ti_sysbios_family_arm_m3_Hwi_vnvicInitialized = TRUE;
+    }
 
     /* configure Vector Table Offset Register */
     Hwi_nvic.VTOR = (UInt32)Hwi_module->vectorTableBase;

@@ -18,6 +18,6 @@ package iar.tools.configuro [1, 0, 0] {
     module Main;
 }
 /*
- *  @(#) iar.tools.configuro; 1, 0, 0,58; 12-8-2015 17:33:02; /db/ztree/library/trees/xdctools/xdctools-g03x/src/
+ *  @(#) iar.tools.configuro; 1, 0, 0,62; 2-13-2016 16:55:42; /db/ztree/library/trees/xdctools/xdctools-g06x/src/
  */
 

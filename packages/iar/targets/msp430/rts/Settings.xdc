@@ -37,7 +37,7 @@ module Settings {
     metaonly config Bool bootOnly = false;
 }
 /*
- *  @(#) iar.targets.msp430.rts; 1, 0, 0,0; 12-11-2015 16:44:27; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) iar.targets.msp430.rts; 1, 0, 0,0; 1-29-2016 17:06:10; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

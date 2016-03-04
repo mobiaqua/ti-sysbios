@@ -34,11 +34,11 @@
  *    - `--profile profile`
  *      The build profile.
  *    - `--projFile project_file (Optional)`
- *      IAR Embedded Workbench project file. This is optional when 
+ *      IAR Embedded Workbench project file. This is optional when
  *      infile.cfg is passed on command line.
  *    - `infile.cfg (Optional)`
  *      A user-supplied configuration script that names a set of RTSC
- *      modules, and optionally changes their configuration settings. 
+ *      modules, and optionally changes their configuration settings.
  *      If provided, it will override the --projFile option.
  *  @p
  *
@@ -62,8 +62,9 @@
  *  For example:
  *  @p(code)
  *      xs iar.tools.configuro -c "<codegen_dir>" --cc "<compiler>"
- *         --device "<device_name>" -compileOptions "<compiler_options>"
- *         --linkOptions "<link_options>" --profile "<profile>" infile.cfg
+ *         --device "<device_name>" --cfgArgs "<cfg_script_args>"
+ *         --compileOptions "<compiler_options>" --linkOptions "<link_options>"
+ *         --profile "<profile>" infile.cfg
  *  @p
  */
 metaonly module Main inherits xdc.tools.ICmd {
@@ -76,6 +77,7 @@ metaonly module Main inherits xdc.tools.ICmd {
         '[-c codegen_dir]',
         '[--cc compiler_name_string]',
         '[--device device_name]',
+        '[--cfgArgs args_string]',
         '[--compileOptions compile_options_string]',
         '[--linkOptions linker_options_string]',
         '[--profile profile]',
@@ -141,7 +143,7 @@ instance:
      *  Compile options used for building C files
      *
      *  The compiler options are required to find the target and platform
-     *  options for xdc.tools.configuro. 
+     *  options for xdc.tools.configuro.
      */
     @CommandOption("compileOptions")
     config String compileOptions = null;
@@ -150,8 +152,8 @@ instance:
      *  ======== linkOptions ========
      *  Linker options used for linking libraries
      *
-     *  The linker options are required to pull in the correct libraries 
-     *  during link. 
+     *  The linker options are required to pull in the correct libraries
+     *  during link.
      */
     @CommandOption("linkOptions")
     config String linkOptions = null;
@@ -164,6 +166,62 @@ instance:
     config String profile = "";
 
     /*!
+     *  ======== cfgArgs ========
+     *  Optional arguments passed to configuration script
+     *
+     *  This option lets the user pass values into the configuration script
+     *  from the command line. The argument is an expression in JavaScript
+     *  syntax.  Its value is available in the configuration script under the
+     *  name `Program.build.cfgArgs`.
+     *
+     *  The JavaScript expression is evaluated in the configuration domain
+     *  after the platform package is imported, immediately before calling
+     *  the user's configuration script.
+     *
+     *  This string has the same effect as the `cfgArgs` string in
+     *  `{@link xdc.bld.Executable#Attrs}`.
+     *
+     *  You can pass multiple values to configuration scripts using the
+     *  syntax of a JavaScript `Object` constant:
+     *  @p(code)
+     *      xs xdc.tools.configuro --cfgArgs '{foo:"hello", bar:2}' ... app.cfg
+     *  @p
+     *
+     *  The configuration script can read the various fields as, e.g.:
+     *  @p(code)
+     *      if (Program.build.cfgArgs.foo == "hello") {
+     *          :
+     *      }
+     *  @p
+     *
+     *  @a(Note)
+     *  Different command line shells, such as UNIX `bash` verses Windows
+     *  `cmd.exe`, interpret quotes on the command line very differently.
+     *  As a result, the syntax necessary to pass a string such as "hello"
+     *  to `configuro` can vary depending on the shell you use.
+     *
+     *  For most UNIX shells, it is possible to use single quotes around the
+     *  use of double quotes as in the example above.  However, since Windows
+     *  `cmd.exe` does not treat the single quote as a special character, it
+     *  is necessary to use a backslash, '\', to ensure that the double quote
+     *  characters are passed to the configuro tool.
+     *
+     *  Windows `cmd.exe`:
+     *  @p(code)
+     *      xs xdc.tools.configuro --cfgArgs "{foo:\"hello\", bar:2}" ...
+     *  @p
+     *
+     *  UNIX `bash`, `ksh`, `csh`, ...:
+     *  @p(code)
+     *      xs xdc.tools.configuro --cfgArgs '{foo:"hello", bar:2}' ...
+     *  @p
+     *
+     *  @see xdc.bld.Executable#Attrs
+     */
+    @CommandOption("cfgArgs")
+    config String cfgArgs = "";
+
+    /*!
      *  ======== projFile ========
      *  IAR Embedded project file.
      *
@@ -173,6 +231,6 @@ instance:
     config String projFile = "";
 }
 /*
- *  @(#) iar.tools.configuro; 1, 0, 0,58; 12-8-2015 17:33:02; /db/ztree/library/trees/xdctools/xdctools-g03x/src/
+ *  @(#) iar.tools.configuro; 1, 0, 0,62; 2-13-2016 16:55:42; /db/ztree/library/trees/xdctools/xdctools-g06x/src/
  */
 

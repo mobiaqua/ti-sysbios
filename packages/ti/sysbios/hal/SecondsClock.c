@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,6 @@
 #include <ti/sysbios/knl/Clock.h>
 
 #include <xdc/runtime/Startup.h>
-#include <xdc/runtime/Timestamp.h>
 #include <xdc/runtime/Types.h>
 
 #include "package/internal/SecondsClock.xdc.h"

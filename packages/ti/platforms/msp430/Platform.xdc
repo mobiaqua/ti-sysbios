@@ -102,6 +102,6 @@ instance:
 };
 
 /*
- *  @(#) ti.platforms.msp430; 1, 0, 0,; 12-4-2015 21:42:17; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.platforms.msp430; 1, 0, 0,; 1-29-2016 10:02:48; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

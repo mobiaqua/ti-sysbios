@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 by Texas Instruments and others.
+ *  Copyright (c) 2016 by Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -642,6 +642,6 @@ SFR_16BIT(ADC10SA);                           /* ADC10 Data Transfer Start Addre
 #endif /* #ifndef __msp430x11x2 */
 
 /*
- *  @(#) ti.mcu.msp430.include; 1,0,0,; 12-4-2015 21:40:34; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.mcu.msp430.include; 1,0,0,2; 1-29-2016 10:01:11; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

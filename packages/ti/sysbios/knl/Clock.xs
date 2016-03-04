@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -234,7 +234,7 @@ function module$validate()
 
         /* verify that the bound Timer supports RunMode_DYNAMIC */
         if (Clock.TimerProxy.supportsDynamic == false) {
-            Clock.$logError("Clock tick suppression (TickMode_DYNAMIC) not supported on this device", Clock, "tickMode");
+            Clock.$logError("The selected Clock.TimerProxy does not support TickMode_DYNAMIC", Clock, "tickMode");
         }
     }
 

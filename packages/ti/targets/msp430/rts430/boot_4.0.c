@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015 by Texas Instruments Incorporated.
+ *  Copyright 2016 by Texas Instruments Incorporated.
  *
  */
 
@@ -421,7 +421,7 @@ extern void __interrupt _c_int00_noinit_noexit_mpu_init()
    ti_targets_msp430_rts430_noexit__I(main(0));
 }
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 12-11-2015 16:44:37; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 1-29-2016 17:06:21; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

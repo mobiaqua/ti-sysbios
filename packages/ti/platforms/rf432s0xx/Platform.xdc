@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 by Texas Instruments and others.
+ *  Copyright (c) 2016 by Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -113,6 +113,6 @@ instance:
     config Bool includeLinkCmdFile = false;
 };
 /*
- *  @(#) ti.platforms.rf432s0xx; 1, 0, 0,; 12-4-2015 21:42:19; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.platforms.rf432s0xx; 1, 0, 0,; 1-29-2016 10:02:52; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

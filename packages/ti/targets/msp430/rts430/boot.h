@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015 by Texas Instruments Incorporated.
+ *  Copyright 2016 by Texas Instruments Incorporated.
  *
  */
 
@@ -65,7 +65,7 @@ __asm("\t.global __STACK_END");
 #define STACK_INIT() __asm("\t   MOV.W\t    #__STACK_END,SP")
 #endif
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 12-11-2015 16:44:37; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 1-29-2016 17:06:20; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

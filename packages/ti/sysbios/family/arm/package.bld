@@ -71,7 +71,8 @@ var objList = [
 
 var trgFilter = {
     field: "$name",
-    list: [ "ti.targets.arm.elf.R5F",
+    list: [ "ti.targets.arm.elf.R4F",
+            "ti.targets.arm.elf.R5F",
             "ti.targets.arm.elf.R5F_big_endian"
           ]
 };

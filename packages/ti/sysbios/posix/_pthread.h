@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ typedef struct pthread_Obj {
     Queue_Struct      mutexList;
 
     /* PTHREAD_PRIO_INHERIT mutex the thread is blocked on */
-    pthread_mutex_t blockedMutex;
+    pthread_mutex_t   blockedMutex;
 #endif
     int               priority;
 
@@ -92,6 +92,9 @@ typedef struct pthread_Obj {
 
     /* Cleanup handlers */
     struct _pthread_cleanup_context *cleanupList;
+
+    /* List of keys that the thread has called pthread_setspecific() on */
+    Queue_Struct      keyList;
 } pthread_Obj;
 
 #define _pthread_getRunningPriority(pthread) \
@@ -106,6 +109,8 @@ typedef struct pthread_Obj {
 #if ti_sysbios_posix_Settings_supportsMutexPriority__D
 extern int _pthread_getMaxPrioCeiling(pthread_Obj *thread);
 #endif
+
+extern void _pthread_removeThreadKeys(pthread_t pthread);
 
 #ifdef __cplusplus
 }

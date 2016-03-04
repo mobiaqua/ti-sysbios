@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015 by Texas Instruments Incorporated.
+ *  Copyright 2016 by Texas Instruments Incorporated.
  *
  */
 
@@ -145,7 +145,7 @@ void _auto_init_elf(void)
 
 #endif
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 12-11-2015 16:44:53; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) ti.targets.rts6000; 1, 0, 0,0; 1-29-2016 17:06:38; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

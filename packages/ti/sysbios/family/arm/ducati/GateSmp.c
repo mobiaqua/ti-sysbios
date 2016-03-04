@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,6 +92,8 @@ IArg GateSmp_enter(GateSmp_Object *gate)
              * Read coreId again as Task may have switched to a different core
              */
             coreId = Core_getId();
+            gateBytePtr = (volatile UInt8 *)&gate->gateWord;
+            gateBytePtr = &gateBytePtr[coreId];
 
             /* make core 1's loop a little slower to avoid a stalemate */
             if (coreId == 1) {

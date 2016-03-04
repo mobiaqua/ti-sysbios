@@ -26,7 +26,7 @@ package ti.targets.rts2800 [1,0,0] {
     module Settings;
 }
 /*
- *  @(#) ti.targets.rts2800; 1, 0, 0,0; 12-11-2015 16:44:49; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) ti.targets.rts2800; 1, 0, 0,0; 1-29-2016 17:06:34; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

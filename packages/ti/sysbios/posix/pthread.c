@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -248,6 +248,9 @@ int pthread_cancel(pthread_t pthread)
             _pthread_cleanup_pop(thread->cleanupList, 1);
         }
 
+        /* Cleanup any pthread specific data */
+        _pthread_removeThreadKeys(pthread);
+
         if (thread->detached) {
             /* Free memory */
 #if ti_sysbios_posix_Settings_supportsMutexPriority__D
@@ -320,6 +323,9 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr,
     Queue_elemClear((Queue_Elem *)thread);
     Queue_construct(&(thread->mutexList), NULL);
 #endif
+
+    /* List of keys for which thread has called pthread_setspecific() */
+    Queue_construct(&(thread->keyList), NULL);
 
     Semaphore_Params_init(&semParams);
     semParams.mode = Semaphore_Mode_BINARY;
@@ -407,6 +413,9 @@ void pthread_exit(void *retval)
     while (thread->cleanupList != NULL) {
         _pthread_cleanup_pop(thread->cleanupList, 1);
     }
+
+    /* Cleanup any pthread specific data */
+    _pthread_removeThreadKeys((pthread_t)thread);
 
     if (!thread->detached) {
         Semaphore_post(Semaphore_handle(&(thread->joinSem)));
@@ -668,6 +677,9 @@ static void _pthread_runStub(UArg arg0, UArg arg1)
     while (thread->cleanupList != NULL) {
         _pthread_cleanup_pop(thread->cleanupList, 1);
     }
+
+    /* Cleanup any pthread specific data */
+    _pthread_removeThreadKeys((pthread_t)thread);
 
     key = Task_disable();
 

@@ -50,6 +50,7 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.A15F":
             return (["TimestampProvider_asm_gnu.asm"]);
             break;
+        case "ti.targets.arm.elf.R4F":
         case "ti.targets.arm.elf.R5F":
         case "ti.targets.arm.elf.R5F_big_endian":
             return (["TimestampProvider_asm.asm"]);

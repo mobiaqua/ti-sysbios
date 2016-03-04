@@ -58,6 +58,6 @@ function instance$meta$init()
         {name: "watchdog", baseAddr: 0x15c});
 }
 /*
- *  @(#) ti.catalog.msp430.f54xx; 1, 0, 0,; 12-4-2015 21:40:09; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.catalog.msp430.f54xx; 1, 0, 0,2; 1-29-2016 10:00:44; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

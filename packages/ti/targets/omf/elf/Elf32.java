@@ -403,6 +403,18 @@ public class Elf32 implements xdc.rta.IOFReader, xdc.rov.ISymbolTable
 
             return (false);
         }
+
+        /*
+         *  ======== isLocalData ========
+         */
+        boolean isLocalData()
+        {
+            if (st_info == STT_OBJECT) {
+                return (true);
+            }
+
+            return (false);
+        }
     }
     
     /*
@@ -752,7 +764,7 @@ public class Elf32 implements xdc.rta.IOFReader, xdc.rov.ISymbolTable
             entry.read(symTabBuffer);
 
             /* If this is a data or program symbol ... */
-            if (entry.isAbsolute() || entry.isData() || entry.isCode()) {
+            if (entry.isAbsolute() || entry.isData() || entry.isLocalData() || entry.isCode()) {
                                 
                 /* Read the symbol name from the file. */
                 // TODO - Are the symbol table strings always encoded as
@@ -768,15 +780,20 @@ public class Elf32 implements xdc.rta.IOFReader, xdc.rov.ISymbolTable
                     val += Math.pow(2, 32);
                 }
                 
-                /* Add the symbol to the map. */
-                symsByName.put(entry.name, val);
+                /* Add the symbol to the map
+                 * (never overwrite global with to local symbol names)
+                 */
+                if (symsByName.get(entry.name) == null
+                    || !entry.isLocalData()) {
+                    symsByName.put(entry.name, val);
+                }
                 
                 /* 
                  * Determine which value-to-name map to add the symbol to
                  * (based on whether it's a data or program symbol).
                  */
                 HashMap<Long, String[]> symsByVal;
-                if (entry.isData()) {
+                if (entry.isData() || entry.isLocalData()) {
                     symsByVal = dataSymsByVal;
                 }
                 else if (entry.isCode()) {

@@ -74,6 +74,7 @@ var ccOptsList = {
     "ti.targets.arm.elf.M3"                     : customArmOpts,
     "ti.targets.arm.elf.M4"                     : customArmOpts,
     "ti.targets.arm.elf.M4F"                    : customArmOpts,
+    "ti.targets.arm.elf.R4F"                    : customArmOpts,
     "ti.targets.arm.elf.R5F"                    : customArmOpts,
     "ti.targets.arm.elf.R5F_big_endian"         : customArmOpts,
     "gnu.targets.arm.M3"                        : customGnuArmM3Opts,

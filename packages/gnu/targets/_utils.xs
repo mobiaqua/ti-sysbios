@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015 by Texas Instruments Incorporated.
+ *  Copyright 2016 by Texas Instruments Incorporated.
  *
  */
 
@@ -106,7 +106,7 @@ function _mkCmds(target)
     return(tool2cmd);
 }
 /*
- *  @(#) gnu.targets; 1, 0, 1,0; 12-11-2015 16:22:01; /db/ztree/library/trees/xdctargets/xdctargets-k07/src/ xlibrary
+ *  @(#) gnu.targets; 1, 0, 1,0; 1-29-2016 16:37:03; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
 
  */
 

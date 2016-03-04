@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,6 @@
 
 var BIOS;
 var Clock;
-var Timestamp;
 var SecondsClock;
 
 /*
@@ -80,5 +79,4 @@ function module$use()
 {
     BIOS = xdc.module("ti.sysbios.BIOS");
     SecondsClock = this;
-    Timestamp = xdc.useModule('xdc.runtime.Timestamp');
 }

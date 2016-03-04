@@ -58,6 +58,6 @@ function instance$meta$init(clock) {
     this.interruptSource[5].interruptHandler = false;
 }
 /*
- *  @(#) ti.catalog.msp430.peripherals.timer; 1, 0, 0,; 12-4-2015 21:40:22; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.catalog.msp430.peripherals.timer; 1, 0, 0,2; 1-29-2016 10:00:59; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

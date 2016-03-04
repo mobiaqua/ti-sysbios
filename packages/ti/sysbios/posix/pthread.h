@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -186,6 +186,16 @@ extern int pthread_cond_signal(pthread_cond_t *cond);
 extern int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex,
         const struct timespec *abstime);
 extern int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
+
+/*
+ *************************************************************************
+ *                      pthread_key
+ *************************************************************************
+ */
+extern int pthread_key_create(pthread_key_t *key, void (*destructor)(void*));
+extern int pthread_key_delete(pthread_key_t key);
+extern void *pthread_getspecific(pthread_key_t key);
+extern int pthread_setspecific(pthread_key_t key, const void *value);
 
 /*
  *************************************************************************

@@ -660,6 +660,6 @@ instance:
     Void setDefaultPinFunction(UInt port, UInt pin, Any owner);
 }
 /*
- *  @(#) ti.catalog.msp430.peripherals.gpio; 1, 0, 0,; 12-4-2015 21:40:19; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.catalog.msp430.peripherals.gpio; 1, 0, 0,2; 1-29-2016 10:00:55; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

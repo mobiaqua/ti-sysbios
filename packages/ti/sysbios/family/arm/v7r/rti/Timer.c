@@ -668,6 +668,14 @@ UInt32 Timer_getExpiredCounts(Timer_Object *obj)
 }
 
 /*
+ *  ======== Timer_getExpiredTicks ========
+ */
+UInt32 Timer_getExpiredTicks(Timer_Object *obj, UInt32 tickPeriod)
+{
+    return (0);
+}
+
+/*
  *  ======== Timer_getFreq ========
  */
 Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)

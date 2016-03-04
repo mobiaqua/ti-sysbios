@@ -20,6 +20,6 @@ function getLibs()
     return (null);    /* no libraries for this package */
 }
 /*
- *  @(#) ti.catalog.msp430; 1, 0, 0,; 12-4-2015 21:40:06; /db/ztree/library/trees/platform/platform-q16/src/
+ *  @(#) ti.catalog.msp430; 1, 0, 0,2; 1-29-2016 10:00:42; /db/ztree/library/trees/platform/platform-q17/src/
  */
 

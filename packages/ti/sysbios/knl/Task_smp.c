@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -179,8 +179,8 @@ Void Task_schedule()
     Task_Object *curTask;
     Task_Object *readyQTask;
     Int i;
+    Int newPri;
     UInt coreId;
-    UInt newPri;
     UInt curSetPriX;
     UInt curPriLocal;
     UInt curSetPriLocal;
@@ -621,7 +621,7 @@ UInt Task_setAffinity(Task_Object *tsk, UInt newAffinity)
 
                 /* force a Task switch */
                 Task_module->smpCurMask[coreId] = 0;
-                SORT_RUNQ(0, coreId);
+                SORT_RUNQ(-1, coreId);
 
                 if (tsk->mask > Task_module->smpCurMask[newAffinity]) {
                     Task_module->workFlag |=
@@ -696,7 +696,7 @@ Void Task_blockI(Task_Object *tsk)
 
         /* force a task switch */
         Task_module->smpCurMask[curCoreId] = 0;
-        SORT_RUNQ(0, curCoreId);
+        SORT_RUNQ(-1, curCoreId);
         Task_module->workFlag |= (1 << curCoreId);
 
         if (curCoreId != Core_getId()) {
@@ -790,7 +790,7 @@ Void Task_yield()
 
     /* force a task switch */
     Task_module->smpCurMask[coreId] = 0;
-    SORT_RUNQ(0, coreId);
+    SORT_RUNQ(-1, coreId);
     Task_module->workFlag |= (1 << coreId);
 
     Hwi_restore(hwiKey);
@@ -917,7 +917,7 @@ Void Task_startCore(UInt coreId)
     Task_Object *curTask;
     Task_Struct dummyTask;
     UInt curSetPriLocal, curSetPriX, curPriLocal;
-    UInt newPri;
+    Int newPri;
     Int i;
 
     Hwi_disable();      /* re-enabled in Task_enter of first task */
