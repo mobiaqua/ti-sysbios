@@ -798,18 +798,18 @@ function getFrequency()
         return (0);
     }
 
-    /* 
-     * newer devices use a more complex algorithm for 
+    /*
+     * newer devices use a more complex algorithm for
      * computing frequency
      */
     if (Boot.enhancedClockMode == true) {
         return (sysCtlClockFreqSet(Boot.ulConfig, Boot.cpuFrequency));
     }
-    
-    /* 
-     * legacy algorithm below 
+
+    /*
+     * legacy algorithm below
      */
-    
+
     /*
      * If the pll is being used (which is normal)
      * then it will always be configured to output 200MHz.

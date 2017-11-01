@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ function getAsmFiles(targetName)
 {
     switch(targetName) {
         case "ti.targets.arm.elf.R4F":
+        case "ti.targets.arm.elf.R4Ft":
         case "ti.targets.arm.elf.R5F":
             return (["Core_asm.sv7R"]);
             break;
@@ -67,12 +68,18 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
         },
         "RM57L8xx": {
             numCores  : 1
+        },
+        "AWR14XX": {
+            numCores  : 1
         }
     };
 
     deviceTable["RM57D8[a-zA-Z0-9]+"] = deviceTable["RM57D8xx"];
     deviceTable["RM57L8[a-zA-Z0-9]+"] = deviceTable["RM57L8xx"];
     deviceTable["RM48L.*"] = deviceTable["RM57L8xx"];
+    deviceTable["AWR16XX"] = deviceTable["AWR14XX"];
+    deviceTable["IWR14XX"] = deviceTable["AWR14XX"];
+    deviceTable["IWR16XX"] = deviceTable["AWR14XX"];
 }
 
 /*

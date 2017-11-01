@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  *  ======== Boot.xdc ========
@@ -58,7 +78,7 @@ module Boot
     }
 
     @Facet
-    metaonly config ViewInfo.Instance rovViewInfo = 
+    metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
             viewMap: [
             [
@@ -71,52 +91,52 @@ module Boot
             ],
             ]
         });
-    
-    /*! 
+
+    /*!
      *  Watchdog disable flag, default is false.
      *
      *  Set to true to disable the watchdog timer.
      */
     metaonly config Bool disableWatchdog = false;
 
-    /*! 
-     *  PLL type.  
+    /*!
+     *  PLL type.
      *
-     *  The default will be determined by platform specification, or by the 
+     *  The default will be determined by platform specification, or by the
      *  device ID for the generic (tms320c28) platform.
      */
     metaonly config Type pllType;
 
-    /*! 
+    /*!
      *  PLL configuration flag, default is false.
      *
      *  Set to true to configure the PLL.
      */
     metaonly config Bool configurePll = false;
 
-    /*! 
+    /*!
      *  OSCCLK input frequency to PLL, in MHz. Default is 10 MHz.
      *
      *  This is the frequency of the oscillator clock (OSCCLK) input to the
      *  PLL.  On some devices (e.g., TMS320C28346) this will correspond to the
-     *  frequency of an external crystal or clock input.  On others 
-     *  (e.g., TMS320F28069) this will correspond to the frequency of an 
+     *  frequency of an external crystal or clock input.  On others
+     *  (e.g., TMS320F28069) this will correspond to the frequency of an
      *  internal oscillator which is the default OSCCLK coming out of reset.
      */
     metaonly config UInt pllOSCCLK = 10;
 
-    /*! 
+    /*!
      *  PLLCR[DIV] clocking ratio value. Default is 10.
      *
-     *  This is the actual value written to the DIV bits in 
+     *  This is the actual value written to the DIV bits in
      *  the PLL Control Register (PLLCR)
      */
     metaonly config UInt pllcrDIV = 10;
 
-    /*! 
+    /*!
      *  PLLSTS[DIVSEL] divide select value. Default is 2.
      *
-     *  This is the actual value written to the DIVSEL bits in 
+     *  This is the actual value written to the DIVSEL bits in
      *  the PLL Status Register (PLLSTS).
      *
      *  This configuration parameter applies for all of the
@@ -130,18 +150,18 @@ module Boot
      *  This function is called when the Boot module is about to configure
      *  the PLL, but finds the device operating in Limp mode (i.e., the mode
      *  when a missing OSCCLK input has been detected).
-     *  
-     *  If this function is not specified by the application, a default 
+     *
+     *  If this function is not specified by the application, a default
      *  function will be used, which does an ESTOP0 and then enters an
      *  infinite loop.
      */
     metaonly config Fxn limpAbortFunction;
 
-    /*! 
+    /*!
      *  Boot from FLASH flag, default is false.
      *
      *  Set to true to enable booting from FLASH.  When set to true,
-     *  a long branch (LB) to the c_int00 entry point will be placed at 
+     *  a long branch (LB) to the c_int00 entry point will be placed at
      *  the BEGIN section address defined in the linker command file.
      */
     metaonly config Bool bootFromFlash = false;
@@ -163,11 +183,11 @@ module Boot
 
     /*!
      *  ======== getFrequency ========
-     *  Gets the resulting output frequency (in Hz) given the PLL configuration 
+     *  Gets the resulting output frequency (in Hz) given the PLL configuration
      *  parameters.
      */
     metaonly UInt32 getFrequency();
-    
+
     /*!
      *  ======== registerFreqListener ========
      *  Register a module to be notified whenever the frequency changes.
@@ -176,7 +196,7 @@ module Boot
      *  which takes the new frequency as an argument.
      */
     metaonly function registerFreqListener(listener);
-    
+
 internal:
 
     /* Used to display the computed frequency value in the Grace page. */
@@ -185,8 +205,4 @@ internal:
     /* Used to indicate if using on a Concerto device */
     metaonly config Bool concertoDevice = false;
 
-};   
-/*
- *  @(#) ti.catalog.c2800.init; 1, 0, 0,2; 1-29-2016 10:00:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
-
+};

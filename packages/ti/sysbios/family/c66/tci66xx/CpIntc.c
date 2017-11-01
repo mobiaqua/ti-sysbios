@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,7 @@ Int CpIntc_Module_startup(Int phase)
     }
 
     /* Clear then enable any statically enabled interrupts */
-    for (i = 0; i < CpIntc_numStatusRegs; i++) {
+    for (i = 0; i < (UInt32)CpIntc_numStatusRegs; i++) {
         offset = i << 5;
         for (j = 0; j < 32; j++) {
             bitpos = 1 << j;

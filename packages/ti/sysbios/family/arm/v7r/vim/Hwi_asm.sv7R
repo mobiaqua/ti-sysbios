@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2015, Texas Instruments Incorporated
+;  Copyright (c) 2015-2016, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -71,11 +71,15 @@ ti_sysbios_family_arm_v7r_vim_Hwi_Module__state__V .tag ti_sysbios_family_arm_v7
 
 ti_sysbios_family_arm_v7r_vim_Hwi_dispatchIRQ__I:
         .asmfunc
+    .if (ti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D)
         sub     lr, lr, #4
         srsdb   #0x1f           ; push sys CPSR and LR onto SYS stack
         cps     #0x1f           ; switch back to System mode
         sub     sp, sp, #8      ; back up below CPSR and LR
         push    {r0-r5, r12, lr}; save required C registers
+    .else
+        push    {r2-r5, r12, lr}; save required C registers
+    .endif
         ldr     r5, [sp, #32]   ; retrieve IRP
 
     .if __TI_VFP_SUPPORT__ | __TI_NEON_SUPPORT__
@@ -142,23 +146,8 @@ ti_sysbios_family_arm_v7r_vim_Hwi_init__I:
         add     sp, r12, sp     ; sp = initial fiq stack
 
         mrs     r12, cpsr
-        bic     r12, r12, #0x1f ; switch to IRQ mode
-        orr     r12, r12, #0x12 ; to initialize zero-latency IRQ sp
-        msr     cpsr_cf, r12    ;
-
-        ldr     sp, irqStackAddr
-        ldr     sp, [sp]        ; base of zero-latency IRQ stack
-        ldr     r12, irqStackSize
-        ldr     r12, [r12]      ; size of zero-latency IRQ stack
-        add     sp, r12, sp     ; sp = initial zero-latency IRQ stack
-
-        mrs     r12, cpsr
         orr     r12, r12, #0x1f ; switch back to SYS mode
         msr     cpsr_cf, r12    ;
-
-        mrc     p15, #0, r12, c1, c0, #0
-        orr     r12, r12, #0x01000000
-        mcr     p15, #0, r12, c1, c0, #0    ; Enable vector enable (VE) bit
 
         bx      lr
         .endasmfunc
@@ -168,11 +157,5 @@ fiqStackAddr:
 
 fiqStackSize:
         .word   ti_sysbios_family_arm_v7r_vim_Hwi_Module__state__V.fiqStackSize
-
-irqStackAddr:
-        .word   ti_sysbios_family_arm_v7r_vim_Hwi_Module__state__V.irqStack
-
-irqStackSize:
-        .word   ti_sysbios_family_arm_v7r_vim_Hwi_Module__state__V.irqStackSize
 
         .end

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,7 @@ import xdc.runtime.Error;
  *  is automatically done for every period specified by
  *  {@link #windowInMs windowInMs} in an {@link ti.sysbios.knl.Idle Idle}
  *  function when {@link #updateInIdle updateInIdle} is
- *  set to true. The time between 2 calls to {@link #update} is called the
+ *  set to true. The time between two calls to {@link #update} is called the
  *  benchmark time window.
  *
  *  By passing in a function pointer of type
@@ -461,6 +461,20 @@ module Load
     config Bool updateInIdle = true;
 
     /*!
+     *  ======== enableCPULoadCalc ========
+     *  Automatically update the Load module's CPU load value in
+     *  {@link #update}.
+     *
+     *  If this parameter is set to `true`, Load_update() will calculate
+     *  the CPU load for the elapsed time.  In some cases, the user may
+     *  prefer to use the statistics gathered by the Load module and do
+     *  the CPU load calculation themself.  Set this parameter to false,
+     *  to disable the Load module's CPU load calculations.  This can
+     *  improve performance of the Load_update() call.
+     */
+    metaonly config Bool enableCPULoadCalc = true;
+
+    /*!
      *  ======== minIdle ========
      *  Specifies the minimum time used to compute idle time
      *
@@ -584,6 +598,18 @@ module Load
      */
     @DirectCall
     Void updateLoads();
+
+    /*!
+     *  @_nodoc
+     *  ======== updateContextsAndPost ========
+     *  This function is called by Load_update() when Load.enableCPULoadCalc
+     *  is false.
+     *  Updates the current thread's time and hook contexts for all threads.
+     *  Call the postUpdate() function.  It is up to the application to
+     *  calculate the loads.
+     */
+    @DirectCall
+    Void updateContextsAndPost();
 
     /*!
      *  @_nodoc

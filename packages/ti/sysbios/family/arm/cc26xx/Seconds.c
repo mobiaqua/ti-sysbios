@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,15 @@
 
 #include <ti/sysbios/hal/Hwi.h>
 
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_aon_rtc.h>
-#include <inc/hw_ints.h>
-#include <driverlib/aon_rtc.h>
-#include <driverlib/aon_event.h>
-#include <driverlib/interrupt.h>
+#include <ti/devices/DeviceFamily.h>
+
+#include DeviceFamily_constructPath(inc/hw_types.h)
+#include DeviceFamily_constructPath(inc/hw_memmap.h)
+#include DeviceFamily_constructPath(inc/hw_aon_rtc.h)
+#include DeviceFamily_constructPath(inc/hw_ints.h)
+#include DeviceFamily_constructPath(driverlib/aon_rtc.h)
+#include DeviceFamily_constructPath(driverlib/aon_event.h)
+#include DeviceFamily_constructPath(driverlib/interrupt.h)
 
 #include "package/internal/Seconds.xdc.h"
 

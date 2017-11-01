@@ -1,20 +1,41 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  *  ======== IOA ========
  *  MSP430 General Purpose Operational Amplifier
  */
 metaonly interface IOA inherits xdc.platform.IPeripheral {
-    
+
     /*! Inverting input selection */
     enum OAN_t {
       OAN_0 = (0*0x400u),       /*! OAxI0 */
@@ -30,7 +51,7 @@ metaonly interface IOA inherits xdc.platform.IPeripheral {
       OAP_2 = (2*0x400u),       /*! OAxI2 */
       OAP_3 = 3*0x400u          /*! OAxI3 */
     };
-     
+
     /*! Slew rate select */
     enum OAPM_t {
       OAPM_0 = (0*0x400u),      /*! Off, output high Z */
@@ -38,17 +59,17 @@ metaonly interface IOA inherits xdc.platform.IPeripheral {
       OAPM_2 = (2*0x400u),      /*! Medium */
       OAPM_3 = 3*0x400u         /*! Fast */
     };
-    
+
     enum OAADC0_t {
       OAADC0_OFF = (0x00),      /*! OAx output to ADC12 input channel select 0 */
       OAADC0 = 0x01             /*! OAx output to ADC12 input channel select 0 */
     };
-    
+
     enum OAADC1_t {
       OAADC1_OFF = (0x00),      /*! OAx output to ADC12 input channel select 1 */
       OAADC1 = 0x02             /*! OAx output to ADC12 input channel select 1 */
     };
-    
+
     /*! OAx feedback resistor select */
     enum OAFBR_t {
       OAFBR_0 = (0*0x100u),     /*! OAx Feedback resistor: Tap 0 */
@@ -77,12 +98,12 @@ metaonly interface IOA inherits xdc.platform.IPeripheral {
       OARRIP_OFF = 0x00,        /*! Rtop = AVss, Rbottom = AVcc */
       OARRIP     = 0x01         /*! Rtop = AVcc, Rbottom = AVss */
     };
-    
+
     enum OANEXT_t {
       OANEXT_OFF = 0x00,        /*! OAx inverting input not externally available */
       OANEXT     = 0x02         /*! OAx inverting input externally available */
     };
-      
+
    /*!
     *  ======== OAxCTL0_t ========
     *  Opamp Control Register 0 Definition
@@ -137,7 +158,7 @@ metaonly interface IOA inherits xdc.platform.IPeripheral {
                                   * External A12, A13, or A14 pin connections are disconnected from the
                                   * ADC. */
     }
-    
+
     /*!
     *  ======== OAxCTL1_t ========
     *  Opamp Control Register 1 Definition
@@ -188,13 +209,9 @@ metaonly interface IOA inherits xdc.platform.IPeripheral {
         String     register;
         Bool       regForceSet;
     }
-    
+
 instance:
 
     /*! Returns the number of available OA */
     UChar getNumberOfOA();
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.oa; 1, 0, 0,2; 1-29-2016 10:00:54; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

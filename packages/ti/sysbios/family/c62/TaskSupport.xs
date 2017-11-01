@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,7 @@
 function getAsmFiles(targetName)
 {
     switch(targetName) {
-        case "ti.targets.C64P":
-        case "ti.targets.C64P_big_endian":
-        case "ti.targets.C674":
         case "ti.targets.elf.C64P":
-        case "ti.targets.elf.C64P_big_endian":
         case "ti.targets.elf.C674":
             return (["TaskSupport_asm.s62"]);
             break;

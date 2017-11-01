@@ -58,7 +58,7 @@ function module$use()
 
     /* set configureDCO to false for all non-UCS clock based devices */
     var device = Program.cpu.attrs.peripherals["clock"];
-    if (device == null || 
+    if (device == null ||
         (device.$module.$name != "ti.catalog.msp430.peripherals.clock.UCS" &&
          device.$module.$name != "ti.catalog.msp430.peripherals.clock.CS_A")) {
         Boot.configureDCO = false;

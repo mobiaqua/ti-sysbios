@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 by Texas Instruments Incorporated.
+ *  Copyright 2017 by Texas Instruments Incorporated.
  *
  */
 
@@ -655,7 +655,7 @@ static Int putSymbol(COF_Handle desc, FILE *file, COF_Symbol *symbol)
     return (0);
 }
 /*
- *  @(#) ti.targets.omf.cof; 1,0,0,0; 1-29-2016 17:06:20; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.omf.cof; 1,0,0,0; 7-27-2017 12:30:45; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

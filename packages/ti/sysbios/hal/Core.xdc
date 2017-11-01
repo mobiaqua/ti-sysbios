@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,16 @@
  */
 module Core inherits ti.sysbios.interfaces.ICore
 {
+    /*!
+     *  ======== numCores ========
+     *  @a(NOTE)
+     *  This configuration parameter should be set in a family specific or
+     *  delegate Core module. Setting "ti.sysbios.hal.Core" module's "numCores"
+     *  field does not have the desired affect in SMP mode. This is because all
+     *  SMP aware modules reference the family specific (or delegate) Core
+     *  module's "numCores" field to determine the number of CPU cores.
+     */
+    override config UInt numCores;
 
     @Macro
     override UInt hwiDisable();

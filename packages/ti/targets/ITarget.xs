@@ -1,5 +1,5 @@
 /* --COPYRIGHT--,EPL
- *  Copyright (c) 2008-2015 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2016 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -57,6 +57,7 @@ var _isaChainMap = {
     isa_67P: ["62", "67", "67P"],
     isa_64T: ["64T"],
     isa_66:  ["62", "64", "64P", "674", "66"],
+    isa_71:  ["71"],
     isa_28:  ["28"],
     isa_28FP:["28", "28FP"],
     isa_430: ["430"],

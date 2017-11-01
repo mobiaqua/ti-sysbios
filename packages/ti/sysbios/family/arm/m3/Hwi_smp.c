@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -185,21 +185,22 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
      * for postInit(), encode irp with enableInt
      * and useDispatcher info.
      */
-
     hwi->irp = 0;
 
+    /* encode 'enableInt' in bit 0 */
     if (params->enableInt) {
         hwi->irp = 0x1;
     }
 
+    /* encode 'useDispatcher' in bit 1 */
     if (params->useDispatcher) {
         hwi->irp |= 0x2;
     }
 
     status = Hwi_postInit(hwi, eb);
 
-    if (Error_check(eb)) {
-        return (3 + status);
+    if (status) {
+        return (2 + status);
     }
 
     return (0);
@@ -219,14 +220,24 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
     Int i;
+    Error_Block localEB;
+    Error_Block *leb;
+
+    if (eb != Error_IGNORE) {
+        leb = eb;
+    }
+    else {
+        Error_init(&localEB);
+        leb = &localEB;
+    }
 
     for (i = 0; i < Hwi_hooks.length; i++) {
         hwi->hookEnv[i] = (Ptr)0;
         if (Hwi_hooks.elem[i].createFxn != NULL) {
-            Hwi_hooks.elem[i].createFxn((IHwi_Handle)hwi, eb);
+            Hwi_hooks.elem[i].createFxn((IHwi_Handle)hwi, leb);
 
-            if (Error_check(eb)) {
-                return (i);
+            if (Error_check(leb)) {
+                return (i + 1);
             }
         }
     }
@@ -243,7 +254,11 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
     if (((hwi->irp & 0x2) == 0) ||
         (hwi->priority < Hwi_disablePriority)) {
         Hwi_plug(hwi->intNum, (Void *)(UArg)hwi->fxn);
-        /* encode useDispatcher == FALSE as a negative intNum */
+        /*
+         * encode useDispatcher == FALSE as a negative intNum
+         * This is done to inform ROV that this is a non-dispatched interrupt
+         * without adding a new field to the Hwi object.
+         */
         hwi->intNum = 0 - hwi->intNum;
     }
     else {
@@ -278,7 +293,7 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
                 return (Hwi_hooks.length); /* unwind all Hwi_hooks */
 #else
-                return (0);
+                return (1);
 #endif
             }
         }
@@ -307,13 +322,19 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 {
     UInt intNum;
 
-    if (status == 1) {  /* failed Hwi_create */
+    if (status == 1) {  /* vector in use */
         return;
     }
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
     if (Hwi_hooks.length > 0) {
         Int i, cnt;
+
+        /* return if failed to allocate Hook Env */
+        if (status == 2) {
+            return;
+        }
+
         if (status == 0) {
             cnt = Hwi_hooks.length;
         }
@@ -332,7 +353,13 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
     }
 #endif
 
-    intNum = hwi->intNum;
+    /* compensate for encoded intNum */
+    if (hwi->intNum < 0) {
+        intNum = 0 - hwi->intNum;
+    }
+    else {
+        intNum = hwi->intNum;
+    }
 
     Hwi_disableInterrupt(intNum);
     Hwi_plug(intNum, (Void *)(UArg)Hwi_nullIsrFunc);
@@ -671,7 +698,7 @@ Bool Hwi_getStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth)
     Bool stackOverflow;
 
     /* Copy the stack base address and size */
-    stkInfo->hwiStackSize = Hwi_module->isrStackSize;
+    stkInfo->hwiStackSize = (SizeT)Hwi_module->isrStackSize;
     stkInfo->hwiStackBase = Hwi_module->isrStackBase;
 
     isrSP = stkInfo->hwiStackBase;
@@ -1026,7 +1053,7 @@ Void Hwi_excFillContext(UInt *excStack)
             if (BIOS_swiEnabled) {
                 excContext->threadHandle = (Ptr)Swi_self();
                 stack = Hwi_module->isrStackBase;
-                stackSize = Hwi_module->isrStackSize;
+                stackSize = (SizeT)Hwi_module->isrStackSize;
             }
             break;
         }
@@ -1034,13 +1061,13 @@ Void Hwi_excFillContext(UInt *excStack)
             excContext->threadHandle =
                 (Ptr)Hwi_getHandle((UInt)(excContext->psr) & 0xff);
             stack = Hwi_module->isrStackBase;
-            stackSize = Hwi_module->isrStackSize;
+            stackSize = (SizeT)Hwi_module->isrStackSize;
             break;
         }
         case BIOS_ThreadType_Main: {
             excContext->threadHandle = NULL;
             stack = Hwi_module->isrStackBase;
-            stackSize = Hwi_module->isrStackSize;
+            stackSize = (SizeT)Hwi_module->isrStackSize;
             break;
         }
     }
@@ -1549,4 +1576,3 @@ Void Hwi_doTaskRestore(UInt swiTskKey)
         TASK_RESTORE(swiTskKey >> 8);   /* returns with ints disabled */
     }
 }
-

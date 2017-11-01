@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,8 @@ extern Void `String(Hwi.undefinedInstFunc).substr(1)`();
 extern Void `String(Hwi.swiFunc).substr(1)`();
 extern Void `String(Hwi.prefetchAbortFunc).substr(1)`();
 extern Void `String(Hwi.dataAbortFunc).substr(1)`();
+extern Void `String(Hwi.reservedFunc).substr(1)`();
+extern Void `String(Hwi.irqFunc).substr(1)`();
 
 %if (!Hwi.lockstepDevice) {
 const UInt32 ti_sysbios_family_arm_v7r_vim_Hwi_vectors[] = {
@@ -53,13 +55,14 @@ const UInt32 ti_sysbios_family_arm_v7r_vim_Hwi_vectors[] = {
     (UInt32)(`String(Hwi.prefetchAbortFunc)`),      /* prefetchAbortFunc     */
     (UInt32)(`String(Hwi.dataAbortFunc)`),          /* dataAbortFunc         */
     (UInt32)(`String(Hwi.reservedFunc)`),           /* reservedFunc          */
+    (UInt32)(`String(Hwi.irqFunc)`)                 /* irqFunc               */
 };
 %}
 %else {
 /*
- * The IRQ and FIQ offset register is placed at an offset of #-0x1B0 w.r.t.
- * the FIQ and IRQ vector table entry such that the vector table entry can
- * directly reference it.
+ * The FIQ offset register is placed at an offset of #-0x1B0 w.r.t. the FIQ
+ * vector table entry such that the vector table entry can directly reference
+ * it.
  */
 const UInt32 ti_sysbios_family_arm_v7r_vim_Hwi_vectors[] = {
     (UInt32)(0xE59FF018),                       /* ldr  pc, resetFunc         */
@@ -68,13 +71,14 @@ const UInt32 ti_sysbios_family_arm_v7r_vim_Hwi_vectors[] = {
     (UInt32)(0xE59FF018),                       /* ldr  pc, prefetchAbortFunc */
     (UInt32)(0xE59FF018),                       /* ldr  pc, dataAbortFunc     */
     (UInt32)(0xE59FF018),                       /* ldr  pc, reservedFunc      */
-    (UInt32)(0xE51FF1B0),                       /* ldr  pc, [pc, #-0x1b0]     */
+    (UInt32)(0xE59FF018),                       /* ldr  pc, irqFunc           */
     (UInt32)(0xE51FF1B0),                       /* ldr  pc, [pc, #-0x1b0]     */
     (UInt32)(`String(Hwi.resetFunc)`),          /* resetFunc                  */
     (UInt32)(`String(Hwi.undefinedInstFunc)`),  /* undefInstFunc              */
     (UInt32)(`String(Hwi.swiFunc)`),            /* swiFunc                    */
     (UInt32)(`String(Hwi.prefetchAbortFunc)`),  /* prefetchAbortFunc          */
     (UInt32)(`String(Hwi.dataAbortFunc)`),      /* dataAbortFunc              */
-    (UInt32)(`String(Hwi.reservedFunc)`)        /* reservedFunc               */
+    (UInt32)(`String(Hwi.reservedFunc)`),       /* reservedFunc               */
+    (UInt32)(`String(Hwi.irqFunc)`)             /* irqFunc                    */
 };
 %}

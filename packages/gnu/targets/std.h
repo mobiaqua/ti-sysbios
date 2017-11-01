@@ -91,7 +91,7 @@ typedef xdc_IArg            xdc_Arg;
 #if !defined(xdc_target__os_MacOS)
   #define xdc__META(n,s) \
     __attribute__ ((section ("xdc.meta"))) \
-    const char (n)[] = {s}
+    const char (n)[] = {(s)}
 #endif
 
 #if (xdc_target__sizeof_IArg > xdc_target__sizeof_Ptr) \
@@ -106,7 +106,7 @@ static inline xdc_Fxn xdc_uargToFxn(xdc_UArg a) { return ((xdc_Fxn)(int)a); }
 
 #endif /* gnu_targets_STD_ */
 /*
- *  @(#) gnu.targets; 1, 0, 1,0; 1-29-2016 16:37:03; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) gnu.targets; 1, 0, 1,1; 7-27-2017 11:46:51; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

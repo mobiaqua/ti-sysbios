@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,6 +115,7 @@ if (xdc.om.$name == "cfg") {
     deviceTable["TMS320C3.*"] = deviceTable["TMS320C3430"];
     deviceTable["OMAP3.*"] = deviceTable["TMS320C3430"];
     deviceTable["AM35.*"] = deviceTable["TMS320C3430"];
+    deviceTable["DM37XX"] = deviceTable["TMS320C3430"];
 
     deviceTable["TMS320.*81.."] = deviceTable["TMS320DM8168"];
     deviceTable["AM335.*"] = deviceTable["TMS320DM8168"];

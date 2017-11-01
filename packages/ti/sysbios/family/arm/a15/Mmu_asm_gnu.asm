@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2015, Texas Instruments Incorporated
+@  Copyright (c) 2015-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@
 @ ======== Mmu_init ========
 @ Initialize mmu registers
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_init__I
         .func ti_sysbios_family_arm_a15_Mmu_init__I
 ti_sysbios_family_arm_a15_Mmu_init__I:
         mov  r0, #1                     @ TTBR0 used and desc uses Short format
@@ -74,7 +74,7 @@ ti_sysbios_family_arm_a15_Mmu_init__I:
 @ ======== Mmu_disableAsm ========
 @ Disable MMU.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_disableAsm__I
         .func ti_sysbios_family_arm_a15_Mmu_disableAsm__I
 
 ti_sysbios_family_arm_a15_Mmu_disableAsm__I:
@@ -90,7 +90,7 @@ ti_sysbios_family_arm_a15_Mmu_disableAsm__I:
 @ ======== Mmu_enableAsm ========
 @ Enable MMU.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_enableAsm__I
         .func ti_sysbios_family_arm_a15_Mmu_enableAsm__I
 
 ti_sysbios_family_arm_a15_Mmu_enableAsm__I:
@@ -112,7 +112,7 @@ tableBuf:
 @
 @  ======== Mmu_getAsid ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_getAsid__E
         .func ti_sysbios_family_arm_a15_Mmu_getAsid__E
 
 ti_sysbios_family_arm_a15_Mmu_getAsid__E:
@@ -126,7 +126,7 @@ ti_sysbios_family_arm_a15_Mmu_getAsid__E:
 @ ======== Mmu_isEnabled ========
 @ Determines if MMU is enabled. Returns TRUE if enabled otherwise FALSE.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_isEnabled__E
         .func ti_sysbios_family_arm_a15_Mmu_isEnabled__E
 
 ti_sysbios_family_arm_a15_Mmu_isEnabled__E:
@@ -142,7 +142,7 @@ ti_sysbios_family_arm_a15_Mmu_isEnabled__E:
 @ ======== Mmu_instructionSync ========
 @ Execute isb barrier instruction
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_instructionSync__I
         .func ti_sysbios_family_arm_a15_Mmu_instructionSync__I
 
 ti_sysbios_family_arm_a15_Mmu_instructionSync__I:
@@ -155,7 +155,7 @@ ti_sysbios_family_arm_a15_Mmu_instructionSync__I:
 @
 @  ======== Mmu_switchContext ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_switchContext__E
         .func ti_sysbios_family_arm_a15_Mmu_switchContext__E
 
 ti_sysbios_family_arm_a15_Mmu_switchContext__E:
@@ -172,7 +172,7 @@ ti_sysbios_family_arm_a15_Mmu_switchContext__E:
 @
 @ ======== Mmu_tlbInvAll ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_tlbInvAll__E
         .func ti_sysbios_family_arm_a15_Mmu_tlbInvAll__E
 
 ti_sysbios_family_arm_a15_Mmu_tlbInvAll__E:
@@ -189,7 +189,7 @@ ti_sysbios_family_arm_a15_Mmu_tlbInvAll__E:
 @
 @ ======== Mmu_tlbInv ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_tlbInv__E
         .func ti_sysbios_family_arm_a15_Mmu_tlbInv__E
 
 ti_sysbios_family_arm_a15_Mmu_tlbInv__E:
@@ -214,7 +214,7 @@ tlbInv:
 @ ======== Mmu_writeMAIRAsm ========
 @ Write attr to appropriate byte offset within the selected MAIR register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a15_Mmu_writeMAIRAsm__I
         .func ti_sysbios_family_arm_a15_Mmu_writeMAIRAsm__I
 
 ti_sysbios_family_arm_a15_Mmu_writeMAIRAsm__I:

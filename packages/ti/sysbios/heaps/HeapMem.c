@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -202,53 +202,65 @@ Void HeapMem_restore(HeapMem_Object *obj)
     obj->head.next = begHeader;
 }
 
-
 /*
  *  ======== HeapMem_alloc ========
- *  HeapMem is implemented such that all of the memory and blocks it works
- *  with have an alignment that is a multiple of the header size and have a
- *  size which is a multiple of the header size. Maintaining this requirement
- *  throughout the implementation ensures that there are never any odd
- *  alignments or odd block sizes to deal with.
- *
- *  Specifically:
- *  The buffer managed by HeapMem:
- *    1. Is aligned on a multiple of sizeof(HeapMem_Header)
- *    2. Has an adjusted size that is a multiple of sizeof(HeapMem_Header)
- *  All blocks on the freelist:
- *    1. Are aligned on a multiple of sizeof(HeapMem_Header)
- *    2. Have a size that is a multiple of sizeof(HeapMem_Header)
- *  All allocated blocks:
- *    1. Are aligned on a multiple of sizeof(HeapMem_Header)
- *    2. Have a size that is a multiple of sizeof(HeapMem_Header)
- *
  */
 Ptr HeapMem_alloc(HeapMem_Object *obj, SizeT reqSize,
                     SizeT reqAlign, Error_Block *eb)
 {
     IArg key;
+    Ptr buffer;
+
+    key = Gate_enterModule();
+
+    buffer = HeapMem_allocUnprotected(obj, reqSize, reqAlign);
+
+    Gate_leaveModule(key);
+
+    if (buffer == NULL) {
+        Error_raise(eb, HeapMem_E_memory, (IArg)obj, (IArg)reqSize);
+    }
+    return (buffer);
+}
+
+/*
+ *  ======== HeapMem_allocUnprotected ========
+ *  HeapMem is implemented such that all of the memory and blocks it works
+ *  with have an alignment of the minBlockAlign and have a
+ *  size which is a multiple of the minBlockAlign. Maintaining this requirement
+ *  throughout the implementation ensures that there are never any odd
+ *  alignments or odd block sizes to deal with.
+ *
+ *  Specifically:
+ *  The buffer managed by HeapMem:
+ *    1. Is aligned on a multiple of minBlockAlign
+ *    2. Has an adjusted size that is a multiple of minBlockAlign
+ *  All blocks on the freelist:
+ *    1. Are aligned on a multiple of minBlockAlign
+ *    2. Have a size that is a multiple of minBlockAlign
+ *  All allocated blocks:
+ *    1. Are aligned on a multiple of minBlockAlign
+ *    2. Have a size that is a multiple of minBlockAlign
+ */
+Ptr HeapMem_allocUnprotected(HeapMem_Object *obj, SizeT reqSize, SizeT reqAlign)
+{
     HeapMem_Header *prevHeader, *newHeader, *curHeader;
-    Char *allocAddr;
-    Memory_Size curSize, adjSize;
+    Memory_Size curSize;
+    Memory_Size adjSize;
     SizeT remainSize; /* free memory after allocated memory      */
-    SizeT adjAlign, offset;
+    Char *allocAddr;
+    SizeT offset;
+    SizeT adjAlign;
 
     /* Assert that requested align is a power of 2 */
     Assert_isTrue(((reqAlign & (reqAlign - 1)) == 0), HeapMem_A_align);
 
-    adjSize = (Memory_Size)reqSize;
-
-    /* Make size requested a multiple of Memory_Header */
-    if ((offset = (adjSize & (obj->minBlockAlign - 1))) != 0) {
-        adjSize = adjSize + (obj->minBlockAlign - offset);
-    }
-
     /* Assert that requested block size is non-zero */
-    Assert_isTrue((adjSize != 0), HeapMem_A_zeroBlock);
+    Assert_isTrue((reqSize != 0), HeapMem_A_zeroBlock);
 
     /*
      *  Make sure the alignment is at least as large as the sizeof
-     *  HeapMem_Header.
+     *  minBlockAlign.
      *  Note: adjAlign must be a power of 2 (by function constraint) and
      *  Header size is also a power of 2,
      */
@@ -258,7 +270,12 @@ Ptr HeapMem_alloc(HeapMem_Object *obj, SizeT reqSize,
         adjAlign = obj->minBlockAlign;
     }
 
-    key = Gate_enterModule();
+    adjSize = (Memory_Size)reqSize;
+
+    /* Make size requested a multiple of minBlockAlign */
+    if ((offset = (adjSize & (obj->minBlockAlign - 1))) != 0) {
+        adjSize = adjSize + (obj->minBlockAlign - offset);
+    }
 
     /*
      *  The block will be allocated from curHeader. Maintain a pointer to
@@ -345,8 +362,6 @@ Ptr HeapMem_alloc(HeapMem_Object *obj, SizeT reqSize,
                 }
             }
 
-            Gate_leaveModule(key);
-
             /* Success, return the allocated memory */
             return ((Ptr)allocAddr);
         }
@@ -355,10 +370,6 @@ Ptr HeapMem_alloc(HeapMem_Object *obj, SizeT reqSize,
             curHeader = curHeader->next;
         }
     }
-
-    Gate_leaveModule(key);
-
-    Error_raise(eb, HeapMem_E_memory, (IArg)obj, (IArg)reqSize);
 
     return (NULL);
 }
@@ -369,22 +380,32 @@ Ptr HeapMem_alloc(HeapMem_Object *obj, SizeT reqSize,
 Void HeapMem_free(HeapMem_Object *obj, Ptr addr, SizeT size)
 {
     IArg key;
-    HeapMem_Header *curHeader, *newHeader, *nextHeader;
+
+    key = Gate_enterModule();
+
+    HeapMem_freeUnprotected(obj, addr, size);
+
+    Gate_leaveModule(key);
+}
+
+/*
+ *  ======== HeapMem_freeUnprotected ========
+ */
+Void HeapMem_freeUnprotected(HeapMem_Object *obj, Ptr addr, SizeT size)
+{
     SizeT offset;
+    HeapMem_Header *curHeader, *newHeader, *nextHeader;
 
     /* Make sure the addr is aligned properly */
     Assert_isTrue((((UArg)addr & (obj->minBlockAlign - 1)) == 0),
                   HeapMem_A_invalidFree);
-
-    /* obj->head never changes, doesn't need Gate protection. */
-    curHeader = &obj->head;
 
     /* Restore size to actual allocated size */
     if ((offset = size & (obj->minBlockAlign - 1)) != 0) {
         size += obj->minBlockAlign - offset;
     }
 
-    key = Gate_enterModule();
+    curHeader = &obj->head;
 
     newHeader = (HeapMem_Header *)addr;
     nextHeader = curHeader->next;
@@ -440,7 +461,7 @@ Void HeapMem_free(HeapMem_Object *obj, Ptr addr, SizeT size)
         curHeader->size += newHeader->size;
     }
 
-    Gate_leaveModule(key);
+    return;
 }
 
 /*

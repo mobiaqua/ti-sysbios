@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,14 @@
 
     var XDCROOT = String(environment['xdc.rootDir'] + '/packages/').replace(/\\/g, "/");
 
+    /* collect xdc include paths */
+    var xdcpath =  String(environment['xdc.path'] + '/packages/').replace(/\\/g, "/");
+    var xdcincs = xdcpath.split(';');
+    var XDC_PATH_INCS = "";
+    for each (var inc in xdcincs) {
+        XDC_PATH_INCS += "-I\"" + inc + "/\" ";
+    }
+
     var CGEN = TARGET.rootDir.replace(/\\/g, "/");
 
     function baseName(path) {
@@ -86,11 +94,11 @@ BIOS_ROOT = `checkDOSPath(this.$package.packageRepository) + "ti/sysbios/"`
 
 BIOS_DEFS = `Build.getDefs()`
 
+ASM_DEFS = `(Build.getDefs()).replace(Build.getCommandLineDefs(), '')`
+
 BIOS_INC  = -I"`checkDOSPath(this.$package.packageRepository)`"
 
-TARGET_INC = -I"`checkDOSPath(xdc.loadPackage('ti.targets').packageRepository)`"
-
-INCS = $(BIOS_INC) $(TARGET_INC) `Build.getIncludePaths()`
+INCS =  $(BIOS_INC) `XDC_PATH_INCS`
 
 CCOPTS    = `BIOS.getCCOpts(TARGET.name).replace("\$(rootDir)",CGEN)` `POPTS`
 
@@ -118,7 +126,7 @@ endef
 
 define ASSEMBLE
 	@echo asm`TARGET.suffix` $< ...
-	@$(ASM) $(BIOS_DEFS) $(XOPTS) $(INCS) $<
+	@$(ASM) $(ASM_DEFS) $(XOPTS) $(INCS) $<
 endef
 %var LIB = "sysbios.a" + TARGET.suffix;
 

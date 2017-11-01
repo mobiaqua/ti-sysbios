@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,24 +48,76 @@ import ti.sysbios.family.arm.m3.Hwi;
  *  ======== Timer ========
  *  CC26xx Timer Peripheral Manager
  *
- *  This module manages the RTC timer available on CC26xx devices.
+ *  This Timer module manages the RTC timer peripheral on
+ *  CC26XX/CC13XX devices.  This Timer operates in a dynamic tick mode
+ *  (RunMode_DYNAMIC). Rather than interrupting on every fixed tick period,
+ *  the Timer is dynamically reprogrammed to interrupt on the next required
+ *  tick (as determined by work that has been scheduled with a future timeout).
  *
- *  The Timer module supports the timer in 'one shot', 'continuous', and
- *  'dynamic' modes.
+ *  By default, this Timer module is used by the SYS/BIOS
+ *  {@link ti.sysbios.knl.Clock Clock} module for implementing timing services
+ *  on CC26XX/CC13XX devices.  Operating in dynamic mode allows the Clock module
+ *  to implement dynamic tick suppression, to reduce the number of interrupts
+ *  from the timer, to the minimum required for any scheduled work.
  *
- *  In 'one shot' mode, a timer function will "fire" (run) when the timer
- *  period expires. In 'one shot' mode this will only happen once.
+ *  The RTC peripheral is implemented as a 64-bit counter, with the upper
+ *  32-bits of count representing seconds, and the lower 32-bits representing
+ *  sub-seconds.  Three timer "channels" are provided for generating time match
+ *  interrupt events.  The match compare value for each channel is a 32-bit
+ *  value, spanning the lower 16-bits of the RTC seconds count, and the upper
+ *  16-bits of the subsecond count.  There is a single interrupt line from the
+ *  RTC to generate a CPU interrupt, for a match event occurring on any
+ *  of these three channels.
  *
- *  In 'continuous' mode, the specified timer function will "fire" every
- *  time the period expires, throughout the lifetime of the program.
+ *  Channel 0 of the RTC is dedicated to use by the Clock module.  This Timer
+ *  module implementation is therefore responsible for overall management of
+ *  the RTC, including resetting and starting the RTC during application boot,
+ *  and providing the single interrupt service routine (ISR) for the RTC.
  *
- *  In 'dynamic' mode, the specified timer function will "fire" every
- *  time the period expires.  But the period of the timer can be changed
- *  dynamically, to correspond to the next tick interrupt needed from the
- *  timer.  This mode is used by the SYS/BIOS
- *  {@link ti.sysbios.knl.Clock Clock} module for implementing
- *  dynamic tick suppression, to reduce the number of interrupts from the
- *  timer to the minimum required for currently scheduled timeouts.
+ *  Channels 1 and 2 of the RTC are not used by the Clock module.  These
+ *  channels may be available for use by some applications, depending upon the
+ *  mix of software components being used.  For this purpose, this Timer
+ *  module supports sharing of the RTC interrupt, to support usage
+ *  of these other channels (in parallel with the usage of Channel 0 by the
+ *  Clock module).
+ *
+ *  To use one of these other channels the application will need to explicitly
+ *  configure an interrupt "hook" function for the channel. In this case, when
+ *  an RTC interrupt triggers the ISR will check the status of each channel to
+ *  see if the corresponding channel hook function should be called.
+ *
+ *  The time match values for Channel 0 will be automatically programmed by
+ *  the Clock module.  To use Channels 1 (and/or Channel 2), the application
+ *  will need to explicitly program the match value for the corresponding
+ *  channel, for the desired time for the interrupt.  Also, the application
+ *  will need to explicitly enable the additional channel, and include it in the
+ *  combined event configuration.
+ *
+ *  The below snippets show an example of using Channel 1, with Driverlib API
+ *  calls to configure an RTC event at 4 seconds after boot.
+ *
+ *  First, in the application .cfg file a hook function is defined for
+ *  Channel 1:
+ *
+ *  @p(code)
+ *    var Timer = xdc.module('ti.sysbios.family.arm.cc26xx.Timer');
+ *    Timer.funcHookCH1 = "&myHookCH1";
+ *  @p
+ *
+ *  In main(), Channel 1 is first cleared, a compare (match) value of 4 seconds
+ *  is set, the channel is enabled, and is included (along with Channel
+ *  0) in the combined event configuration:
+ *
+ *  @p(code)
+ *    AONRTCEventClear(AON_RTC_CH1);
+ *    AONRTCCompareValueSet(AON_RTC_CH1, 0x40000);
+ *    AONRTCChannelEnable(AON_RTC_CH1);
+ *    AONRTCCombinedEventConfig(AON_RTC_CH0 | AON_RTC_CH1);
+ *  @p
+ *
+ *  With the above, myHookCH1() will be called when the RTC reaches a count of
+ *  4 seconds.  At that time, a new compare value can be written for the next
+ *  interrupt that should occur for Channel 1.
  *
  *  @p(html)
  *  <h3> Calling Context </h3>
@@ -161,7 +213,6 @@ module Timer inherits ti.sysbios.interfaces.ITimer
         String      label;
         UInt        id;
         String      startMode;
-        UInt        period;
         String      tickFxn[];
         UArg        arg;
         String      hwiHandle;
@@ -172,13 +223,10 @@ module Timer inherits ti.sysbios.interfaces.ITimer
         UInt        id;
         String      device;
         String      devAddr;
-	UInt	    intNum;
-        UInt        period;
-        UInt64      period64;
-        UInt        currCount;
-        UInt        remainingCount;
-        UInt64      prevThreshold;
-        UInt64      nextThreshold;
+        UInt        intNum;
+        UInt32      currCount;
+        UInt32      nextCompareCount;
+        UInt32      remainingCount;
         String      state;
     };
 
@@ -257,6 +305,11 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      *  ======== funcHookCH1 ========
      *  Optional hook function for processing RTC channel 1 events
      *
+     *  This function will be called when there is a timeout event on
+     *  RTC Channel 1.  It will be called from hardware interrupt context,
+     *  so any API calls from this function must be appropriate for
+     *  execution from an ISR.
+     *
      *  Function hooks are only supported with RunMode_DYNAMIC.
      */
     config FuncPtr funcHookCH1 = null;
@@ -264,6 +317,11 @@ module Timer inherits ti.sysbios.interfaces.ITimer
     /*!
      *  ======== funcHookCH2 ========
      *  Optional hook function for processing RTC channel 2 events.
+     *
+     *  This function will be called when there is a timeout event on
+     *  RTC Channel 2.  It will be called from hardware interrupt context,
+     *  so any API calls from this function must be appropriate for
+     *  execution from an ISR.
      *
      *  Function hooks are only supported with RunMode_DYNAMIC.
      */

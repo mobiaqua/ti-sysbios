@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- 
+<!--
 Copyright (c) 2011, Texas Instruments Incorporated
 All rights reserved.
 -->
@@ -16,8 +16,8 @@ All rights reserved.
       <h1>System Configuration</h1>
         <table>
         <tr>
-          <td><control type="checkbox" 
-                       label="Enable boot from FLASH" 
+          <td><control type="checkbox"
+                       label="Enable boot from FLASH"
                        value="value:this.bootFromFlash"
                        tooltip="value:this.bootFromFlash.$summary"/></td>
         </tr>
@@ -107,9 +107,3 @@ All rights reserved.
 <properties name="Advanced" title="All Options" enabled="true" visible="true" link="this"/>
 
 </gep>
-<!--
-/*
- * @(#) ti.catalog.c2800.concertoInit; 1, 0, 0,2; 1-29-2016 10:00:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
--->
-

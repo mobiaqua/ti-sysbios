@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,8 @@ import xdc.rov.ViewInfo;
  *  each region.
  *
  *  The number of memory regions supported is device specific and may vary
- *  on different devices. The Cortex-R5F based TMS570DCxx/RM57D8xx devices
- *  for instance support 16 memory regions.
+ *  on different devices. The Cortex-R4F based RM48L5XX devices for instance
+ *  support 16 memory regions.
  *
  *  Programming a memory region requires specifying the base address and
  *  size of the region, and the region's protection attributes. It is also
@@ -61,11 +61,6 @@ import xdc.rov.ViewInfo;
  *  The protection attributes for each region include attributes such as
  *  memory type (strongly-ordered, device or normal), shareability,
  *  cacheability and read-write access permission.
- *
- *  By default, this module programs the MPU regions with some default
- *  settings/attributes. Please see this
- *  {@link ./doc-files/MpuRegions.html MPU Region Settings} table for
- *  a list of default settings used for various supported devices.
  *
  *  @a(Memory region attributes)
  *  Memory regions can be configured as different memory types by setting
@@ -339,9 +334,9 @@ module MPU
 
     /*!
      *  ======== enableMPU ========
-     *  Configuration parameter to enable MPU.
+     *  Configuration parameter to enable MPU. Disabled by default.
      */
-    config Bool enableMPU = true;
+    config Bool enableMPU = false;
 
     /*!
      *  ======== enableBackgroundRegion ========

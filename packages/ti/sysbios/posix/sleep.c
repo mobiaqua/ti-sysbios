@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,8 @@
 
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Task.h>
-#include <ti/sysbios/posix/unistd.h>
+
+#include "unistd.h"
 
 /*
  *  ======== sleep ========
@@ -61,15 +62,13 @@ int usleep(useconds_t useconds)
     UInt32             timeout;
 
     /*
-     *  If useconds >= 1000000 microseconds, this should set errno to EINVAL
-     *  and return -1.
+     *  Implementations may place limitations on the granularity of timer
+     *  values. For each interval timer, if the requested timer value requires
+     *  a finer granularity than the implementation supports, the actual timer
+     *  value shall be rounded up to the next supported value.
      */
-    if (useconds >= 1000000) {
-        return (-1);
-    }
-
     /* Clock_tickPeriod is the Clock period in microsecnds */
-    timeout = (UInt32)((useconds + Clock_tickPeriod / 2) / Clock_tickPeriod);
+    timeout = (UInt32)((useconds + Clock_tickPeriod - 1) / Clock_tickPeriod);
 
     Task_sleep(timeout);
 

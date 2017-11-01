@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -239,7 +239,7 @@ var examplesList = [
         title: "Benchmark Example",
         name: "benchmark",
         description: "This example gathers and prints benchmark timing data for some representative SYS/BIOS APIs.",
-        root: "ti/sysbios/benchmarks/",
+        root: "./generic/benchloop/",
         cFile: "benchloop.c",
         cfgFile: "benchloop.cfg",
         isHybrid: true,

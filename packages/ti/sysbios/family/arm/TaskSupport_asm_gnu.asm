@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014, Texas Instruments Incorporated
+@  Copyright (c) 2014-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ ENTER   .req     r3     @ 4th argument
 .set    ARG0,    0      @ 5th argument (stack offset)
 .set    ARG1,    4      @ 6th argument (stack offset)
 
-        .text
+        .section .text.ti_sysbios_family_arm_TaskSupport_buildTaskStack
         .func ti_sysbios_family_arm_TaskSupport_buildTaskStack
 
 ti_sysbios_family_arm_TaskSupport_buildTaskStack:
@@ -132,7 +132,7 @@ glueAddr:
 OLD     .req    r0                      @ 1st argument
 NEW     .req    r1                      @ 2nd argument
 
-        .text
+        .section .text.ti_sysbios_family_arm_TaskSupport_swap__E
         .func ti_sysbios_family_arm_TaskSupport_swap__E
 
 ti_sysbios_family_arm_TaskSupport_swap__E:
@@ -163,7 +163,7 @@ ti_sysbios_family_arm_TaskSupport_swap__E:
 @  registers - necessary for the arm register passing model.
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_TaskSupport_glue
         .func ti_sysbios_family_arm_TaskSupport_glue
 
 ti_sysbios_family_arm_TaskSupport_glue:

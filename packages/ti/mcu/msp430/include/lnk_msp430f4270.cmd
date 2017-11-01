@@ -118,7 +118,7 @@ SECTIONS
     SD16         : { * ( .int12 ) } > INT12 type = VECT_INIT
     .int13       : {}               > INT13
     NMI          : { * ( .int14 ) } > INT14 type = VECT_INIT
-    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */ 
+    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */
 }
 
 /****************************************************************************/
@@ -126,4 +126,3 @@ SECTIONS
 /****************************************************************************/
 
 -l msp430f4270.cmd
-

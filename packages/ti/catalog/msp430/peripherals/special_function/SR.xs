@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 
 /*
  *  ======== SR.xs ========
@@ -18,7 +39,7 @@ var GetSet;
 /*
  *  ======== instance$meta$init ========
  */
-function instance$meta$init() 
+function instance$meta$init()
 {
     // Activate getter/setter support on current instance
     GetSet.init(this);
@@ -28,7 +49,7 @@ function instance$meta$init()
 /*
  *  ======== module$meta$init ========
  */
-function module$meta$init() 
+function module$meta$init()
 {
     // Get handle to getter/setter service
     GetSet = xdc.module("xdc.services.getset.GetSet");
@@ -37,7 +58,7 @@ function module$meta$init()
 /*
  *  ======== getSCG1 ========
  */
-function getSCG1() 
+function getSCG1()
 {
     var REGS = this.$module;
     if(this.SR.SCG1 == REGS.SCG1)
@@ -53,7 +74,7 @@ function getSCG1()
 /*
  *  ======== setSCG1 ========
  */
-function setSCG1(set) 
+function setSCG1(set)
 {
     var REGS = this.$module;
     if(set)
@@ -64,14 +85,14 @@ function setSCG1(set)
     {
         this.SR.SCG1 = REGS.SCG1_OFF;
     }
-    
+
     return set;
 }
 
 /*
  *  ======== getSCG0 ========
  */
-function getSCG0() 
+function getSCG0()
 {
     var REGS = this.$module;
     if(this.SR.SCG0 == REGS.SCG0)
@@ -87,10 +108,10 @@ function getSCG0()
 /*
  *  ======== setSCG0 ========
  */
-function setSCG0(set) 
+function setSCG0(set)
 {
     var REGS = this.$module;
-        
+
     if(set)
     {
         this.SR.SCG0 = REGS.SCG0;
@@ -99,14 +120,14 @@ function setSCG0(set)
     {
         this.SR.SCG0 = REGS.SCG0_OFF;
     }
-    
+
     return set;
 }
 
 /*
  *  ======== getOSCOFF ========
  */
-function getOSCOFF() 
+function getOSCOFF()
 {
     var REGS = this.$module;
     if(this.SR.OSCOFF == REGS.OSCOFF)
@@ -122,10 +143,10 @@ function getOSCOFF()
 /*
  *  ======== setOSCOFF ========
  */
-function setOSCOFF(set) 
+function setOSCOFF(set)
 {
     var REGS = this.$module;
-    
+
     if(set)
     {
         this.SR.OSCOFF = REGS.OSCOFF;
@@ -134,14 +155,14 @@ function setOSCOFF(set)
     {
         this.SR.OSCOFF = REGS.OSCOFF_OFF;
     }
-    
+
     return set;
 }
 
 /*
  *  ======== getCPUOFF ========
  */
-function getCPUOFF() 
+function getCPUOFF()
 {
     var REGS = this.$module;
     if(this.SR.CPUOFF == REGS.CPUOFF)
@@ -157,10 +178,10 @@ function getCPUOFF()
 /*
  *  ======== setCPUOFF ========
  */
-function setCPUOFF(set) 
+function setCPUOFF(set)
 {
     var REGS = this.$module;
-    
+
     if(set)
     {
         this.SR.CPUOFF = REGS.CPUOFF;
@@ -169,14 +190,14 @@ function setCPUOFF(set)
     {
         this.SR.CPUOFF = REGS.CPUOFF_OFF;
     }
-    
+
     return set;
 }
 
 /*
  *  ======== getGIE ========
  */
-function getGIE() 
+function getGIE()
 {
     var REGS = this.$module;
     if(this.SR.GIE == REGS.GIE)
@@ -192,10 +213,10 @@ function getGIE()
 /*
  *  ======== setGIE ========
  */
-function setGIE(set) 
+function setGIE(set)
 {
     var REGS = this.$module;
-    
+
     if(set)
     {
         this.SR.GIE = REGS.GIE;
@@ -204,10 +225,6 @@ function setGIE(set)
     {
         this.SR.GIE = REGS.GIE_OFF;
     }
-    
+
     return set;
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.special_function; 1, 0, 0,2; 1-29-2016 10:00:57; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

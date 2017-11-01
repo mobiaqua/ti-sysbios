@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2012, Texas Instruments Incorporated
+@  Copyright (c) 2012-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
     .global ti_sysbios_family_arm_a15_TimestampProvider_getOverflowCCNT__I
     .global ti_sysbios_family_arm_a15_TimestampProvider_initCCNT__I
 
-    .text
+    .section .text.ti_sysbios_family_arm_a15_TimestampProvider_get32__E
     .func ti_sysbios_family_arm_a15_TimestampProvider_get32__E
 
 ti_sysbios_family_arm_a15_TimestampProvider_get32__E:
@@ -47,7 +47,7 @@ ti_sysbios_family_arm_a15_TimestampProvider_get32__E:
     .endfunc
 
 
-    .text
+    .section .text.ti_sysbios_family_arm_a15_TimestampProvider_getOverflowCCNT__I
     .func ti_sysbios_family_arm_a15_TimestampProvider_getOverflowCCNT__I
 
 @
@@ -61,7 +61,7 @@ ti_sysbios_family_arm_a15_TimestampProvider_getOverflowCCNT__I:
     .endfunc
 
 
-    .text
+    .section .text.ti_sysbios_family_arm_a15_TimestampProvider_initCCNT__I
     .func ti_sysbios_family_arm_a15_TimestampProvider_initCCNT__I
 
 ti_sysbios_family_arm_a15_TimestampProvider_initCCNT__I:

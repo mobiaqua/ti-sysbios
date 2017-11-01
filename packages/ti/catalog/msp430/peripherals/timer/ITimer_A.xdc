@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  *  ======== ITimer_A ========
  *  MSP430 ITimer_A interface
@@ -21,17 +42,17 @@ metaonly interface ITimer_A inherits ITimer {
         TASSEL_2 = (2*0x100u),              /*! SMCLK */
         TASSEL_3 = 3*0x100u                 /*! INCLK */
     };
-    
+
     enum TACLR_t {
         TACLR_OFF = (0x0000),               /* Timer A counter clear */
         TACLR = 0x0004                      /* Timer A counter clear */
     };
-    
+
     enum TAIE_t {
         TAIE_OFF = (0x0000),                /* Timer A counter interrupt enable */
         TAIE     = 0x0002                   /* Timer A counter interrupt enable */
     };
-    
+
     enum TAIFG_t {
         TAIFG_OFF = (0x000),                /* Timer A counter interrupt flag */
         TAIFG     = (0x0001)                /* Timer A counter interrupt flag */
@@ -43,7 +64,7 @@ metaonly interface ITimer_A inherits ITimer {
         MC_2 = (2*0x10u),                   /*! Continuous Mode */
         MC_3 = 3*0x10u                      /*! Up/Down Mode */
     };
-    
+
     enum ID_t {
         ID_0 = (0*0x40u),                   /*! Divider - /1 */
         ID_1 = (1*0x40u),                   /*! Divider - /2 */
@@ -57,29 +78,29 @@ metaonly interface ITimer_A inherits ITimer {
         CM_2 = (2*0x4000u),                 /*! Falling Edge */
         CM_3 = 3*0x4000u                    /*! Both Edges */
     };
-    
+
     enum CCIS_t {
         CCIS_0 = (0*0x1000u),               /*! CCIxA */
         CCIS_1 = (1*0x1000u),               /*! CCIxB */
         CCIS_2 = (2*0x1000u),               /*! GND */
         CCIS_3 = 3*0x1000u                  /*! Vcc */
     };
-    
+
     enum SCS_t {
         SCS_OFF = (0x0000),                 /*! Asynchronous Capture */
         SCS = 0x0800                        /*! Sychronous Capture  */
     };
-    
+
     enum SCCI_t {
         SCCI_OFF = (0x0000),                /*! Latched capture signal (read) */
         SCCI = 0x0400                       /*! Latched capture signal (read) */
     };
-    
+
     enum CAP_t {
         CAP_OFF = (0x0000),                 /*! Compare mode */
         CAP = 0x0100                        /*! Capture mode */
     };
-    
+
     enum CCIE_t {
         CCIE_OFF = (0x0000),                /* Capture/compare interrupt disable */
         CCIE = (0x0010)                     /* Capture/compare interrupt enable */
@@ -94,7 +115,7 @@ metaonly interface ITimer_A inherits ITimer {
         OUT_OFF = (0x0000),                 /* PWM Output signal if output mode 0 */
         OUT = (0x0004)                      /* PWM Output signal if output mode 0 */
     };
-    
+
     enum COV_t {
         COV_OFF = (0x0000),                 /* Capture/compare overflow flag */
         COV = (0x0002)                      /* Capture/compare overflow flag */
@@ -103,7 +124,7 @@ metaonly interface ITimer_A inherits ITimer {
     enum CCIFG_t {
         CCIFG_OFF = (0x0000),               /* Capture/compare interrupt flag */
         CCIFG = (0x0001)                    /* Capture/compare interrupt flag */
-    };    
+    };
 
     enum OUTMOD_t {
         OUTMOD_0 = (0*0x20u),               /*! PWM output mode: 0 - OUT bit value */
@@ -158,7 +179,7 @@ metaonly interface ITimer_A inherits ITimer {
                                   *  0  No interrupt pending
                                   *  1  Interrupt pending */
     }
-    
+
    /*!
     *  ======== TACCTLx_t ========
     *  Capture/Compare Control Register
@@ -220,7 +241,3 @@ instance:
     /*! Timer_A INCLK */
     config float INCLK = 0;
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.timer; 1, 0, 0,2; 1-29-2016 10:00:58; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

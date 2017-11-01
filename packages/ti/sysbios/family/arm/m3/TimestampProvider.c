@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -87,8 +87,9 @@ Bits32 TimestampProvider_get32()
      * The order of calling getTickCount() and getExpiredCounts()
      * MUST be preserved to maintain rollover count coherency
      */
-    timestamp = Timer_getTickCount() * Timer_getPeriod(MOD->timer)
-                   + Timer_getExpiredCounts(MOD->timer);
+    timestamp = Timer_getTickCount();
+    timestamp *= Timer_getPeriod(MOD->timer);
+    timestamp += Timer_getExpiredCounts(MOD->timer);
 
     Hwi_restore(key);
 
@@ -109,8 +110,9 @@ Void TimestampProvider_get64(Types_Timestamp64 *result)
      * The order of calling getTickCount() and getExpiredCounts()
      * MUST be preserved to maintain rollover count coherency
      */
-    timestamp = (UInt64)Timer_getTickCount() * (UInt64)Timer_getPeriod(MOD->timer)
-                   + (UInt64)Timer_getExpiredCounts(MOD->timer);
+    timestamp = (UInt64)Timer_getTickCount();
+    timestamp *= (UInt64)Timer_getPeriod(MOD->timer);
+    timestamp += (UInt64)Timer_getExpiredCounts(MOD->timer);
 
     Hwi_restore(key);
 

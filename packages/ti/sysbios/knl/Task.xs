@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,12 @@ function module$meta$init()
         Task.defaultStackSection = ".far:taskStackSection";
     }
     else if (Program.build.target.name.match(/C28.*/)) {
-        Task.defaultStackSection = ".ebss:taskStackSection";
+        if (Program.build.target.$name.match(/elf/)) {
+            Task.defaultStackSection = ".bss:taskStackSection";
+        }
+        else {
+            Task.defaultStackSection = ".ebss:taskStackSection";
+        }
     }
     else {
         Task.defaultStackSection = ".bss:taskStackSection";
@@ -471,6 +476,12 @@ function module$validate()
                         Task, "enableIdleTask");
     }
 
+    if ((BIOS.smpEnabled == true) &&
+        (Task.enableIdleTask == false)) {
+        Task.$logError("Idle task cannot be disabled in SMP mode.",
+                        Task, "enableIdleTask");
+    }
+
     /* validate all "created" instances */
     for(var i = 0; i < Task.$instances.length; i++) {
         instance_validate(Task.$instances[i]);
@@ -508,6 +519,34 @@ function instance_validate(instance)
         (instance.$object.fxn == Idle.loop)) {
         Task.$logError("Idle task priority must be 0", instance, "priority");
     }
+}
+
+/*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
 }
 
 /*
@@ -586,6 +625,11 @@ function viewInitBasic(view, obj)
     var Task = xdc.useModule('ti.sysbios.knl.Task');
     var BIOS = xdc.useModule('ti.sysbios.BIOS');
     var BIOSCfg = Program.getModuleConfig(BIOS.$name);
+
+    if (viewCheckForNullObject(Task, obj)) {
+        view.label = "Uninitialized Task object";
+        return;
+    }
 
     /*
      * First, scan the Task module's array of constructed tasks so that these
@@ -710,7 +754,7 @@ function viewInitBasic(view, obj)
 
     view.$private.nickName = view.label != "" ? "Label: " + view.label
                             : fxnName != "" ? "Fxn: " + fxnName
-                        : "Handle: " + Number(obj.$addr).toString(16);
+                            : "Handle: " + Number(obj.$addr).toString(16);
 }
 
 /*
@@ -731,6 +775,11 @@ function viewInitDetailed(view, obj)
     var Task = xdc.useModule('ti.sysbios.knl.Task');
     var TaskCfg = Program.getModuleConfig(Task.$name);
     var Hwi = xdc.useModule('ti.sysbios.hal.Hwi');
+
+    if (viewCheckForNullObject(Task, obj)) {
+        view.label = "Uninitialized Task object";
+        return;
+    }
 
     /*
      * First, scan the Task module's array of constructed tasks so that these
@@ -1176,7 +1225,7 @@ function viewInitModule(view, mod)
     else {
         if (HwiCfg.initStackFlag) {
             view.hwiStackPeak = String(stackInfo.hwiStackPeak);
-            if (view.hwiStackPeak == view.hwiStackSize) {
+            if (stackInfo.hwiStackPeak == stackInfo.hwiStackSize) {
                 Program.displayError(view, "hwiStackPeak", "Overrun!  ");
                 /*                                                  ^^  */
                 /* (extra spaces to overcome right justify)             */
@@ -1465,6 +1514,13 @@ function viewInitCallStack()
     for (var i in taskRawView.instStates) {
         var taskView = taskRawView.instStates[i];
 
+        if (viewCheckForNullObject(Task, taskView)) {
+            var nullArray = new Array();
+            obj["0x" + Number(taskView.$addr).toString(16) +
+            ",  Uninitialized Task object"] = nullArray;
+            return (obj);
+        }
+
         /* determine Task state */
         var taskState;
         if (taskView.priority == -1) {
@@ -1542,8 +1598,13 @@ function viewInitCallStack()
         }
 
         var nickName = Task.getNickName(taskBasicView);
-        nickName = nickName.replace("Label: ti.sysbios.knl.Task.IdleTask",
+        if (nickName != undefined) {
+            nickName = nickName.replace("Label: ti.sysbios.knl.Task.IdleTask",
                                     "Label: IdleTask");
+        }
+        else {
+            nickName = "Label: <N/A>";
+        }
 
         /*
          * Invert the frames[] array so that the strings become the index of a

@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 import ti.catalog.msp430.peripherals.clock.IClock;
 
 /*!
@@ -28,24 +49,24 @@ metaonly module Flash_2xx inherits IFlash
         MERAS_t     MERAS;                  /*! Mass erase */
         ERASE_t     ERASE;                  /*! Erase */
     }
-    
+
     /* FCTL2 Register */
     struct FCTL2_t {
         FWKEY_t     FWKEY;                  /*! FCTLx password Always read as 096h. Must be written as 0A5h or a PUC
                                              *  will be generated. */
-         FSSEL_t     FSSEL;                 /*! Flash controller clock source select        
+         FSSEL_t     FSSEL;                 /*! Flash controller clock source select
                                              *   00  ACLK
                                              *   01  MCLK
                                              *   10  SMCLK
                                              *   11  SMCLK */
-        FN5_t    FN5;                       /*! Flash Controller Clock Divider Bit 5 */                                 
-        FN4_t    FN4;                       /*! Flash Controller Clock Divider Bit 4 */                                 
-        FN3_t    FN3;                       /*! Flash Controller Clock Divider Bit 3 */                                 
-        FN2_t    FN2;                       /*! Flash Controller Clock Divider Bit 2 */                                 
-        FN1_t    FN1;                       /*! Flash Controller Clock Divider Bit 1 */                                 
+        FN5_t    FN5;                       /*! Flash Controller Clock Divider Bit 5 */
+        FN4_t    FN4;                       /*! Flash Controller Clock Divider Bit 4 */
+        FN3_t    FN3;                       /*! Flash Controller Clock Divider Bit 3 */
+        FN2_t    FN2;                       /*! Flash Controller Clock Divider Bit 2 */
+        FN1_t    FN1;                       /*! Flash Controller Clock Divider Bit 1 */
         FN0_t    FN0;                       /*! Flash Controller Clock Divider Bit 0 */
     }
-    
+
     /* FCTL3 Register */
     struct FCTL3_t {
         FWKEY_t     FWKEY;                  /*! FCTLx password. Always read as 096h. Must be written as 0A5h or a PUC
@@ -86,7 +107,7 @@ metaonly module Flash_2xx inherits IFlash
                                              *  0  Not Busy
                                              *  1  Busy */
     }
-    
+
     /*
      *  ======== create ========
      */
@@ -96,10 +117,10 @@ instance:
     /*! Flash Memory Control Register 1 */
     config FCTL1_t FCTL1 = {
         FWKEY   : FWKEY,
-        BLKWRT  : BLKWRT_OFF,    
-        WRT     : WRT_OFF,          
-        EEIEX   : EEIEX_OFF, 
-        EEI     : EEI_OFF,       
+        BLKWRT  : BLKWRT_OFF,
+        WRT     : WRT_OFF,
+        EEIEX   : EEIEX_OFF,
+        EEI     : EEI_OFF,
         MERAS   : MERAS_OFF,
         ERASE   : ERASE_OFF
     };
@@ -115,7 +136,7 @@ instance:
         FN1         : FN1,
         FN0         : FN0_OFF
     };
-    
+
     /*! Flash Memory Control Register 3 */
     config FCTL3_t FCTL3 = {
         FAIL        : FAIL_OFF,
@@ -126,18 +147,14 @@ instance:
         ACCVIFG     : ACCVIFG_OFF,
         KEYV        : KEYV_OFF,
         BUSY        : BUSY_OFF
-    };    
-    
+    };
+
     /*! Determine if each Register needs to be forced set or not */
     readonly config ForceSetDefaultRegister_t forceSetDefaultRegister[] = [
         { register : "FCTL1" , regForceSet : false },
         { register : "FCTL2" , regForceSet : false },
         { register : "FCTL3" , regForceSet : false }
     ];
-    
+
     config IClock.Instance clock;
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.memory; 1, 0, 0,2; 1-29-2016 10:00:53; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

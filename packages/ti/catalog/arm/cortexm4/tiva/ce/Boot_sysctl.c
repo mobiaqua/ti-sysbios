@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1055,8 +1055,9 @@ Boot_sysCtlClockSetI(ULong ui32Config)
           "    .thumb\n"
           "    .global ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I\n"
           "ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I:\n"
+          "local_ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I:\n"
           "    subs r0, #1\n"
-          "    bne.n ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I\n"
+          "    bne.n local_ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I\n"
           "    bx lr\n");
 #endif
 

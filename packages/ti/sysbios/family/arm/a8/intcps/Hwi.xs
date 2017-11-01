@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,7 @@ if (xdc.om.$name == "cfg") {
     deviceTable["TMS320C3.*"] = deviceTable["TMS320C3430"];
     deviceTable["OMAP3.*"]    = deviceTable["TMS320C3430"];
     deviceTable["AM35.*"]     = deviceTable["TMS320C3430"];
+    deviceTable["DM37XX"]     = deviceTable["TMS320C3430"];
 
     deviceTable["TMS320.*81.."] = deviceTable["TMS320DM8168"];
     deviceTable["AM335.*"]      = deviceTable["TMS320DM8168"];
@@ -370,6 +371,10 @@ function instance$static$init(obj, intNum, fxn, params)
                 Hwi.interrupt[intNum].fxn + ").", intNum);
     }
 
+    if (params.priority == 0) {
+        Hwi.$logError("Interrupt priority 0 is not supported.", this);
+    }
+
     if (obj.fxn != Hwi.nonPluggedHwiHandler) {
         Hwi.interrupt[intNum].used = true;
     }
@@ -455,7 +460,12 @@ function viewInitBasic(view, obj)
     var halHwi = xdc.useModule('ti.sysbios.hal.Hwi');
 
     view.halHwiHandle =  halHwi.viewGetHandle(obj.$addr);
-    view.label = Program.getShortName(obj.$label);
+    if (view.halHwiHandle != null) {
+        view.label = Program.getShortName(halHwi.viewGetLabel(obj.$addr));
+    }
+    else {
+        view.label = Program.getShortName(obj.$label);
+    }
     view.intNum = obj.intNum;
     view.priority = obj.priority;
 

@@ -21,25 +21,23 @@ XDC_INSTALL_DIR ?= $(TREES)/xdcprod/xdcprod-t52/product/xdccore/$(BUILD_HOST_OS)
 #
 ti.targets.C28_large ?=
 ti.targets.C28_float ?=
-ti.targets.C64P ?=
-ti.targets.C64P_big_endian ?=
-ti.targets.C674 ?=
+ti.targets.elf.C28_float ?=
 
 ti.targets.elf.C64P ?=
-ti.targets.elf.C64P_big_endian ?=
-ti.targets.elf.C64T ?=
 ti.targets.elf.C66 ?=
 ti.targets.elf.C66_big_endian ?=
 ti.targets.elf.C674 ?=
 
 ti.targets.arm.elf.Arm9 ?=
 ti.targets.arm.elf.A8Fnv ?=
+ti.targets.arm.elf.R4F ?=
+ti.targets.arm.elf.R4Ft ?=
+ti.targets.arm.elf.R5F ?=
 ti.targets.arm.elf.M3 ?=
 ti.targets.arm.elf.M4 ?=
 ti.targets.arm.elf.M4F ?=
 
 ti.targets.msp430.elf.MSP430X ?=
-ti.targets.msp430.elf.MSP430X_small ?=
 
 ti.targets.arp32.elf.ARP32 ?=
 ti.targets.arp32.elf.ARP32_far ?=
@@ -49,6 +47,7 @@ gnu.targets.arm.M4 ?=
 gnu.targets.arm.M4F ?=
 
 gnu.targets.arm.A8F ?=
+gnu.targets.arm.A9F ?=
 gnu.targets.arm.A15F ?=
 
 iar.targets.msp430.MSP430X_small ?=
@@ -74,22 +73,20 @@ iar.targets.arm.M4F ?=
 XDCARGS= \
     ti.targets.C28_large=\"$(ti.targets.C28_large)\" \
     ti.targets.C28_float=\"$(ti.targets.C28_float)\" \
-    ti.targets.C64P=\"$(ti.targets.C64P)\" \
-    ti.targets.C64P_big_endian=\"$(ti.targets.C64P_big_endian)\" \
-    ti.targets.C674=\"$(ti.targets.C674)\" \
+    ti.targets.elf.C28_float=\"$(ti.targets.elf.C28_float)\" \
     ti.targets.arm.elf.Arm9=\"$(ti.targets.arm.elf.Arm9)\" \
     ti.targets.arm.elf.A8Fnv=\"$(ti.targets.arm.elf.A8Fnv)\" \
+    ti.targets.arm.elf.R4F=\"$(ti.targets.arm.elf.R4F)\" \
+    ti.targets.arm.elf.R4Ft=\"$(ti.targets.arm.elf.R4Ft)\" \
+    ti.targets.arm.elf.R5F=\"$(ti.targets.arm.elf.R5F)\" \
     ti.targets.arm.elf.M3=\"$(ti.targets.arm.elf.M3)\" \
     ti.targets.arm.elf.M4=\"$(ti.targets.arm.elf.M4)\" \
     ti.targets.arm.elf.M4F=\"$(ti.targets.arm.elf.M4F)\" \
     ti.targets.elf.C64P=\"$(ti.targets.elf.C64P)\" \
-    ti.targets.elf.C64P_big_endian=\"$(ti.targets.elf.C64P_big_endian)\" \
-    ti.targets.elf.C64T=\"$(ti.targets.elf.C64T)\" \
     ti.targets.elf.C66=\"$(ti.targets.elf.C66)\" \
     ti.targets.elf.C66_big_endian=\"$(ti.targets.elf.C66_big_endian)\" \
     ti.targets.elf.C674=\"$(ti.targets.elf.C674)\" \
     ti.targets.msp430.elf.MSP430X=\"$(ti.targets.msp430.elf.MSP430X)\" \
-    ti.targets.msp430.elf.MSP430X_small=\"$(ti.targets.msp430.elf.MSP430X_small)\" \
     ti.targets.arp32.elf.ARP32=\"$(ti.targets.arp32.elf.ARP32)\" \
     ti.targets.arp32.elf.ARP32_far=\"$(ti.targets.arp32.elf.ARP32_far)\" \
     gnu.targets.arm.M3=\"$(gnu.targets.arm.M3)\" \

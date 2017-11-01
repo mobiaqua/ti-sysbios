@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -230,7 +230,7 @@ module HeapMem inherits xdc.runtime.IHeap {
      *  Assert raised when a block of size 0 is requested
      *
      *  This error can also be raised if the requested size wraps
-     *  the contents of a SizeT type when it is adjusted for a minimum 
+     *  the contents of a SizeT type when it is adjusted for a minimum
      *  alignment. For example, when SizeT is 16-bits and a size request
      *  is made for 0xFFFB.
      */
@@ -288,15 +288,15 @@ module HeapMem inherits xdc.runtime.IHeap {
      *
      *  The following example will create a HeapMem instance whose
      *  size and buffer will be determined at runtime based on the
-     *  values of the symbols `__heap_start__` and
-     *  `__heap_end__`. It is assumed the user will define these
+     *  values of the symbols `__primary_heap_start__` and
+     *  `__primary_heap_end__`. It is assumed the user will define these
      *  symbols in their linker command file.
      *
      *  @p(code)
      *  var HeapMem = xdc.useModule('ti.sysbios.heaps.HeapMem');
      *
-     *  HeapMem.primaryHeapBaseAddr = "&__heap_start__";
-     *  HeapMem.primaryHeapEndAddr = "&__heap_end__";
+     *  HeapMem.primaryHeapBaseAddr = "&__primary_heap_start__";
+     *  HeapMem.primaryHeapEndAddr = "&__primary_heap_end__";
      *
      *  var heapMemParams = new HeapMem.Params;
      *  heapMemParams.usePrimaryHeap = true;
@@ -314,7 +314,7 @@ module HeapMem inherits xdc.runtime.IHeap {
      *  see {@link #usePrimaryHeap}
      *
      *  @p(code)
-     *  HeapMem.primaryHeapEndAddr = "&__heap_end__";
+     *  HeapMem.primaryHeapEndAddr = "&__primary_heap_end__";
      *  @p
      */
     config Char *primaryHeapEndAddr = null;
@@ -339,100 +339,101 @@ module HeapMem inherits xdc.runtime.IHeap {
 
 instance:
 
-   /*!
-    *  ======== usePrimaryHeap ========
-    *  Use {@link #primaryHeapBaseAddr} and {@link #primaryHeapEndAddr}
-    *  to define the Heap buffer managed by this static instance.
-    *
-    *  @a(warning)
-    *  This instance parameter only exists for statically defined
-    *  HeapMem objects and can only be set to true in the creation
-    *  of one static HeapMem object!
-    */
-   metaonly config Bool usePrimaryHeap = false;
+    /*!
+     *  ======== usePrimaryHeap ========
+     *  Use {@link #primaryHeapBaseAddr} and {@link #primaryHeapEndAddr}
+     *  to define the Heap buffer managed by this static instance.
+     *
+     *  @a(warning)
+     *  This instance parameter only exists for statically defined
+     *  HeapMem objects and can only be set to true in the creation
+     *  of one static HeapMem object!
+     */
+    metaonly config Bool usePrimaryHeap = false;
 
-   /*!
-    *  ======== align ========
-    *  Alignment of the buffer being managed by this heap instance
-    *
-    *  In the static HeapMem.create() call, the buffer allocated for the
-    *  HeapMem instance will have the alignment specified by this parameter.
-    *
-    *  In the dynamic case, the client must supply the buffer, so it is the
-    *  client's responsibility to manage the buffer's alignment, and there is
-    *  no 'align' parameter.
-    *
-    *  The specified alignment must be a power of 2.
-    *
-    *  HeapMem requires that the buffer be aligned on a target-specific minimum
-    *  alignment, and will adjust (round up) the requested alignment as
-    *  necessary to satisfy this requirement.
-    *
-    *  The default alignment is 0.
-    */
-   metaonly config SizeT align = 0;
-   
-   /*!
-    *  ======== minBlockAlign ========
-    *  Minimum alignment for each block allocated
-    *
-    *  This parameter dictates the minimum alignment for each
-    *  block that is allocated. If an alignment request of greater than
-    *  minBlockAlign is made in the alloc, it will be honored. If an
-    *  alignment request of less than minBlockAlign is made, the request will
-    *  be ignored and minBlockAlign will be used.
-    *    
-    *  @p(code)
-    *  HeapMem_Params_init(&prms);
-    *  prms.minBlockAlign = 32;
-    *  handle = HeapMem_create(&prms, &eb);
-    *  ...
-    *  // buf will be aligned on a 32 MAU boundary
-    *  buf = Memory_alloc(HeapMem_Handle_upCast(handle), SIZE, 8, &eb);
-    *  
-    *  // buf will be aligned on a 64 MAU boundary    
-    *  buf = Memory_alloc(HeapMem_Handle_upCast(handle), SIZE, 64, &eb);
-    *  @p
-    *
-    *  The default alignment is 0 (which means this parameter is ignored).
-    */
-   config SizeT minBlockAlign = 0;
+    /*!
+     *  ======== align ========
+     *  Alignment of the buffer being managed by this heap instance
+     *
+     *  In the static HeapMem.create() call, the buffer allocated for the
+     *  HeapMem instance will have the alignment specified by this parameter.
+     *
+     *  In the dynamic case, the client must supply the buffer, so it is the
+     *  client's responsibility to manage the buffer's alignment, and there is
+     *  no 'align' parameter.
+     *
+     *  The specified alignment must be a power of 2.
+     *
+     *  HeapMem requires that the buffer be aligned on a target-specific minimum
+     *  alignment, and will adjust (round up) the requested alignment as
+     *  necessary to satisfy this requirement.
+     *
+     *  The default alignment is 0.
+     */
+    metaonly config SizeT align = 0;
 
-   /*!
-    *  ======== sectionName ========
-    *  Section name for the buffer managed by the instance
-    *
-    *  The default section is the 'dataSection' in the platform.
-    */
-   metaonly config String sectionName = null;
+    /*!
+     *  ======== minBlockAlign ========
+     *  Minimum alignment for each block allocated
+     *
+     *  This parameter dictates the minimum alignment for each
+     *  block that is allocated. If an alignment request of greater than
+     *  minBlockAlign is made in the alloc, it will be honored. If an
+     *  alignment request of less than minBlockAlign is made, the request will
+     *  be ignored and minBlockAlign will be used.
+     *
+     *  @p(code)
+     *  HeapMem_Params_init(&prms);
+     *  prms.minBlockAlign = 32;
+     *  handle = HeapMem_create(&prms, &eb);
+     *  ...
+     *  // buf will be aligned on a 32 MAU boundary
+     *  buf = Memory_alloc(HeapMem_Handle_upCast(handle), SIZE, 8, &eb);
+     *
+     *  // buf will be aligned on a 64 MAU boundary
+     *  buf = Memory_alloc(HeapMem_Handle_upCast(handle), SIZE, 64, &eb);
+     *  @p
+     *
+     *  The default alignment is 0 (which means this parameter is ignored).
+     */
+    config SizeT minBlockAlign = 0;
 
-   /*!
-    *  ======== buf ========
-    *  Buffer being managed by this heap instance
-    *
-    *  This parameter is ignored in the static HeapMem.create() call. It is a
-    *  required parameter in the dynamic HeapMem_create() call.
-    *
-    *  HeapMem requires that the buffer be aligned on a target-specific minimum
-    *  alignment, and will adjust the buffer's start address and size as
-    *  necessary to satisfy this requirement.
-    */
-   config Ptr buf = 0;
+    /*!
+     *  ======== sectionName ========
+     *  Section name for the buffer managed by the instance
+     *
+     *  The default section is the 'dataSection' in the platform.
+     */
+    metaonly config String sectionName = null;
 
-   /*!
-    *  ======== size ========
-    *  Size of buffer being managed by this heap instance
-    *
-    *  The usable size may be smaller depending on alignment requirements.
-    */
-   config Memory.Size size = 0;
+    /*!
+     *  ======== buf ========
+     *  Buffer being managed by this heap instance
+     *
+     *  This parameter is ignored in the static HeapMem.create() call. It is a
+     *  required parameter in the dynamic HeapMem_create() call.
+     *
+     *  HeapMem requires that the buffer be aligned on a target-specific minimum
+     *  alignment, and will adjust the buffer's start address and size as
+     *  necessary to satisfy this requirement.
+     */
+    config Ptr buf = 0;
+
+    /*!
+     *  ======== size ========
+     *  Size of buffer being managed by this heap instance
+     *
+     *  The usable size may be smaller depending on alignment requirements.
+     */
+    config Memory.Size size = 0;
 
     /*!
      *  ======== alloc ========
      *
      *  @HeapMem
      *  The actual block returned may be larger than requested to satisfy
-     *  alignment requirements
+     *  alignment requirements, and its size will always be a multiple of
+     *  the size of the HeapMem_Header data structure (usually 8 bytes)
      *
      *  HeapMem_alloc() will lock the heap using the HeapMem Gate while it
      *  traverses the list of free blocks to find a large enough block for
@@ -441,9 +442,10 @@ instance:
      *  HeapMem_alloc() should not be called directly.  Application code
      *  should use Memory_alloc() with a HeapMem_Handle as the first
      *  parameter.  Among other things, Memory_alloc() makes sure that the
-     *  alignment parameter is greater than or equal to the maximum alignment
-     *  required for data structures for a given C compiler (8 bytes in many
-     *  cases). HeapMem_alloc() may crash if you pass a smaller alignment.
+     *  alignment parameter is greater than or equal to the minimum alignment
+     *  required for the HeapMem_Header data structure for a given C compiler
+     *  (8 bytes in most cases). HeapMem_alloc() may crash if you pass a
+     *  smaller alignment.
      *
      *  Guidelines for using large heaps and multiple alloc() calls.
      *  @p(blist)
@@ -455,8 +457,46 @@ instance:
      *            because the largest free memory block may be smaller than
      *            total amount of unallocated memory.
      *  @p
+     *
+     *  @param(size)  Requested size
+     *  @param(align) Requested alignment
+     *  @param(eb)    Error_Block used to denote location in case of a failure
+     *
+     *  @b(returns)    allocated block or NULL is request cannot be honored
      */
     override Ptr alloc(SizeT size, SizeT align, xdc.runtime.Error.Block *eb);
+
+    /*!
+     *  ======== allocUnprotected ========
+     *
+     *  @HeapMem
+     *  The actual block returned may be larger than requested to satisfy
+     *  alignment requirements
+     *
+     *  HeapMem_allocUnprotected() will
+     *  traverses the list of free blocks to find a large enough block for
+     *  the request.
+     *
+     *  The caller of this API must provider the thread-safety
+     *  of this call.
+     *
+     *  Guidelines for using large heaps and multiple alloc() calls.
+     *  @p(blist)
+     *          - If possible, allocate larger blocks first. Previous
+     *            allocations of small memory blocks can reduce the size
+     *            of the blocks available for larger memory allocations.
+     *          - Realize that alloc() can fail even if the heap contains a
+     *            sufficient absolute amount of unallocated space. This is
+     *            because the largest free memory block may be smaller than
+     *            total amount of unallocated memory.
+     *  @p
+     *
+     *  @param(size)  Requested size
+     *  @param(align) Requested alignment
+     *
+     *  @b(returns)    allocated block or NULL is request cannot be honored
+     */
+    Ptr allocUnprotected(SizeT size, SizeT align);
 
     /*!
      *  ======== free ========
@@ -469,8 +509,28 @@ instance:
      *
      *  free() will lock the heap using the HeapMem Gate, if one is specified
      *  using 'HeapMem.common$.gate'.
+     *
+     *  @param(block) Block to be freed
+     *  @param(size)  Size of block to free
      */
     override Void free(Ptr block, SizeT size);
+
+    /*!
+     *  ======== freeUnprotected ========
+     *
+     *  @HeapMem
+     *  freeNoGate() places the memory block specified by addr and size back into the
+     *  free pool of the heap specified. The newly freed block is combined with
+     *  any adjacent free blocks. The space is then available for further
+     *  allocation by alloc().
+     *
+     *  The caller of this API must provider the thread-safety
+     *  of this call.
+     *
+     *  @param(block) Block to be freed
+     *  @param(size)  Size of block to free
+     */
+    Void freeUnprotected(Ptr block, SizeT size);
 
     /*!
      *  ======== isBlocking ========
@@ -516,21 +576,22 @@ instance:
      */
     Void getExtendedStats(ExtendedStats *stats);
 
+
 internal:   /* not for client use */
 
-    /*! 
+    /*!
      *  ======== init ========
      *  Initialize instance at runtime
      *
      *  This function is plugged as a Startup.firstFxn so that the
-     *  HeapMem objects are ready and usable by malloc() and 
+     *  HeapMem objects are ready and usable by malloc() and
      *  Memory_alloc() by the time the module startup functions
      *  get called so that any calls to atexit(), which in some targets
      *  invokes malloc(), will be handled cleanly.
      */
     Void init();
 
-    /*! 
+    /*!
      *  ======== initPrimary ========
      *  Initialize instance at runtime
      *

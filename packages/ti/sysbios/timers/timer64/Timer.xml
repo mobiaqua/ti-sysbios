@@ -67,8 +67,8 @@
         <tr>
           <td><control type="label" label="Timer Id" align="left"/></td>
           <td><control type="droplist"
-               labels="ANY;0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15"
-               values="-1;0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15"
+               labels="ANY;0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19"
+               values="-1;0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19"
                text="value:this.create.id"
                tooltip="Supported range of Timer Ids is device specific"/></td>
         </tr>

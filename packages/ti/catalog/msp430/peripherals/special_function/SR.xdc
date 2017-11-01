@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  *  ======== SR ========
  *  MSP430 Status Register
@@ -20,28 +41,28 @@ metaonly module SR inherits xdc.platform.IPeripheral {
         SCG1_OFF   = 0x0000,              /*! Disable System clock generator 1 */
         SCG1       = 0x0080               /*! Enable System clock generator 1 */
     };
-    
+
     enum SCG0_t {
         SCG0_OFF   = 0x0000,              /*! Disable System clock generator 0 */
         SCG0       = 0x0040               /*! Enable System clock generator 0 */
     };
-    
+
     enum OSCOFF_t {
         OSCOFF_OFF = 0x0000,              /*! Oscillator On */
-        OSCOFF     = 0x0020               /*! Oscillator Off */  
+        OSCOFF     = 0x0020               /*! Oscillator Off */
     };
-    
+
     /* CPU off. This bit, when set, turns off the CPU. */
     enum CPUOFF_t {
         CPUOFF_OFF = 0x0000,              /*! CPU On */
-        CPUOFF     = 0x0010               /*! CPU Off */     
+        CPUOFF     = 0x0010               /*! CPU Off */
     };
 
     enum GIE_t {
         GIE_OFF    = 0x0000,              /*! General interrupt disable */
         GIE        = 0x0008               /*! General interrupt enable */
     };
-          
+
     /* SR */
     struct SR_t {
         SCG1_t      SCG1;                 /*! System clock generator 1
@@ -53,7 +74,7 @@ metaonly module SR inherits xdc.platform.IPeripheral {
                                            *or SMCLK.
                                            */
         OSCOFF_t    OSCOFF;               /*!Oscillator Off
-                                           *This bit, when set, turns off the LFXT1 
+                                           *This bit, when set, turns off the LFXT1
                                            *crystal oscillator, when LFXT1CLK is not
                                            *use for MCLK or SMCLK
                                            */
@@ -62,7 +83,7 @@ metaonly module SR inherits xdc.platform.IPeripheral {
                                            */
         GIE_t       GIE;                  /*! General interrupt enable
                                            *This bit, when set, enables maskable
-                                           *interrupts. When reset, all maskable 
+                                           *interrupts. When reset, all maskable
                                            *interrupts are disabled
                                            */
     }
@@ -80,7 +101,7 @@ metaonly module SR inherits xdc.platform.IPeripheral {
         String     register;
         Bool       regForceSet;
     }
-    
+
 instance:
     /*! SR, Status Register */
     config SR_t SR = {
@@ -90,7 +111,7 @@ instance:
         CPUOFF      : CPUOFF_OFF,
         GIE         : GIE_OFF
     };
-    
+
    /*!
     *  ======== getSCG1 ========
     *  Gets SCG1 bit
@@ -98,7 +119,7 @@ instance:
     *  @see #getSCG1
     */
     Bool    getSCG1();
-    
+
    /*!
     *  ======== setSCG1 ========
     *  Sets SCG1 bit
@@ -114,7 +135,7 @@ instance:
     *  @see #getSCG0
     */
     Bool    getSCG0();
-    
+
    /*!
     *  ======== setSCG0 ========
     *  Sets SCG0 bit
@@ -122,7 +143,7 @@ instance:
     *  @see #setSCG0
     */
     Bool    setSCG0(Bool set);
-    
+
    /*!
     *  ======== getOSCOFF ========
     *  Gets OSCOFF bit
@@ -130,7 +151,7 @@ instance:
     *  @see #getOSCOFF
     */
     Bool    getOSCOFF();
-    
+
    /*!
     *  ======== setOSCOFF ========
     *  Sets OSCOFF bit
@@ -138,7 +159,7 @@ instance:
     *  @see #setOSCOFF
     */
     Bool    setOSCOFF(Bool set);
-    
+
     /*!
     *  ======== getCPUOFF ========
     *  Gets CPUOFF bit
@@ -146,7 +167,7 @@ instance:
     *  @see #getCPUOFF
     */
     Bool    getCPUOFF();
-    
+
    /*!
     *  ======== setCPUOFF ========
     *  Sets CPUOFF bit
@@ -162,7 +183,7 @@ instance:
     *  @see #getGIE
     */
     Bool    getGIE();
-    
+
    /*!
     *  ======== setGIE ========
     *  Sets GIE bit
@@ -170,14 +191,10 @@ instance:
     *  @see #setGIE
     */
     Bool    setGIE(Bool set);
-    
+
     /*! Determine if each Register needs to be forced set or not */
     readonly config ForceSetDefaultRegister_t forceSetDefaultRegister[] =
     [
         { register : "SR" , regForceSet : false },
     ];
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.special_function; 1, 0, 0,2; 1-29-2016 10:00:57; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 requires xdc.platform;
 
@@ -29,7 +49,7 @@ package ti.catalog.c6000 [1,0,0,0] {
     interface ITMS320CTCI648x, ITMS320CTCI6484, ITMS320CTCI6486;
     interface ITMS320CTCI6497;
     interface ITMS320TCI6608, ITMS320TCI6616;
-    interface ITMS320CDRx40x, ITMS320CDRA44x, ITMS320CDRA45x; 
+    interface ITMS320CDRx40x, ITMS320CDRA44x, ITMS320CDRA45x;
     interface ITMS320DA8xx;
     interface ITMS320C6452, ITMS320CDM6467;
     module TMS320C6452, TMS320CDM647, TMS320CDM648, TMS320CTNETV2685;
@@ -134,8 +154,13 @@ package ti.catalog.c6000 [1,0,0,0] {
     module TMS320C66AK2E02;
     module TMS320C66AK2E05;
     module TCI66AK2G02;
-}
-/*
- *  @(#) ti.catalog.c6000; 1, 0, 0, 0,2; 1-29-2016 10:00:48; /db/ztree/library/trees/platform/platform-q17/src/
- */
 
+    interface IC6x;
+    module C64;
+    module C64P;
+    module C66;
+    module C67;
+    module C674;
+
+    module DM37XX;
+}

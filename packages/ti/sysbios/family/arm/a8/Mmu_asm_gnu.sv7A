@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014, Texas Instruments Incorporated
+@  Copyright (c) 2014-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@
 @ ======== Mmu_init ========
 @ Initialize mmu registers and asid
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_init__I
         .func ti_sysbios_family_arm_a8_Mmu_init__I
 ti_sysbios_family_arm_a8_Mmu_init__I:
         mov     r0, #0                   @ TTBR0 used and desc uses Short format
@@ -65,7 +65,7 @@ ti_sysbios_family_arm_a8_Mmu_init__I:
 @ ======== Mmu_disableAsm ========
 @ Disable MMU.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_disableAsm__I
         .func ti_sysbios_family_arm_a8_Mmu_disableAsm__I
 
 ti_sysbios_family_arm_a8_Mmu_disableAsm__I:
@@ -85,7 +85,7 @@ ti_sysbios_family_arm_a8_Mmu_disableAsm__I:
 @ ======== Mmu_enableAsm ========
 @ Enable MMU.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_enableAsm__I
         .func ti_sysbios_family_arm_a8_Mmu_enableAsm__I
 
 ti_sysbios_family_arm_a8_Mmu_enableAsm__I:
@@ -112,7 +112,7 @@ tableBuf:
 @ ======== Mmu_isEnabled ========
 @ Determines if MMU is enabled. Returns TRUE if enabled otherwise FALSE.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_isEnabled__E
         .func ti_sysbios_family_arm_a8_Mmu_isEnabled__E
 
 ti_sysbios_family_arm_a8_Mmu_isEnabled__E:
@@ -128,7 +128,7 @@ ti_sysbios_family_arm_a8_Mmu_isEnabled__E:
 @ ======== Mmu_getDomainAccessCtrlReg ========
 @ Return the contents of DACR register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_getDomainAccessCtrlReg__E
         .func ti_sysbios_family_arm_a8_Mmu_getDomainAccessCtrlReg__E
 
 ti_sysbios_family_arm_a8_Mmu_getDomainAccessCtrlReg__E:
@@ -141,7 +141,7 @@ ti_sysbios_family_arm_a8_Mmu_getDomainAccessCtrlReg__E:
 @ ======== Mmu_setDomainAccessCtrlReg ========
 @ Write the passed argument to DACR register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_setDomainAccessCtrlReg__E
         .func ti_sysbios_family_arm_a8_Mmu_setDomainAccessCtrlReg__E
 
 ti_sysbios_family_arm_a8_Mmu_setDomainAccessCtrlReg__E:
@@ -153,7 +153,7 @@ ti_sysbios_family_arm_a8_Mmu_setDomainAccessCtrlReg__E:
 @
 @  ======== Mmu_switchContext ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_switchContext__E
         .func ti_sysbios_family_arm_a8_Mmu_switchContext__E
 
 ti_sysbios_family_arm_a8_Mmu_switchContext__E:
@@ -172,7 +172,7 @@ ti_sysbios_family_arm_a8_Mmu_switchContext__E:
 @
 @  ======== Mmu_getAsid ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_getAsid__E
         .func ti_sysbios_family_arm_a8_Mmu_getAsid__E
 
 ti_sysbios_family_arm_a8_Mmu_getAsid__E:
@@ -185,7 +185,7 @@ ti_sysbios_family_arm_a8_Mmu_getAsid__E:
 @
 @ ======== Mmu_tlbInvAll ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Mmu_tlbInvAll__E
         .func ti_sysbios_family_arm_a8_Mmu_tlbInvAll__E
 
 ti_sysbios_family_arm_a8_Mmu_tlbInvAll__E:

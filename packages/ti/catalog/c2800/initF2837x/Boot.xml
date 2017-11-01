@@ -17,7 +17,7 @@ All rights reserved.
         <table>
         <tr>
           <td><control type="checkbox"
-                       label="Disable the watchdog timer" 
+                       label="Disable the watchdog timer"
                        value="value:this.disableWatchdog"
                        tooltip="value:this.disableWatchdog.$summary"/></td>
         </tr>
@@ -222,9 +222,3 @@ All rights reserved.
 <properties name="Advanced" title="All Options" enabled="true" visible="true" link="this"/>
 
 </gep>
-<!--
-/*
- * @(#) ti.catalog.c2800.initF2837x; 1, 0, 0,2; 1-29-2016 10:00:39; /db/ztree/library/trees/platform/platform-q17/src/
- */
--->
-

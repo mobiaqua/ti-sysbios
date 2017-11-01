@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,9 @@ package ti.sysbios.posix;
  *  For BIOS pthread documentation, please refer to:
  *  {@link http://processors.wiki.ti.com/index.php/SYS/BIOS_POSIX_Thread_%28pthread%29_Support SYS/BIOS POSIX Thread (pthread) Support}
  */
+
+@Template("./Settings.xdt")
+
 module Settings
 {
     /*!

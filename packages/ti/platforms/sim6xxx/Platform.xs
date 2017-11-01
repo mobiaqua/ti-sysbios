@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*
  *  ======== Platform.xs ========
  *  Platform support for the sim6xxx
@@ -102,7 +123,7 @@ function getLinkTemplate(prog)
      */
     var tname = prog.build.target.$name;
     var tpkg = tname.substring(0, tname.lastIndexOf('.'));
-    var templateName = tpkg.replace(/\./g, "/") + "/linkcmd.xdt"; 
+    var templateName = tpkg.replace(/\./g, "/") + "/linkcmd.xdt";
 
     if (xdc.findFile(templateName) != null) {
         return (templateName);
@@ -151,14 +172,10 @@ function instance$meta$init(name)
     if (this.deviceName != undefined) {
         if (!(this.deviceName in xdc.om[cpuAttrs.catalogName])) {
             this.$module.$logError("Device " + this.deviceName + " does not " +
-                "exist in " + cpuAttrs.catalogName, this, this.deviceName);     
+                "exist in " + cpuAttrs.catalogName, this, this.deviceName);
         }
         else {
-            this.$private.cpuAttrs.deviceName = this.deviceName;        
+            this.$private.cpuAttrs.deviceName = this.deviceName;
         }
     }
 }
-/*
- *  @(#) ti.platforms.sim6xxx; 1, 0, 1, 1,; 1-29-2016 10:03:07; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

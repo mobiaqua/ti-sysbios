@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,30 +36,32 @@
 var family = {
     "ti.targets.C28_large" :                    "c28",
     "ti.targets.C28_float" :                    "c28",
-    "ti.targets.C64" :                          "c64",
-    "ti.targets.C674" :                         "c64p",
+    "ti.targets.elf.C64P" :                     "c64p",
     "ti.targets.elf.C66" :                      "c64p",
     "ti.targets.elf.C66_big_endian" :           "c64p",
     "ti.targets.elf.C674" :                     "c64p",
     "ti.targets.elf.C67P" :                     "c67p",
+    "ti.targets.elf.nda.C71" :                  "c7x",
+    "ti.targets.elf.C28_float" :                "c28",
     "ti.targets.msp430.elf.MSP430X" :           "msp430",
     "iar.targets.msp430.MSP430" :               "msp430",
     "iar.targets.msp430.MSP430X_small" :        "msp430",
     "iar.targets.msp430.MSP430X_large" :        "msp430",
     "ti.targets.arm.elf.Arm9" :                 "arm",
     "ti.targets.arm.elf.A8Fnv" :                "arm",
-    "ti.targets.arm.elf.M0" :                   "arm",
     "ti.targets.arm.elf.M3" :                   "arm",
     "ti.targets.arm.elf.M4" :                   "arm",
     "ti.targets.arm.elf.M4F" :                  "arm",
     "ti.targets.arm.elf.R5F" :                  "arm",
     "ti.targets.arm.elf.R4F" :                  "arm",
+    "ti.targets.arm.elf.R4Ft" :                 "arm",
     "gnu.targets.arm.M3" :                      "arm",
     "gnu.targets.arm.M4" :                      "arm",
     "gnu.targets.arm.M4F" :                     "arm",
     "gnu.targets.arm.A8F" :                     "arm",
     "gnu.targets.arm.A9F" :                     "arm",
     "gnu.targets.arm.A15F" :                    "arm",
+    "gnu.targets.arm.A53F" :                    "arm",
     "iar.targets.arm.M3" :                      "arm",
     "iar.targets.arm.M4" :                      "arm",
     "iar.targets.arm.M4F" :                     "arm",
@@ -275,10 +277,15 @@ function unsupportedTargetCheck(mod)
         throw Error();
     }
     else if ((Program.build.target.name == "C64T") ||
-             (Program.build.target.name == "C64P") ||
+             (Program.build.target.$name == "ti.targets.C64P") ||
              (Program.build.target.name == "C64P_big_endian")) {
         mod.$logError(Program.build.target.$name + " is no longer supported. " +
             "Please use SYS/BIOS 6.42.03 or older.", mod);
+        throw Error();
+    }
+    else if (Program.build.target.$name == "ti.targets.C674") {
+        mod.$logError(Program.build.target.$name + " is no longer supported. " +
+            "Please use ti.targets.elf.C674 instead.", mod);
         throw Error();
     }
     else if (Program.build.target.$name ==

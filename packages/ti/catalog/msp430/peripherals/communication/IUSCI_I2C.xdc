@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  * Universal Serial Communication Interface
  */
@@ -23,25 +44,25 @@ metaonly interface IUSCI_I2C inherits IUSCI {
         UCA10_OFF = 0x00,       /*! Own address is a 7-bit address */
         UCA10 = 0x80            /*! Own address is a 10-bit address */
     };
-    
+
     /*! Slave addressing mode select */
     enum UCSLA10_t {
         UCSLA10_OFF = 0x00,     /*! Address slave with 7-bit address */
         UCSLA10 = 0x40          /*! Address slave with 10-bit address */
     };
-    
+
     /*! Multi-master environment select */
     enum UCMM_t {
         UCMM_OFF = 0x00,        /*! Single master environment. There is no other master in the system. The address compare unit is disabled. */
         UCMM = 0x20             /*! Multi master environment */
     };
-    
+
     /*! Master mode select */
     enum UCMST_t {
         UCMST_OFF = 0x00,       /*! Slave mode */
         UCMST = 0x40            /*! Master mode */
     };
-    
+
     /*! USCI clock source select. These bits select the BRCLK source clock. */
     enum UCSSEL_I2C_t {
         UCSSEL_0 = 0x00,        /*! UCLK */
@@ -49,79 +70,79 @@ metaonly interface IUSCI_I2C inherits IUSCI {
         UCSSEL_2 = 0x02         /*! SMCLK */
 /*      UCSSEL_3 = 0x04         /*! SMCLK */
     };
-    
+
     /*! Transmitter/Receiver */
     enum UCTR_t {
         UCTR_OFF = 0x00,        /*! Receiver */
         UCTR = 0x10             /*! Transmitter */
     };
-    
+
     /*! Transmit a NACK */
     enum UCTXNACK_t {
         UCTXNACK_OFF = 0x00,    /*! Acknowledge normally */
         UCTXNACK = 0x08         /*! Generate NACK */
     };
-    
+
     /*! Transmit STOP condition in master mode */
     enum UCTXSTP_t {
         UCTXSTP_OFF = 0x00,     /*! No STOP generated */
         UCTXSTP = 0x10          /*! Generate STOP */
     };
-    
+
     /*! Transmit START condition in master mode */
     enum UCTXSTT_t {
         UCTXSTT_OFF = 0x00,     /*! Do not generate START condition */
         UCTXSTT = 0x10          /*! Generate START condition */
     };
-    
+
     /*! SCL low */
     enum UCSCLLOW_t {
         UCSCLLOW_OFF = 0x00,    /*! SCL is not held low */
         UCSCLLOW = 0x10         /*! SCL is held low */
     };
-    
+
     /*! General call address received */
     enum UCGC_t {
         UCGC_OFF = 0x00,        /*! No general call address received */
         UCGC = 0x10             /*! General call address received */
     };
-    
+
     /*! Bus busy */
     enum UCBBUSY_t {
         UCBBUSY_OFF = 0x00,     /*! Bus inactive */
         UCBBUSY = 0x10          /*! Bus busy */
     };
-    
+
     /*! Not-acknowledge received interrupt flag */
     enum UCNACKIFG_t {
         UCNACKIFG_OFF = 0x00,   /*! No interrupt pending */
         UCNACKIFG = 0x10        /*! Interrupt pending */
     };
-    
+
     /*! Stop condition interrupt flag */
     enum UCSTPIFG_t {
         UCSTPIFG_OFF = 0x00,    /*! No interrupt pending */
         UCSTPIFG = 0x10         /*! Interrupt pending */
     };
-    
+
     /*! Start condition interrupt flag */
     enum UCSTTIFG_t {
         UCSTTIFG_OFF = 0x00,    /*! No interrupt pending */
         UCSTTIFG = 0x10         /*! Interrupt pending */
     };
-    
+
     /*! Arbitration lost interrupt flag */
     enum UCALIFG_t {
         UCALIFG_OFF = 0x00,     /*! No interrupt pending */
         UCALIFG = 0x10          /*! Interrupt pending */
     };
-    
+
     /*! General call response enable */
     enum UCGCEN_t {
         UCGCEN_OFF = 0x00,      /*! Do not respond to a general call */
         UCGCEN = 0x80           /*! Respond to a general call */
     };
-    
+
     struct UCxCTL0_t {
         UCA10_t     UCA10;      /*! Own addressing mode select
                                  *  0  Own address is a 7-bit address
@@ -206,7 +227,7 @@ metaonly interface IUSCI_I2C inherits IUSCI {
                                  *  0  No interrupt pending
                                  *  1  Interrupt pending */
     }
-    
+
     struct UCBxI2COA_t {
         UCGCEN_t    UCGCEN;     /*! General call response enable
                                  *  0  Do not respond to a general call
@@ -233,7 +254,3 @@ instance:
     */
     void setUCBxI2CSA(Bits8 value);
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.communication; 1, 0, 0,2; 1-29-2016 10:00:48; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

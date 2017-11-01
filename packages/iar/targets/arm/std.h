@@ -72,12 +72,12 @@ typedef uintptr_t       xdc_UArg;
  *  ======== xdc__META ========
  */
 #if (__VER__ >= 7010000)
-#define xdc__META(n,s) __no_alloc const char (n)[] @ "xdc.meta" = {s}
+#define xdc__META(n,s) __no_alloc const char (n)[] @ "xdc.meta" = {(s)}
 #endif
 
 #endif /* iar_targets_arm_STD_ */
 /*
- *  @(#) iar.targets.arm; 1, 0, 0,0; 1-29-2016 16:37:03; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) iar.targets.arm; 1, 0, 0,1; 7-27-2017 11:47:09; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

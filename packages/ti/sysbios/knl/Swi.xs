@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,10 +47,10 @@ var BIOS = null;
 function getCFiles(targetName)
 {
     if (BIOS.smpEnabled) {
-        return (["Swi_smp.c", "Swi_andn.c"]);
+        return (["Swi_smp.c"]);
     }
     else {
-        return (["Swi.c", "Swi_andn.c"]);
+        return (["Swi.c"]);
     }
 }
 
@@ -240,6 +240,34 @@ function instance_validate(instance)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Initialize the 'Basic' Task instance view.
  */
@@ -248,6 +276,11 @@ function viewInitBasic(view, obj)
     var Swi = xdc.useModule('ti.sysbios.knl.Swi');
     var Program = xdc.useModule('xdc.rov.Program');
 
+    if (viewCheckForNullObject(Swi, obj)) {
+        view.label = "Uninitialized Swi object";
+        return;
+    }
+    
     view.label = Program.getShortName(obj.$label);
     view.priority = obj.priority;
 

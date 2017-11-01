@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,6 +99,12 @@ metaonly module Build
      *  Get the library Asm source files.
      */
     metaonly Any getAsmFiles(String target);
+
+    /*!
+     *  ======== getCommandLineDefs ========
+     *  Get the set of -D strings to insert into the makefile.
+     */
+    metaonly String getCommandLineDefs();
 
     /*!
      *  ======== getIncludePaths ========

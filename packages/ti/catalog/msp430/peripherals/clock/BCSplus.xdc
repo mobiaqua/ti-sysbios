@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 
 /*!
  *  ======== BSCplus ========
@@ -45,7 +66,7 @@ metaonly module BCSplus inherits IClock
         MOD4_OFF = 0x00,    /*! Disable MOD4 bit */
         MOD4 = 0x10         /*! Enable MOD4 bit */
     };
-    
+
     /*! DCO0 Bit */
     enum DCO0_t {
         DCO0_OFF = 0x00,    /*! Disable DCO0 bit */
@@ -57,7 +78,7 @@ metaonly module BCSplus inherits IClock
         DCO1_OFF = 0x00,    /*! Disable DCO1 bit */
         DCO1 = 0x40         /*! Enable DCO1 bit */
     };
-    
+
     /*! DCO2 Bit */
     enum DCO2_t {
         DCO2_OFF = 0x00,    /*! Disable DCO2 bit */
@@ -78,22 +99,22 @@ metaonly module BCSplus inherits IClock
         RSEL0_OFF = 0x00,   /*! Disable RSEL0 bit */
         RSEL0 = 0x01        /*! Enable RSEL0 bit */
     };
-    
+
     enum RSEL1_t {
         RSEL1_OFF = 0x00,   /*! Disable RSEL1 bit */
         RSEL1 = 0x02        /*! Enable RSEL1 bit */
     };
-    
+
     enum RSEL2_t {
         RSEL2_OFF = 0x00,   /*! Disable RSEL2 bit */
         RSEL2 = 0x04        /*! Enable RSEL2 bit */
     };
-    
+
     enum RSEL3_t {
         RSEL3_OFF = 0x00,   /*! Disable RSEL3 bit */
         RSEL3 = 0x08        /*! Enable RSEL3 bit */
     };
-    
+
     /*! MCLK Source Select */
     enum SELM_t {
         SELM_0 = 0x00,      /*! DCOCLK */
@@ -101,7 +122,7 @@ metaonly module BCSplus inherits IClock
         SELM_2 = 0x80,      /*! XT2CLK/LFXTCLK */
         SELM_3 = 0xC0       /*! LFXTCLK */
     };
-    
+
     /*! ACLK Divider values */
     enum DIVA_t {
         DIVA_0 = 0x00,      /*! Divide by 1 */
@@ -109,7 +130,7 @@ metaonly module BCSplus inherits IClock
         DIVA_2 = 0x20,      /*! Divide by 4 */
         DIVA_3 = 0x30       /*! Divide by 8 */
     };
-    
+
     /*! MCLK Divider values */
     enum DIVM_t {
         DIVM_0 = 0x00,      /*! Divide by 1 */
@@ -125,7 +146,7 @@ metaonly module BCSplus inherits IClock
         DIVS_2 = 0x04,      /*! Divide by 4 */
         DIVS_3 = 0x06       /*! Divide by 8 */
     };
-    
+
     enum SELS_t {
         SELS_OFF = 0x00,    /*! DCOCLK */
         SELS = 0x08         /*! XT2CLK when XT2 oscillator present. LFXT1CLK or VLOCLK when XT2 oscillator not present */
@@ -135,7 +156,7 @@ metaonly module BCSplus inherits IClock
         DCOR_OFF = 0x00,    /*! DCO uses internal resistor */
         DCOR = 0x01         /*! DCO uses external resistor */
     };
-    
+
     /*! XT2 frequency range select */
     enum XT2S_t {
         XT2S_0 = 0x00,      /*! 0.4 - 1 MHz */
@@ -157,12 +178,12 @@ metaonly module BCSplus inherits IClock
         XCAP_2 = 0x08,      /*! ~10 pF */
         XCAP_3 = 0x0C       /*! ~12.5 pF */
     };
-    
+
     enum XT2OF_t {
         XT2OF_OFF = 0x00,   /*! No fault condition present */
         XT2OF = 0x02        /*! XT2 fault condition present */
     };
-    
+
     enum LFXT1OF_t {
         LFXT1OF_OFF = 0x00, /*! No fault condition present */
         LFXT1OF = 0x01      /*! LFXT1 fault condition present */
@@ -178,7 +199,7 @@ metaonly module BCSplus inherits IClock
         DCO1_t    DCO1;     /*! DCO Select Bit 1 */
         DCO2_t    DCO2;     /*! DCO Select Bit 2 */
     }
-    
+
     /*!
      *  ======== BCSCTL1_t ========
      *  BCS Control Register 1
@@ -205,7 +226,7 @@ metaonly module BCSplus inherits IClock
         RSEL2_t   RSEL2;        /*! Range select bit 2 */
         RSEL3_t   RSEL3;        /*! Range select bit 3 */
     }
-    
+
     /*!
      *  ======== BCSCTL2_t ========
      *  BCS Control Register 2
@@ -242,7 +263,7 @@ metaonly module BCSplus inherits IClock
                                   *  0  Internal resistor
                                   *  1  External resistor */
     }
-    
+
     /*!
      *  ======== BCSCTL3_t ========
      *  BCS Control register 3
@@ -268,7 +289,7 @@ metaonly module BCSplus inherits IClock
                                   *  01  Reserved
                                   *  10  VLOCLK (Reserved in MSP430x21x1 devices)
                                   *  11  Digital external clock source
-                                  * 
+                                  *
                                   *  When XTS = 1 (Not applicable for MSP430x20xx devices)
                                   *  00  0.4 - 1-MHz crystal or resonator
                                   *  01  1 - 3-MHz crystal or resonator
@@ -288,7 +309,7 @@ metaonly module BCSplus inherits IClock
                                   *  0  No fault condition present
                                   *  1  Fault condition present */
     }
-    
+
 instance:
 
     /*! DCO Clock Frequency Control */
@@ -302,7 +323,7 @@ instance:
         DCO1        : DCO1,
         DCO2        : DCO2_OFF,
     };
-    
+
     /*! Basic Clock System Control 1 */
     config BCSCTL1_t  BCSCTL1 = {
         XT2OFF      : XT2OFF,
@@ -313,7 +334,7 @@ instance:
         RSEL2       : RSEL2,
         RSEL3       : RSEL3_OFF
     };
-    
+
     /*! Basic Clock System Control 2 */
     config BCSCTL2_t  BCSCTL2 = {
         SELM        : SELM_0,
@@ -322,7 +343,7 @@ instance:
         DIVS        : DIVS_0,
         DCOR        : DCOR_OFF
     };
-    
+
     /*! Basic Clock System Control 3 */
     config BCSCTL3_t  BCSCTL3 = {
         XT2S        : XT2S_0,
@@ -359,7 +380,7 @@ instance:
      *       4 - Custom
      */
     config String preCalibratedValuesItems[length];
-    
+
     config float VLOCLKHz = 12000;
     config float WATCHCRYSTALCLKHz = 32768;
     config float LFXT1CLKHz = 0;
@@ -372,7 +393,3 @@ instance:
      */
     config Bool enableXT2 = false;
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.clock; 1, 0, 0,2; 1-29-2016 10:00:46; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

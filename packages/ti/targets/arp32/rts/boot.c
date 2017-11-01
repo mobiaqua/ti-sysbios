@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 by Texas Instruments Incorporated.
+ *  Copyright 2017 by Texas Instruments Incorporated.
  *
  */
 
@@ -131,7 +131,7 @@ extern void __interrupt _c_int00()
 }
 
 /*
- *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 1-29-2016 17:06:16; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 7-27-2017 12:30:09; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

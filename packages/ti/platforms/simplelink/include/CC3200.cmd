@@ -35,26 +35,27 @@
 
 MEMORY
 {
-    SRAM (RWX) : origin = 0x20004000, length = 0x00040000 - 0x4000
+    SRAM  (RWX) : origin = 0x20004000, length = 0x00040000 - 0x4000
+    SRAM2 (RWX) : origin = 0x20000000, length = 0x4000
 }
 
 /* Section allocation in memory */
 
 SECTIONS
 {
-    .text   :   > SRAM
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+    .text       : > SRAM
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc : > SRAM
 #endif
 #endif
-    .const  :   > SRAM
-    .cinit  :   > SRAM
-    .pinit  :   > SRAM
+    .const      : > SRAM
+    .cinit      : > SRAM
+    .pinit      : > SRAM
     .init_array : > SRAM
 
-    .data   :   > SRAM
-    .bss    :   > SRAM
-    .sysmem :   > SRAM
-    .stack  :   > SRAM
+    .data       : > SRAM
+    .bss        : > SRAM
+    .sysmem     : > SRAM
+    .stack      : > SRAM2(HIGH)
 }

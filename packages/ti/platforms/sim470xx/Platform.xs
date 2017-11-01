@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*
  *  ======== Platform.xs ========
  *
@@ -46,7 +67,7 @@ function getExeContext(prog)
 
     // check for the overlap in the memory map
     var overlap = Utils.checkOverlap(cpu.memoryMap);
-    
+
     if (overlap != null) {
         this.$module.$logError("Memory objects " + overlap + " overlap", this,
             overlap);
@@ -69,20 +90,20 @@ function getExecCmd(prog)
         + "\n\t: ";
 
     if (os == "Linux") {
-        if (xdc.module("ti.targets.arm.elf.IArm").Module(prog.build.target) 
+        if (xdc.module("ti.targets.arm.elf.IArm").Module(prog.build.target)
             || prog.build.target.$name == "ti.targets.elf.TMS470") {
-            return (this.$package.packageBase + "/Linux/load470.elf -q " 
+            return (this.$package.packageBase + "/Linux/load470.elf -q "
                 + prog.name);
         }
         else {
-            return (this.$package.packageBase + "/" + os + 
+            return (this.$package.packageBase + "/" + os +
                 "/load470.be8_coff -q " + prog.name);
         }
     }
     else if (os == "Solaris") {
         return("@$(ECHO) sim470xx platform package does not know how to " +
         "execute " + prog.name + " on " + os + "\n" + updateComment);
-        
+
     }
     else {
         try {
@@ -113,10 +134,10 @@ function getExecCmd(prog)
                 }
                 if (opts[i] == "-t" && typeof(opts[i+1]) != undefined) {
                     timeout = opts[i+1] - 0;
-                } 
+                }
             }
         }
-    
+
         /* "user.dir" gets us a current working directory */
         var cwd = java.lang.System.getProperty("user.dir") + "";
         cwd = cwd.replace(/\\/g, "/");
@@ -137,9 +158,9 @@ function getExecCmd(prog)
         var canPath = java.io.File(prog.name).getCanonicalPath() + "";
         canPath = canPath.replace(/\\/g, "/");
 
-        command += " -x " + this.ftpath + "/target_server/bin/" + 
+        command += " -x " + this.ftpath + "/target_server/bin/" +
                    "ti_targetserver_dvr" + dllExt + " -e _abort " + canPath;
-                   
+
         return (command);
     }
 }
@@ -204,20 +225,15 @@ function instance$meta$init(name)
     if (this.deviceName != undefined) {
         if (!(this.deviceName in xdc.om[cpuAttrs.catalogName])) {
             this.$module.$logError("Device " + this.deviceName + " does not " +
-                "exist in " + cpuAttrs.catalogName, this, this.deviceName);     
+                "exist in " + cpuAttrs.catalogName, this, this.deviceName);
         }
         else {
-            this.$private.cpuAttrs.deviceName = this.deviceName;        
+            this.$private.cpuAttrs.deviceName = this.deviceName;
         }
     }
 
     if (this.externalMemoryMap.length != 0) {
         this.$module.$logError("External memory cannot be added to this " +
-            "platform", this, null); 
+            "platform", this, null);
     }
 }
-
-/*
- *  @(#) ti.platforms.sim470xx; 1, 0, 1, 1,; 1-29-2016 10:03:01; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

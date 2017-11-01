@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -822,7 +822,7 @@ Power_Status Power_registerNotify(Power_Event eventType, UInt eventMask,
     Error_Block eb;
 
     /* check for out of range event type */
-    if ((eventType < 0) || (eventType >= Power_INVALIDEVENT)) {
+    if (((Int)eventType < 0) || (eventType >= Power_INVALIDEVENT)) {
         return (Power_EINVALIDEVENT);
     }
 
@@ -985,7 +985,7 @@ Power_Status Power_signalEvent(Power_Event eventType, UArg eventArg1,
     UInt key;
 
     /* check for out of range event type */
-    if ((eventType < 0) || (eventType >= Power_INVALIDEVENT)) {
+    if (((Int)eventType < 0) || (eventType >= Power_INVALIDEVENT)) {
         return (Power_EINVALIDEVENT);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,6 +131,20 @@ interface ITaskSupport
      *  b(returns) defaultStackSize for this target
      */
     SizeT getDefaultStackSize();
+
+    /*!
+     *  ======== getCheckValueAddr ========
+     *  @_nodoc
+     *  Returns the address of the check value field that is used to
+     *  store the computed check value to be used for data integrity
+     *  checking of the Task object.
+     *
+     *  The {@link #start} function reserves 2 to 8 bytes (depending on
+     *  the architecture) at the top of the stack for maintaining stack
+     *  alignment. This function reclaims 32-bits at the top of the stack
+     *  for the purpose of storing the Task object's check value.
+     */
+    Ptr getCheckValueAddr(Ptr curTask);
 
     /*!
      *  ======== stackUsed$view ========

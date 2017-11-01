@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1059,8 +1059,9 @@ Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
             divider = 4;
             break;
 
-        case Timer_ID_8:
+        default:
             divider = 8;
+            break;
     }
 
     divider *= (obj->inputDividerExp + 1);

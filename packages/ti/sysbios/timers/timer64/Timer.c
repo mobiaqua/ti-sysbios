@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,9 @@ typedef volatile struct TimerRegs {
         UInt gtcrWhole;
     } u_gtcr;
     UInt wdtcr;
+    UInt pad[2];
+    UInt rello;
+    UInt relhi;
     UInt caplo;
     UInt caphi;
     UInt intctlstat;
@@ -772,7 +775,7 @@ UInt32 Timer_getPeriod(Timer_Object *obj)
  */
 Timer_Status Timer_getStatus(UInt timerId)
 {
-    Assert_isTrue(timerId < (Timer_numTimerDevices >> 1), NULL);
+    Assert_isTrue(timerId < (UInt)(Timer_numTimerDevices >> 1), NULL);
 
     /* both halves must be FREE to return FREE */
     if (timerId < 16) {
@@ -1050,15 +1053,25 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     
     /* get CPU frequency */
     BIOS_getCpuFreq(&cpufreq);
-    cpuCounts = (cpufreq.hi * (1 < 0xffffffff)) + cpufreq.lo;
+    cpuCounts = (UInt64)cpufreq.hi << 32;
+    cpuCounts |=  cpufreq.lo;
 
     /* get Timer frequency */
     Timer_getFreq(obj, &timerfreq);
-    timerCounts = (timerfreq.hi * (1 < 0xffffffff)) + timerfreq.lo;
+    timerCounts = (UInt64)timerfreq.hi << 32;
+    timerCounts |= timerfreq.lo;
 
-    ratio = cpuCounts/timerCounts;
-    period = insts / ratio;
-    count = ratio - (insts % ratio);
+    /* calculate the CPU and timer frequency ratio */
+    ratio = (cpuCounts * 10) / timerCounts;
+
+    /* calculate the number of timer cycles to trigger after */
+    period = (UInt64)((UInt64)insts * (UInt64)10) / ratio;
+
+    /*
+     *  calculate the number of cycles to delay, based on the frequency
+     *  ratio
+     */
+    count = insts - (UInt64)((UInt64)period * (UInt64)ratio) / 10;
 
     if (period == 0) {
         period = 1;
@@ -1067,7 +1080,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     /* follow proper procedure for dynamic period change */
     key = Hwi_disable();
     Timer_setPeriod(obj, period);
-    Timer_start(obj);
     Timer_spinLoop(count);
+    Timer_start(obj);
     Hwi_restore(key);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,18 +49,19 @@ var customGnuArmM4FOpts = " ";
 var customGnuArmA9Opts = " ";
 var customGnuArmA8Opts = " ";
 var customGnuArmA15Opts = " ";
+var customGnuArmA53Opts = " ";
 var customIarArmOpts = " --silent ";
 
 var ccOptsList = {
     "ti.targets.C28_large"                      : custom28xOpts,
     "ti.targets.C28_float"                      : custom28xOpts,
+    "ti.targets.elf.C28_float"                  : custom28xOpts,
     "ti.targets.msp430.elf.MSP430"              : custom430xOpts,
     "ti.targets.msp430.elf.MSP430X"             : custom430xOpts,
     "ti.targets.msp430.elf.MSP430X_small"       : custom430xOpts,
     "iar.targets.msp430.MSP430"                 : customIar430xOpts,
     "iar.targets.msp430.MSP430X_small"          : customIar430xOpts,
     "iar.targets.msp430.MSP430X_large"          : customIar430xOpts,
-    "ti.targets.C674"                           : custom6xOpts,
     "ti.targets.elf.C674"                       : custom6xOpts,
     "ti.targets.elf.C67P"                       : custom6xOpts,
     "ti.targets.elf.C66"                        : custom6xOpts,
@@ -70,11 +71,11 @@ var ccOptsList = {
     "ti.targets.arm.elf.Arm9"                   : customArmOpts,
     "ti.targets.arm.elf.A8F"                    : customArmOpts,
     "ti.targets.arm.elf.A8Fnv"                  : customArmOpts,
-    "ti.targets.arm.elf.M0"                     : customArmOpts,
     "ti.targets.arm.elf.M3"                     : customArmOpts,
     "ti.targets.arm.elf.M4"                     : customArmOpts,
     "ti.targets.arm.elf.M4F"                    : customArmOpts,
     "ti.targets.arm.elf.R4F"                    : customArmOpts,
+    "ti.targets.arm.elf.R4Ft"                   : customArmOpts,
     "ti.targets.arm.elf.R5F"                    : customArmOpts,
     "ti.targets.arm.elf.R5F_big_endian"         : customArmOpts,
     "gnu.targets.arm.M3"                        : customGnuArmM3Opts,
@@ -83,6 +84,7 @@ var ccOptsList = {
     "gnu.targets.arm.A8F"                       : customGnuArmA8Opts,
     "gnu.targets.arm.A9F"                       : customGnuArmA9Opts,
     "gnu.targets.arm.A15F"                      : customGnuArmA15Opts,
+    "gnu.targets.arm.A53F"                      : customGnuArmA53Opts,
     "iar.targets.arm.M3"                        : customIarArmOpts,
     "iar.targets.arm.M4"                        : customIarArmOpts,
     "iar.targets.arm.M4F"                       : customIarArmOpts,
@@ -155,46 +157,46 @@ function module$use()
     /* inform getLibs() about location of library */
     switch (BIOS.libType) {
         case BIOS.LibType_Instrumented:
-	    if ((BIOS.$written("assertsEnabled") == true) &&
-		(BIOS.assertsEnabled == false)) {
-		BIOS.$logWarning(
-		    "Asserts are enabled when BIOS.libType " +
-		    "is set to BIOS.LibType_Instrumented",
+            if ((BIOS.$written("assertsEnabled") == true) &&
+                (BIOS.assertsEnabled == false)) {
+                BIOS.$logWarning(
+                    "Asserts are enabled when BIOS.libType " +
+                    "is set to BIOS.LibType_Instrumented",
                     BIOS, "assertsEnabled"
-		);
-	    }
-	    BIOS.assertsEnabled = true;
-	    
-	    if ((BIOS.$written("logsEnabled") == true) &&
-		(BIOS.logsEnabled == false)) {
-		BIOS.$logWarning(
-		    "Logs are enabled when BIOS.libType " +
-		    "is set to BIOS.LibType_Instrumented",
+                );
+            }
+            BIOS.assertsEnabled = true;
+
+            if ((BIOS.$written("logsEnabled") == true) &&
+                (BIOS.logsEnabled == false)) {
+                BIOS.$logWarning(
+                    "Logs are enabled when BIOS.libType " +
+                    "is set to BIOS.LibType_Instrumented",
                     BIOS, "logsEnabled"
-		);
-	    }
-	    BIOS.logsEnabled = true;
+                );
+            }
+            BIOS.logsEnabled = true;
             break;
 
         case BIOS.LibType_NonInstrumented:
-	    if ((BIOS.$written("assertsEnabled") == true) &&
-		(BIOS.assertsEnabled == true)) {
-		BIOS.$logWarning(
-		    "Asserts are disabled when BIOS.libType " +
-		    "is set to BIOS.LibType_NonInstrumented",
+            if ((BIOS.$written("assertsEnabled") == true) &&
+                (BIOS.assertsEnabled == true)) {
+                BIOS.$logWarning(
+                    "Asserts are disabled when BIOS.libType " +
+                    "is set to BIOS.LibType_NonInstrumented",
                     BIOS, "assertsEnabled"
-		);
-	    }
-	    BIOS.assertsEnabled = false;
-	    if ((BIOS.$written("logsEnabled") == true) &&
-		(BIOS.logsEnabled == true)) {
-		BIOS.$logWarning(
-		    "Logs are disabled when BIOS.libType " +
-		    "is set to BIOS.LibType_NonInstrumented",
+                );
+            }
+            BIOS.assertsEnabled = false;
+            if ((BIOS.$written("logsEnabled") == true) &&
+                (BIOS.logsEnabled == true)) {
+                BIOS.$logWarning(
+                    "Logs are disabled when BIOS.libType " +
+                    "is set to BIOS.LibType_NonInstrumented",
                     BIOS, "logsEnabled"
-		);
-	    }
-	    BIOS.logsEnabled = false;
+                );
+            }
+            BIOS.logsEnabled = false;
             break;
 
         case BIOS.LibType_Debug:
@@ -271,6 +273,7 @@ var biosPackages = [
     "ti.sysbios.family.arm.a15.smp",
     "ti.sysbios.family.arm.a15.tci66xx",
     "ti.sysbios.family.arm.gic",
+    "ti.sysbios.family.arm.gicv3",
     "ti.sysbios.family.arm.systimer",
     "ti.sysbios.family.arm.arm9",
     "ti.sysbios.family.arm.cc26xx",
@@ -285,17 +288,19 @@ var biosPackages = [
     "ti.sysbios.family.arm.lm4",
     "ti.sysbios.family.arm.lm4.rtc",
     "ti.sysbios.family.arm.lm3",
-    "ti.sysbios.family.arm.v6m",
     "ti.sysbios.family.arm.m3",
     "ti.sysbios.family.arm.msp432",
     "ti.sysbios.family.arm.msp432.init",
+    "ti.sysbios.family.arm.msp432e4.init",
+    "ti.sysbios.family.arm.pl192",
     "ti.sysbios.family.arm.v7r",
+    "ti.sysbios.family.arm.v7r.keystone3",
     "ti.sysbios.family.arm.v7r.tms570",
-    "ti.sysbios.family.arm.v7r.rti",
     "ti.sysbios.family.arm.v7r.vim",
     "ti.sysbios.family.arm.tms570",
     "ti.sysbios.family.arm.v7a",
     "ti.sysbios.family.arm.v7a.smp",
+    "ti.sysbios.family.arm.v8a",
     "ti.sysbios.family.c28",
     "ti.sysbios.family.c28.f28m35x",
     "ti.sysbios.family.c28.f2837x",
@@ -311,8 +316,10 @@ var biosPackages = [
     "ti.sysbios.family.c66.vayu",
     "ti.sysbios.family.c67p",
     "ti.sysbios.family.c674",
+    "ti.sysbios.family.c7x",
     "ti.sysbios.family.msp430",
     "ti.sysbios.family.arp32",
+    "ti.sysbios.family.shared.keystone3",
     "ti.sysbios.family.shared.vayu",
     "ti.sysbios.gates",
     "ti.sysbios.hal",
@@ -326,11 +333,13 @@ var biosPackages = [
     "ti.sysbios.rts",
     "ti.sysbios.rts.gnu",
     "ti.sysbios.rts.iar",
+    "ti.sysbios.rts.ti",
     "ti.sysbios.rom.c28",
     "ti.sysbios.smp",
     "ti.sysbios.syncs",
     "ti.sysbios.timers.dmtimer",
     "ti.sysbios.timers.gptimer",
+    "ti.sysbios.timers.rti",
     "ti.sysbios.timers.timer64",
     "ti.sysbios.utils",
     "ti.sysbios.xdcruntime",
@@ -364,8 +373,12 @@ function getDefaultCustomCCOpts()
         else {
             customCCOpts += " -O3 ";
         }
-        customCCOpts += " -I" + Program.build.target.targetPkgPath +
-            "/libs/install-native/$(GCCTARG)/include ";
+        if (!Program.build.target.$name.match(/A53F/)) {
+            customCCOpts += " -I" + Program.build.target.targetPkgPath +
+                "/libs/install-native/$(GCCTARG)/include/newlib-nano " +
+                " -I" + Program.build.target.targetPkgPath +
+                "/libs/install-native/$(GCCTARG)/include ";
+        }
         customCCOpts = Program.build.target.ccOpts.prefix + " " + customCCOpts;
         customCCOpts += Program.build.target.ccOpts.suffix + " ";
 
@@ -437,7 +450,9 @@ function getDefs()
     var defs =   " -Dti_sysbios_BIOS_swiEnabled__D=" + (BIOS.swiEnabled ? "TRUE" : "FALSE")
                + " -Dti_sysbios_BIOS_taskEnabled__D=" + (BIOS.taskEnabled ? "TRUE" : "FALSE")
                + " -Dti_sysbios_BIOS_clockEnabled__D=" + (BIOS.clockEnabled ? "TRUE" : "FALSE")
-               + " -Dti_sysbios_BIOS_runtimeCreatesEnabled__D=" + (BIOS.runtimeCreatesEnabled ? "TRUE" : "FALSE");
+               + " -Dti_sysbios_BIOS_runtimeCreatesEnabled__D=" + (BIOS.runtimeCreatesEnabled ? "TRUE" : "FALSE")
+               + " -Dti_sysbios_knl_Task_moduleStateCheckFlag__D=" + (Task.moduleStateCheckFlag ? "TRUE" : "FALSE")
+               + " -Dti_sysbios_knl_Task_objectCheckFlag__D=" + (Task.objectCheckFlag ? "TRUE" : "FALSE");
 
     if (xdc.module(HwiDelegate).hooks.length == 0) {
         defs += " -Dti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS";
@@ -455,6 +470,8 @@ function getDefs()
     }
 
     if ((BIOS.buildingAppLib == true) && (Build.buildROM == false)) {
+        defs += " -Dti_sysbios_Build_useIndirectReferences=FALSE";
+
         defs += " -Dti_sysbios_knl_Swi_numPriorities__D=" + Swi.numPriorities;
         defs += " -Dti_sysbios_knl_Task_deleteTerminatedTasks__D=" + (Task.deleteTerminatedTasks ? "TRUE" : "FALSE");
         defs += " -Dti_sysbios_knl_Task_numPriorities__D=" + Task.numPriorities;
@@ -589,6 +606,8 @@ function getDefs()
     if (BIOS.logsEnabled == false) {
         defs += " -Dxdc_runtime_Log_DISABLE_ALL";
     }
+
+    defs += Build.getCommandLineDefs();
 
     return (defs);
 }
@@ -790,20 +809,48 @@ function getAsmFiles(target)
                 var modstr = mn.substr(mn.lastIndexOf(".")+1);
                 prefix = prefix.substring(0, prefix.lastIndexOf('.')+1);
                 prefix = prefix.replace(/\./g, "/");
-		var modAsmFiles = mod.$private.getAsmFiles(target);
-		for (var j in modAsmFiles) {
-		    asmSources += prefix + modAsmFiles[j] + " ";
-		}
+                var modAsmFiles = mod.$private.getAsmFiles(target);
+                for (var j in modAsmFiles) {
+                    asmSources += prefix + modAsmFiles[j] + " ";
+                }
             }
-	}
+        }
     }
 
     if (asmSources.length != 0) {
-	/* remove trailing " " */
-	asmSources = asmSources.substring(0, asmSources.length-1);
-    }	
+        /* remove trailing " " */
+        asmSources = asmSources.substring(0, asmSources.length-1);
+    }
 
     return (asmSources.split(' '));
+}
+
+/*
+ *  ======== getCommandLineDefs ========
+ *  get the -D's and --define's from the compiler command line
+ */
+function getCommandLineDefs()
+{
+    var defs = " ";
+    var type = 0; /* 1: quotes */
+    var prefix = Program.build.target.ccOpts.prefix;
+
+    var tokens = prefix.split(" ");
+
+    /*
+     * absorb all the "-Dxyz"'s and "--define"'s in the compiler command line
+     */
+    for (i = 0; i < tokens.length; i++) {
+        if (tokens[i].match(/-D/) || tokens[i].match(/--define/)) {
+            defs += tokens[i];
+            if (tokens[i] == "-D") {
+                defs += tokens[++i];  /* intentionally removes spaces for IAR Assembler */
+            }
+            defs += " ";
+        }
+    }
+
+    return (defs);
 }
 
 /*
@@ -817,15 +864,25 @@ function getIncludePaths()
     var prefix = Program.build.target.ccOpts.prefix;
 
     /*
-     * First look for TI compiler's '--include_path=' option. This is
-     * a contiguous string (no spaces) so it will be a single token.
+     * First look for TI compiler's '--include_path=' option.
+     * This will be a quoted string which may include embedded
+     * spaces.
      */
     var tokens = prefix.split(" ");
+
     for (i=0; i < tokens.length; i++) {
         if (tokens[i].match(/--include_path/)) {
-	    incs += tokens[i] + " ";
+            incs += tokens[i] + " ";
+            if (tokens[i].lastIndexOf('"') == -1) {
+                continue;
+            }
+            /* pull in tokens until last character of token is '"' */
+            while (tokens[i].lastIndexOf('"') != tokens[i].length-1) {
+                incs += tokens[++i] + " ";
+            }
         }
     }
+
 
     /*
      * Now look for TI, IAR and gcc's -I options.  There may be 0 or more
@@ -867,7 +924,7 @@ function getIncludePaths()
                 for (;i < prefix.length; i++) {
                      incs += prefix[i];
                      if (((type == 1) && (prefix[i] == '"')) ||
-		             ((type == 0) && (prefix[i] == ' '))) {
+                         ((type == 0) && (prefix[i] == ' '))) {
                          type = 0;
                          incs += " ";
                          break;
@@ -1022,6 +1079,9 @@ function buildLibs(objList, relList, filter, xdcArgs, incs)
             var ccopts = "";
             var asmopts = "";
 
+            ccopts += " -Dti_sysbios_Build_useIndirectReferences=FALSE"
+            asmopts += " -Dti_sysbios_Build_useIndirectReferences=FALSE"
+
             if (profiles[j] == "smp") {
                 var libPath = "lib/smpbios/debug/";
                 ccopts += " -Dti_sysbios_BIOS_smpEnabled__D=TRUE";
@@ -1052,12 +1112,18 @@ function buildLibs(objList, relList, filter, xdcArgs, incs)
                 }
 
                 if ((targ.$name == "ti.targets.arm.elf.R4F") ||
+                    (targ.$name == "ti.targets.arm.elf.R4Ft") ||
                     (targ.$name == "ti.targets.arm.elf.R5F")) {
-                    ccopts += " -Dti_sysbios_hal_Core_numCores__D=1";
-                    asmopts += " -Dti_sysbios_hal_Core_numCores__D=1";
+                    ccopts += " -Dti_sysbios_hal_Core_numCores__D=1 " +
+                        "-Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
+                    asmopts += " -Dti_sysbios_hal_Core_numCores__D=1 " +
+                        "-Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
+                }
+                /* insert rts includes before "." in command line */
+                if (targ.$name.match("iar.targets.arm")) {
+                    ccopts += " -I" + targ.rootDir+"/inc/c";
                 }
             }
-
             /* confirm that this target supports this profile */
             if (targ.profiles[profiles[j]] !== undefined) {
                 var profile = profiles[j];
@@ -1067,7 +1133,7 @@ function buildLibs(objList, relList, filter, xdcArgs, incs)
                                 copts: ccopts,
                                 aopts: asmopts,
                                 releases: relList,
-				incs: incs,
+                                incs: incs,
                                 });
                 lib.addObjects(objList);
                 /* suppress debug libs from exports */

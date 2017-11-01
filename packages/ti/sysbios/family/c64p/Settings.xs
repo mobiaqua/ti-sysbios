@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,7 @@ var settings = {
             taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c66.Cache",
+            coreDelegate : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.elf.C66" ] 
         },
@@ -57,10 +58,11 @@ var settings = {
             taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c64p.Cache",
+            coreDelegate : null,
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.C674", "ti.targets.elf.C674" ]
+            targets : [ "ti.targets.elf.C674" ]
         },
-        "TMS320C3430": {
+        "DM37XX": {
             hwiDelegate : "ti.sysbios.family.c64p.Hwi",
             timerDelegate : "ti.sysbios.timers.gptimer.Timer",
             clockTimerDelegate : "ti.sysbios.timers.gptimer.Timer",
@@ -69,8 +71,9 @@ var settings = {
             taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c64p.Cache",
+            coreDelegate : null,
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.C64P", "ti.targets.elf.C64P" ] 
+            targets : [ "ti.targets.elf.C64P" ]
         },
         "TMS320TI816X": {
             hwiDelegate : "ti.sysbios.family.c64p.Hwi",
@@ -81,8 +84,9 @@ var settings = {
             taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c64p.Cache",
+            coreDelegate : null,
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.C674", "ti.targets.elf.C674" ]
+            targets : [ "ti.targets.elf.C674" ]
         },
         "DRA7XX": {
             hwiDelegate : "ti.sysbios.family.c64p.Hwi",
@@ -93,8 +97,22 @@ var settings = {
             taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c66.Cache",
+            coreDelegate : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.elf.C66" ]
+        },
+        "AWR16XX": {
+            hwiDelegate : "ti.sysbios.family.c64p.Hwi",
+            timerDelegate : "ti.sysbios.timers.rti.Timer",
+            clockTimerDelegate : "ti.sysbios.timers.rti.Timer",
+            timerSupportDelegate : "ti.sysbios.family.c64p.ti81xx.TimerSupport",
+            timestampDelegate : "ti.sysbios.family.c64p.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
+            cacheDelegate : "ti.sysbios.family.c64p.Cache",
+            coreDelegate : "ti.sysbios.hal.CoreNull",
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.elf.C674" ]
         },
     }
 }
@@ -120,14 +138,6 @@ settings.device["TMS320C6671"]    = settings.device["TMS320C6670"];
 settings.device["TMS320C6672"]    = settings.device["TMS320C6670"];
 settings.device["TMS320C6674"]    = settings.device["TMS320C6670"];
 settings.device["TMS320C6678"]    = settings.device["TMS320C6670"];
-
-settings.device["TMS320C2430"]    = settings.device["TMS320C3430"];
-settings.device["OMAP2431"]       = settings.device["TMS320C3430"];
-settings.device["OMAP2530"]       = settings.device["TMS320C3430"];
-settings.device["OMAP2531"]       = settings.device["TMS320C3430"];
-settings.device["OMAP3425"]       = settings.device["TMS320C3430"];
-settings.device["OMAP3525"]       = settings.device["TMS320C3430"];
-settings.device["OMAP3530"]       = settings.device["TMS320C3430"];
 
 settings.device["TMS320CDM740"]   = settings.device["TMS320TI816X"];
 settings.device["TMS320C6A8149"]  = settings.device["TMS320TI816X"];
@@ -160,8 +170,10 @@ settings.device["TMS320C6742"]    = settings.device["TMS320DA830"];
 settings.device["TMS320C6746"]    = settings.device["TMS320DA830"];
 settings.device["TMS320C6748"]    = settings.device["TMS320DA830"];
 
-settings.device["Vayu"]         = settings.device["DRA7XX"];
-settings.device["TDA3XX"]       = settings.device["DRA7XX"];
+settings.device["Vayu"]           = settings.device["DRA7XX"];
+settings.device["TDA3XX"]         = settings.device["DRA7XX"];
+
+settings.device["IWR16XX"]        = settings.device["AWR16XX"];
 
 /*
  *  ======== deviceSupportCheck ========
@@ -187,7 +199,8 @@ function deviceSupportCheck()
  */
 function getDefaultCoreDelegate()
 {
-    return (null);
+    deviceSupportCheck();
+    return (settings.device[Program.cpu.deviceName].coreDelegate);
 }
 
 /*

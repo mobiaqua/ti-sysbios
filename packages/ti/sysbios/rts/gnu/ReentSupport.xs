@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,9 @@
 
 var BIOS = null;
 var Task = null;
+var Build = null;
+var SysStd = null;
+var Startup = null;
 var Semaphore = null;
 var ReentSupport = null;
 
@@ -46,6 +49,9 @@ function module$use()
     ReentSupport = this;
     
     BIOS = xdc.useModule("ti.sysbios.BIOS");
+    Build = xdc.module("ti.sysbios.Build");
+    SysStd = xdc.module("xdc.runtime.SysStd");
+    Startup = xdc.useModule("xdc.runtime.Startup");
     Semaphore = xdc.useModule("ti.sysbios.knl.Semaphore");
 
     xdc.useModule('xdc.runtime.Memory');
@@ -54,6 +60,8 @@ function module$use()
         Task = xdc.useModule("ti.sysbios.knl.Task");
     }
 
+    Build.ccArgs.$add("-Dti_sysbios_rts_gnu_ReentSupport_enableReentSupport__D=" +
+        (ReentSupport.enableReentSupport ? "TRUE" : "FALSE"));
 }
 
 /*
@@ -86,6 +94,19 @@ function module$static$init(mod, params)
     }
 
     mod.taskHId = 0;
+
+    /*
+     * putch() call does not initialize the global re-entrancy structure
+     * before using it (likely bug in newlib-nano). This causes a problem
+     * when calling SysStd_putch() from main() (SysMin proxy does not call
+     * putch). Force initialize the global re-entrancy structure during
+     * startup.
+     */
+    if (SysStd.$used) {
+        var len = Startup.lastFxns.length;
+        Startup.lastFxns.length++;
+        Startup.lastFxns[len] = ReentSupport.initGlobalReent;
+    }
 }
 
 /*

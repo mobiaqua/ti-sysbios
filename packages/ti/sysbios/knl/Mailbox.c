@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,6 +128,9 @@ Int Mailbox_Instance_init(Mailbox_Object *obj, SizeT msgSize,
                 /* clean-up in finalize */
                 return (1);
             }
+        }
+        else {
+            return (1); /* fail to construct if buf is not provided in construct-only model */
         }
     }
     else {
@@ -320,7 +323,7 @@ Bool Mailbox_post(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
  */
 Int Mailbox_postInit(Mailbox_Object *obj, SizeT blockSize)
 {
-    Int i;
+    UInt i;
     Queue_Handle freeQue;
     Char *buf = obj->buf;
 

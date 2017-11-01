@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -261,12 +261,47 @@ function instance_validate(instance)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  */
 function viewInitBasic(view, obj)
 {
     var Program = xdc.useModule('xdc.rov.Program');
     var Model = xdc.useModule("xdc.rov.Model");
+    var modCfg = Program.getModuleConfig('ti.sysbios.knl.Clock');
+    var Clock = xdc.useModule('ti.sysbios.knl.Clock');
+
+    if (viewCheckForNullObject(Clock, obj)) {
+        view.label = "Uninitialized Clock object";
+        return;
+    }
 
     view.label = obj.$label;
     view.timeout = obj.timeout;
@@ -285,7 +320,27 @@ function viewInitBasic(view, obj)
 
         var modRaw = Program.scanRawView("ti.sysbios.knl.Clock");
 
-        var remain = obj.currTimeout - modRaw.modState.ticks;
+        /*
+         * If operating in dynamic mode and skipping ticks, try to query the
+         * timer to compute the current Clock tick count.
+         */
+        var compTicks = false;
+        if (modRaw.modState.numTickSkip > 1) {
+            var timer = xdc.module(modCfg.TimerProxy.$name);
+            try {
+                var ticks = timer.viewGetCurrentClockTick();
+                compTicks = true;
+            }
+            catch (e) {
+            }
+        }
+
+        if (compTicks) {
+            var remain = obj.currTimeout - ticks;
+        }
+        else {
+            var remain = obj.currTimeout - modRaw.modState.ticks;
+        }
 
         /*
          * Check if 'currTimeout' has wrapped.
@@ -298,10 +353,14 @@ function viewInitBasic(view, obj)
             remain += Math.pow(2, 32);
         }
 
-        /* if skipping ticks indicate stale data */
-        if (modRaw.modState.numTickSkip > 1) {
+        /*
+         * If Timer didn't compute/report tick count, but skipping ticks,
+         * indicate 'stale data'.
+         */
+        if ((!compTicks) && (modRaw.modState.numTickSkip > 1)) {
             view.tRemaining = String(remain) + " (stale data)";
         }
+        /* else, just show remaining ticks */
         else {
             view.tRemaining = String(remain);
         }
@@ -319,10 +378,25 @@ function viewInitModule(view, mod)
     var modRaw = Program.scanRawView("ti.sysbios.knl.Clock");
     var modCfg = Program.getModuleConfig('ti.sysbios.knl.Clock');
 
-    /* if skipping ticks indicate stale data */
+    /*
+     * If operating in dynamic mode and skipping ticks, query the timer
+     * to compute the current Clock tick count.  If the timer doesn't support
+     * computing Clock ticks (i.e., it doesn't implement
+     * viewGetCurrentClockTick()), just report the most recent tick count, and
+     * note 'stale data' (because  ROV's reported count is likely stale, since
+     * it indicates the last serviced timer interrupt).
+     */
     if (modRaw.modState.numTickSkip > 1) {
-        view.ticks = String(mod.ticks) + " (stale data)";
+        var timer = xdc.module(modCfg.TimerProxy.$name);
+        try {
+            var ticks = timer.viewGetCurrentClockTick();
+            view.ticks = String(ticks);
+        }
+        catch (e) {
+            view.ticks = String(mod.ticks) + " (stale data)";
+        }
     }
+    /* else, just show the tick counter */
     else {
         view.ticks = String(mod.ticks);
     }

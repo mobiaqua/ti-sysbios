@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013, Texas Instruments Incorporated
+@  Copyright (c) 2013-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 
         .global ti_sysbios_family_arm_IntrinsicsSupport_maxbitA__I
 
-        .text
+        .section .text.ti_sysbios_family_arm_IntrinsicsSupport_maxbitA__I
         .func ti_sysbios_family_arm_IntrinsicsSupport_maxbitA__I
 ti_sysbios_family_arm_IntrinsicsSupport_maxbitA__I:
         clz     r0, r0

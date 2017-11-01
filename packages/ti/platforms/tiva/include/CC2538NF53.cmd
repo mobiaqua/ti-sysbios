@@ -41,8 +41,8 @@ MEMORY
 SECTIONS
 {
     .text   :   > FLASH
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc : {} load=FLASH, run=SRAM, table(BINIT)
 #endif
 #endif

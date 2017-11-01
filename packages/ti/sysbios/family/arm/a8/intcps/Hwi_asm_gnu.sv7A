@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014, Texas Instruments Incorporated
+@  Copyright (c) 2014-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 @  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @
 @ ======== Hwi_asm_gnu.sv7A ========
-@
 @
 
         .global ti_sysbios_family_arm_a8_intcps_Hwi_dispatchIRQ__I
@@ -84,7 +83,7 @@
 @       sp + 0x00 =  tskKey
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_a8_intcps_Hwi_dispatchIRQ__I
         .func ti_sysbios_family_arm_a8_intcps_Hwi_dispatchIRQ__I
 
 ti_sysbios_family_arm_a8_intcps_Hwi_dispatchIRQ__I:
@@ -198,7 +197,7 @@ ti_sysbios_family_arm_a8_intcps_Hwi_dispatchIRQ__I:
 @  Low level ARM mode-specific register initialization
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_a8_intcps_Hwi_init__I
         .func ti_sysbios_family_arm_a8_intcps_Hwi_init__I
 
 ti_sysbios_family_arm_a8_intcps_Hwi_init__I:
@@ -224,7 +223,7 @@ ti_sysbios_family_arm_a8_intcps_Hwi_init__I:
 @  Set vector table base address
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_a8_intcps_Hwi_initVbar__I
         .func ti_sysbios_family_arm_a8_intcps_Hwi_initVbar__I
 
 ti_sysbios_family_arm_a8_intcps_Hwi_initVbar__I:

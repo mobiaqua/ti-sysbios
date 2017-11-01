@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2015, Texas Instruments Incorporated
+;  Copyright (c) 2015-2016, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -51,12 +51,11 @@ ti_sysbios_family_arm_v7r_vim_Hwi_resetVectors:
         b       prefetchAbortHandler    ; Prefetch abort
         b       dataAbortHandler        ; Data abort
         b       reservedHandler         ; Reserved
+        b       irqHandler              ; Reserved
         ldr     pc, [pc, #-0x1B0]       ; FIQ
-        ldr     pc, [pc, #-0x1B0]       ; IRQ
 
-; The IRQ and FIQ offset register is placed at an offset of #-0x1B0 w.r.t.
-; the FIQ and IRQ vector table entry such that the vector table entry can
-; directly reference it
+; The FIQ offset register is placed at an offset of #-0x1B0 w.r.t. the FIQ
+; vector table entry such that the vector table entry can directly reference it
 
 resetHandler:
         mrc     p15, #0, r0, c0, c0, #5 ; read core Id
@@ -119,6 +118,21 @@ reservedHandler:
         ldrne   r1, core1VectorTable
         ldr     r1, [r1]
         add     r1, r1, #0x14
+        ldr     r1, [r1]
+        bx      r1
+
+irqHandler:
+        sub     lr, lr, #4
+        srsdb   #0x1f                   ; push sys CPSR and LR onto SYS stack
+        cps     #0x1f                   ; switch back to System mode
+        sub     sp, sp, #8              ; back up below CPSR and LR
+        push    {r0-r1}                 ; save required C registers
+        mrc     p15, #0, r0, c0, c0, #5 ; read core Id
+        ands    r0, r0, #0xFF
+        ldreq   r1, core0VectorTable
+        ldrne   r1, core1VectorTable
+        ldr     r1, [r1]
+        add     r1, r1, #0x18
         ldr     r1, [r1]
         bx      r1
 

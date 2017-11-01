@@ -11,8 +11,17 @@
 ;  ACC, XAR0, XAR4-7, P, ST0, ST1, XT
 ;  28FP: R0-R3
 ;
+    .if __TI_EABI__
+
+    .asg ti_sysbios_family_c28_Clobber_trashScratchRegs__F, _ti_sysbios_family_c28_Clobber_trashScratchRegs__F
+    .sect ".text:ti_sysbios_family_c28_Clobber_trashScratchRegs__F"
+
+    .else
+
     .sect ".text:_ti_sysbios_family_c28_Clobber_trashScratchRegs__F"
     .clink
+
+    .endif
      
     .global _ti_sysbios_family_c28_Clobber_trashScratchRegs__F
 _ti_sysbios_family_c28_Clobber_trashScratchRegs__F:
@@ -76,8 +85,18 @@ _ti_sysbios_family_c28_Clobber_trashScratchRegs__F:
 ;  XAR1-3, RPC
 ;  28FP: R4-R7
 ;
+    .if __TI_EABI__
+
+    .asg ti_sysbios_family_c28_Clobber_trashPreservedRegs__F, _ti_sysbios_family_c28_Clobber_trashPreservedRegs__F
+    .sect ".text:ti_sysbios_family_c28_Clobber_trashPreservedRegs__F"
+
+    .else
+
     .sect ".text:_ti_sysbios_family_c28_Clobber_trashPreservedRegs__F"
     .clink
+
+    .endif
+
     .global _ti_sysbios_family_c28_Clobber_trashPreservedRegs__F
 _ti_sysbios_family_c28_Clobber_trashPreservedRegs__F:
         .asmfunc
@@ -125,8 +144,18 @@ _ti_sysbios_family_c28_Clobber_trashPreservedRegs__F:
 ;  ACC, XAR0, XAR4-7, P, ST0, ST1, XT
 ;  28FP: R0-R3
 ; 
+    .if __TI_EABI__
+
+    .asg ti_sysbios_family_c28_Clobber_checkScratchRegs__F, _ti_sysbios_family_c28_Clobber_checkScratchRegs__F
+    .sect ".text:ti_sysbios_family_c28_Clobber_checkScratchRegs__F"
+
+    .else
+
     .sect ".text:_ti_sysbios_family_c28_Clobber_checkScratchRegs__F"
     .clink
+
+    .endif
+
     .global _ti_sysbios_family_c28_Clobber_checkScratchRegs__F
 _ti_sysbios_family_c28_Clobber_checkScratchRegs__F:
         .asmfunc
@@ -214,8 +243,18 @@ _ti_sysbios_family_c28_Clobber_checkScratchRegs__F:
 ;  XAR1-3, RPC
 ;  28FP: R4-R7
 ;      
+    .if __TI_EABI__
+
+    .asg ti_sysbios_family_c28_Clobber_checkPreservedRegs__F, _ti_sysbios_family_c28_Clobber_checkPreservedRegs__F
+    .sect ".text:ti_sysbios_family_c28_Clobber_checkPreservedRegs__F"
+
+    .else
+
     .sect ".text:_ti_sysbios_family_c28_Clobber_checkPreservedRegs__F"
     .clink
+
+    .endif
+
     .global _ti_sysbios_family_c28_Clobber_checkPreservedRegs__F
 _ti_sysbios_family_c28_Clobber_checkPreservedRegs__F:
         .asmfunc

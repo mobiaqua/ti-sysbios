@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013-2014, Texas Instruments Incorporated
+@  Copyright (c) 2013-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,6 @@
         .global ti_sysbios_family_arm_m3_Hwi_initStacks__E
         .global ti_sysbios_family_arm_m3_Hwi_getTaskSP__E
 
-
-        .text
-
-        .align  4
-
 @
 @  ======== ti_sysbios_family_xxx_Hwi_switchToIsrStack ========
 @  Char *ti_sysbios_family_xxx_Hwi_switchToIsrStack()@
@@ -57,6 +52,7 @@
 @        old control register value
 @
 
+        .section .text.ti_sysbios_family_xxx_Hwi_switchToIsrStack
         .func ti_sysbios_family_xxx_Hwi_switchToIsrStack
         .thumb_func
 
@@ -81,6 +77,7 @@ ti_sysbios_family_xxx_Hwi_switchToIsrStack:
 @
 @
 
+        .section .text.ti_sysbios_family_xxx_Hwi_switchToTaskStack
         .func ti_sysbios_family_xxx_Hwi_switchToTaskStack
         .thumb_func
 
@@ -100,6 +97,7 @@ ti_sysbios_family_xxx_Hwi_switchToTaskStack:
 @  back to Task stack.
 @
 
+        .section .text.ti_sysbios_family_xxx_Hwi_switchAndRunFunc
         .func ti_sysbios_family_xxx_Hwi_switchAndRunFunc
         .thumb_func
 
@@ -121,7 +119,9 @@ ti_sysbios_family_xxx_Hwi_switchAndRunFunc:
         pop     {r4, pc}        @ return
         .endfunc
 
+        .section .text.ti_sysbios_family_arm_m3_Hwi_getTaskSP__E
         .func ti_sysbios_family_arm_m3_Hwi_getTaskSP__E
+        .thumb_func
 
 ti_sysbios_family_arm_m3_Hwi_getTaskSP__E:
         mrs     r0, psp         @ psp = interrupt task stack
@@ -137,6 +137,7 @@ ti_sysbios_family_arm_m3_Hwi_getTaskSP__E:
 @  psp = threads (task Stacks)
 @
 
+        .section .text.ti_sysbios_family_arm_m3_Hwi_initStacks__E
         .func ti_sysbios_family_arm_m3_Hwi_initStacks__E
         .thumb_func
 

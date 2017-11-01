@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,9 @@
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/knl/Task.h>
 
-#include <ti/sysbios/posix/pthread.h>
-#include <ti/sysbios/posix/_pthread_error.h>
+#include "pthread.h"
+#include "errno.h"
+#include "pthread_util.h"
 
 static int rdlockAcquire(pthread_rwlock_t *lock, UInt timeout);
 
@@ -123,31 +124,10 @@ int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock)
 int pthread_rwlock_timedrdlock(pthread_rwlock_t *rwlock,
         const struct timespec *abstime)
 {
-    struct timespec     curtime;
-    UInt32              timeout;
-    long                usecs = 0;
-    time_t              secs = 0;
+    UInt32             timeout;
 
-    if ((abstime->tv_nsec < 0) || (1000000000 < abstime->tv_nsec)) {
+    if (_pthread_abstime2ticks(CLOCK_REALTIME, abstime, &timeout) != 0) {
         return (EINVAL);
-    }
-
-    clock_gettime(0, &curtime);
-    secs = abstime->tv_sec - curtime.tv_sec;
-
-    if ((abstime->tv_sec < curtime.tv_sec) ||
-            ((secs == 0) && (abstime->tv_nsec <= curtime.tv_nsec))) {
-        timeout = 0;
-    }
-    else {
-        usecs = (abstime->tv_nsec - curtime.tv_nsec) / 1000;
-
-        if (usecs < 0) {
-            usecs += 1000000;
-            secs--;
-        }
-        usecs += (long)secs * 1000000;
-        timeout = (UInt32)(usecs / Clock_tickPeriod);
     }
 
     return (rdlockAcquire(rwlock, timeout));
@@ -160,37 +140,16 @@ int pthread_rwlock_timedrdlock(pthread_rwlock_t *rwlock,
 int pthread_rwlock_timedwrlock(pthread_rwlock_t *rwlock,
         const struct timespec *abstime)
 {
-    struct timespec     curtime;
-    UInt32              timeout;
-    long                usecs = 0;
-    time_t              secs = 0;
+    UInt32             timeout;
 
-    if ((abstime->tv_nsec < 0) || (1000000000 < abstime->tv_nsec)) {
+    if (_pthread_abstime2ticks(CLOCK_REALTIME, abstime, &timeout) != 0) {
         return (EINVAL);
     }
 
-    clock_gettime(0, &curtime);
-    secs = abstime->tv_sec - curtime.tv_sec;
-
-    if ((abstime->tv_sec < curtime.tv_sec) ||
-            ((secs == 0) && (abstime->tv_nsec <= curtime.tv_nsec))) {
-        timeout = 0;
-    }
-    else {
-        usecs = (abstime->tv_nsec - curtime.tv_nsec) / 1000;
-
-        if (usecs < 0) {
-            usecs += 1000000;
-            secs--;
-        }
-        usecs += secs * 1000000;
-        timeout = usecs / Clock_tickPeriod;
-    }
-
     if (Semaphore_pend(Semaphore_handle(&(rwlock->sem)), timeout)) {
-        Assert_isTrue(rwlock->owner == NULL, NULL);
+        Assert_isTrue(rwlock->owner == NULL, 0);
         rwlock->owner = pthread_self();
-        Assert_isTrue(rwlock->activeReaderCnt == 0, NULL);
+        Assert_isTrue(rwlock->activeReaderCnt == 0, 0);
 
         return (0);
     }
@@ -212,9 +171,9 @@ int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock)
 int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock)
 {
     if (Semaphore_pend(Semaphore_handle(&(rwlock->sem)), 0)) {
-        Assert_isTrue(rwlock->owner == NULL, NULL);
+        Assert_isTrue(rwlock->owner == NULL, 0);
         rwlock->owner = pthread_self();
-        Assert_isTrue(rwlock->activeReaderCnt == 0, NULL);
+        Assert_isTrue(rwlock->activeReaderCnt == 0, 0);
 
         return (0);
     }
@@ -233,7 +192,7 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock)
     key = Task_disable();
 
     if (rwlock->activeReaderCnt) {
-        Assert_isTrue(rwlock->blockedReaderCnt == 0, NULL);
+        Assert_isTrue(rwlock->blockedReaderCnt == 0, 0);
         /*
          *  Lock is held by a reader.  The last active reader
          *  releases the semaphore.
@@ -257,9 +216,9 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock)
             Semaphore_post(Semaphore_handle(&(rwlock->readSem)));
         }
 
-        Assert_isTrue(rwlock->owner == pthread_self(), NULL);
+        Assert_isTrue(rwlock->owner == pthread_self(), 0);
         rwlock->owner = NULL;
-        Assert_isTrue(rwlock->activeReaderCnt == 0, NULL);
+        Assert_isTrue(rwlock->activeReaderCnt == 0, 0);
     }
 
     Task_restore(key);
@@ -274,9 +233,9 @@ int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock)
 {
     Semaphore_pend(Semaphore_handle(&(rwlock->sem)), BIOS_WAIT_FOREVER);
 
-    Assert_isTrue(rwlock->owner == NULL, NULL);
+    Assert_isTrue(rwlock->owner == NULL, 0);
     rwlock->owner = pthread_self();
-    Assert_isTrue(rwlock->activeReaderCnt == 0, NULL);
+    Assert_isTrue(rwlock->activeReaderCnt == 0, 0);
 
     return (0);
 }
@@ -311,9 +270,9 @@ static int rdlockAcquire(pthread_rwlock_t *rwlock, UInt timeout)
     if (Semaphore_pend(Semaphore_handle(&(rwlock->sem)), 0)) {
         /* Got the semaphore */
         rwlock->activeReaderCnt++;
-        Assert_isTrue(rwlock->activeReaderCnt == 1, NULL);
+        Assert_isTrue(rwlock->activeReaderCnt == 1, 0);
 
-        Assert_isTrue(rwlock->owner == NULL, NULL);
+        Assert_isTrue(rwlock->owner == NULL, 0);
         rwlock->owner = pthread_self();
 
         /*
@@ -369,8 +328,8 @@ static int rdlockAcquire(pthread_rwlock_t *rwlock, UInt timeout)
             rwlock->blockedReaderCnt--;
             rwlock->activeReaderCnt++;
 
-            Assert_isTrue(rwlock->activeReaderCnt == 1, NULL);
-            Assert_isTrue(rwlock->owner == NULL, NULL);
+            Assert_isTrue(rwlock->activeReaderCnt == 1, 0);
+            Assert_isTrue(rwlock->owner == NULL, 0);
             rwlock->owner = pthread_self();
 
             Task_restore(key);

@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2015 Texas Instruments and others.
+ *  Copyright (c) 2008-2017 Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -27,18 +27,14 @@ requires xdc.bld;
  */
 package ti.targets [1,0,3] {
     module C64P, C64P_big_endian, C674, C674_big_endian;
-    module C67P;
-    module C64T, C66, C66_big_endian;
+    module C66, C66_big_endian;
     module C28, C28_large, C28_float;
-    module C62, C62_big_endian;
-    module C64, C64_big_endian;
-    module C67, C67_big_endian;
 
     interface ITarget;
 }
 
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 1-29-2016 16:37:07; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,1; 7-27-2017 11:47:28; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

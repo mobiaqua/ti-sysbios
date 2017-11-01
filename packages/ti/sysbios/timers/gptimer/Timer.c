@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -483,7 +483,7 @@ UInt32 Timer_getPeriod(Timer_Object *obj)
  */
 Timer_Status Timer_getStatus(UInt timerId)
 {
-    Assert_isTrue(timerId < Timer_numTimerDevices, NULL);
+    Assert_isTrue(timerId < (UInt)Timer_numTimerDevices, NULL);
 
     if (Timer_module->availMask & (0x1 << timerId)) {
         return (Timer_Status_FREE);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,8 @@ function module$use()
 
     if (Program.build.target.$name.match(/gnu/) &&
        (BIOS.taskEnabled == true) &&
-       (BIOS.heapSize != 0)) {
+       (BIOS.heapSize != 0) &&
+       !Program.build.target.$name.match(/A53F/)) {
         xdc.useModule('ti.sysbios.rts.gnu.ReentSupport');
     }
     else if (Program.build.target.$name.match(/iar/)
@@ -57,6 +58,13 @@ function module$use()
             var thrSup = xdc.useModule('ti.sysbios.rts.iar.MultithreadSupport');
             thrSup.enableMultithreadSupport = true;
         }
+    }
+    else if (Program.build.target.$name.match(/ti/) &&
+             (Program.build.target.isa.match(/66/) ||
+              Program.build.target.isa.match(/674/)) &&
+             (BIOS.taskEnabled == true) &&
+             (BIOS.heapSize != 0)) {
+        xdc.useModule('ti.sysbios.rts.ti.ThreadLocalStorage');
     }
 }
 

@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2015, Texas Instruments Incorporated
+@  Copyright (c) 2015-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,8 @@
 @ SCTLR register, then writeback invalidate the whole L1 data
 @ cache.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_disableL1D__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_disableL1D__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_disableL1D__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_disableL1D__I)
 
@@ -121,7 +122,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_disableL1D__I:)
 @ To disable the L1 instruction cache, first set the I bit to 0 in SCTLR
 @ register, then invalidate the whole instruction cache.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_disableL1P__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_disableL1P__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_disableL1P__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_disableL1P__I)
 
@@ -142,7 +144,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_disableL1P__I:)
 @ ======== Cache_enableL1D ========
 @ To enable the L1 data cache set the C bit to 1 in the SCTLR register.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_enableL1D__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_enableL1D__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_enableL1D__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_enableL1D__I)
 
@@ -160,7 +163,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_enableL1D__I:)
 @ ======== Cache_enableL1P ========
 @ To enable the L1 instruction cache set the I bit to 1 in the c1 register.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_enableL1P__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_enableL1P__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_enableL1P__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_enableL1P__I)
 
@@ -186,7 +190,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_enableL1P__I:)
 @       r1 - contains byteCnt
 @       r2 - contains wait
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_invL1d__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_invL1d__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_invL1d__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_invL1d__I)
 
@@ -218,7 +223,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_invL1d__I:)
 @       r1 - contains byteCnt
 @       r2 - contains wait
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_invL1p__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_invL1p__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_invL1p__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_invL1p__I)
 
@@ -248,7 +254,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_invL1p__I:)
 @ Only use this function if you know for sure the data cache contains unwanted
 @ information.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_invL1dAll__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_invL1dAll__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_invL1dAll__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_invL1dAll__E)
 
@@ -304,7 +311,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_invL1dAll__E:)
 @ ======== Cache_invL1pAll ========
 @ Invalidates all entries in the instruction cache
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_invL1pAll__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_invL1pAll__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_invL1pAll__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_invL1pAll__E)
 
@@ -322,7 +330,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_invL1pAll__E:)
 @ ======== Cache_invBPAll ========
 @ Invalidates all branch predictors
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_invBPAll__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_invBPAll__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_invBPAll__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_invBPAll__E)
 
@@ -348,7 +357,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_invBPAll__E:)
 @       r2 - contains bit mask of cache type (unused)
 @       r3 - contains wait
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wb__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wb__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wb__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wb__E)
 
@@ -383,7 +393,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wb__E:)
 @       r2 - contains bitmask of cache type (unused)
 @       r3 - contains wait
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wbInv__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wbInv__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wbInv__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wbInv__E)
 
@@ -410,7 +421,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wbInv__E:)
 @ ======== Cache_wait ========
 @ Wait for the 'Drain write buffer' to complete
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wait__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wait__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wait__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wait__E)
 
@@ -425,7 +437,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wait__E:)
 @ ======== Cache_wbAll ========
 @ Write back all of L1 data cache
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wbAll__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wbAll__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wbAll__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wbAll__E)
 
@@ -486,7 +499,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wbAll__E:)
 @ ======== Cache_wbAllLoUIS ========
 @ Write back all of L1 data cache to PoU
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wbAllLoUIS__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wbAllLoUIS__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wbAllLoUIS__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wbAllLoUIS__E)
 
@@ -547,7 +561,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wbAllLoUIS__E:)
 @ ======== Cache_wbInvAll ========
 @ Write back and invalidate entire data cache
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wbInvAll__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wbInvAll__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wbInvAll__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wbInvAll__E)
 
@@ -605,7 +620,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_wbInvAll__E:)
 @ ======== Cache_wbInvAllLoUIS ========
 @ Write back and invalidate entire data cache to PoU
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_wbInvAllLoUIS__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_wbInvAllLoUIS__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_wbInvAllLoUIS__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_wbInvAllLoUIS__E)
 
@@ -669,7 +685,8 @@ wbInvAllLoUISLoop1:
 @ NO data accesses between context save/restore other than
 @ loading the memory block.
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_preFetch__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_preFetch__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_preFetch__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_preFetch__I)
 
@@ -706,7 +723,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_preFetch__I:)
 @ ======== Cache_getEnabled ========
 @ Determine the mask of enabled caches
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_getEnabled__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_getEnabled__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_getEnabled__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_getEnabled__E)
 
@@ -735,7 +753,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_getEnabled__E:)
 @
 @ ======== Cache_getLevelInfo ========
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_getCacheLevelInfo__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_getCacheLevelInfo__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_getCacheLevelInfo__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_getCacheLevelInfo__I)
 
@@ -749,7 +768,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_getCacheLevelInfo__I:)
 @
 @ ======== Cache_disableBP ========
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_disableBP__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_disableBP__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_disableBP__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_disableBP__E)
 
@@ -767,7 +787,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_disableBP__E:)
 @
 @ ======== Cache_enableBP ========
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_enableBP__E)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_enableBP__E)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_enableBP__E)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_enableBP__E)
 
@@ -782,7 +803,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_enableBP__E:)
 @
 @ ======== Cache_getL2AuxControlReg ========
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_getL2AuxControlReg__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_getL2AuxControlReg__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_getL2AuxControlReg__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_getL2AuxControlReg__I)
 
@@ -797,7 +819,8 @@ UP_ASM(ti_sysbios_family_arm_a15_Cache_getL2AuxControlReg__I:)
 @ ======== Cache_setL2AuxControlReg ========
 @ This function should only be called on OMAP5 and J6 devices
 @
-        .text
+        SMP_ASM(.section .text.ti_sysbios_family_arm_a15_smp_Cache_setL2AuxControlReg__I)
+        UP_ASM(.section .text.ti_sysbios_family_arm_a15_Cache_setL2AuxControlReg__I)
         SMP_ASM(.func ti_sysbios_family_arm_a15_smp_Cache_setL2AuxControlReg__I)
         UP_ASM(.func ti_sysbios_family_arm_a15_Cache_setL2AuxControlReg__I)
 

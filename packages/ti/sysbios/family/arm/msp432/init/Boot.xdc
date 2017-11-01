@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,43 +94,93 @@ module Boot
      *  Clock configuration will setup the clock system (CS), VCORE, and
      *  Flash wait states appropriately, for one of three different device
      *  speed options, as selected by `{@link #speedSelect}`.
+     *
+     *  Clock configuration by the Boot module is only supported for
+     *  MSP432P401x devices.  If an attempt is made to enable this feature for
+     *  newer MSP432 devices a build error will be thrown.
      */
-    metaonly config Bool configureClocks = true;
+    metaonly config Bool configureClocks;
 
-    /*! Clock speed selection, default is SpeedOpt_High.
+    /*!
+     *  Clock speed selection, default is SpeedOpt_High.
      *
      *  This enumeration is used to select one of three different speed options
      *  that will be configured when `{@link #configureClocks}` is set to
      *  "true".
      *
+     *   @p(code)
      *   SpeedOpt_High will configure:
-     *      MCLK =   48MHz from DCO
-     *      HSMCLK = 24MHz from DCO
-     *      SMCLK =  12MHz from DCO
-     *      ACLK =   32KHz from REFOCLK
-     *      BCLK =   32KHz from REFOCLK
+     *      MCLK =   48MHz from DCO, HFXT, or external clock
+     *      HSMCLK = 24MHz from DCO, HFXT, or external clock
+     *      SMCLK =  12MHz from DCO, HFXT, or external clock
+     *      ACLK =   32KHz from REFOCLK, LFXT, or external clock
+     *      BCLK =   32KHz from REFOCLK, LFXT, or external clock
      *      VCORE = 1 (AM1_LDO mode)
-     *      Flash BNK0 and BNK1 read wait states = 2
+     *      Flash BNK0 and BNK1 read wait states = 1
      *
      *   SpeedOpt_Medium will configure:
-     *      MCLK =   24MHz from DCO
-     *      HSMCLK =  6MHz from DCO
-     *      SMCLK =   6MHz from DCO
-     *      ACLK =   32KHz from REFOCLK
-     *      BCLK =   32KHz from REFOCLK
+     *      MCLK =   24MHz from DCO, HFXT, or external clock
+     *      HSMCLK =  6MHz from DCO, HFXT, or external clock
+     *      SMCLK =   6MHz from DCO, HFXT, or external clock
+     *      ACLK =   32KHz from REFOCLK, LFXT, or external clock
+     *      BCLK =   32KHz from REFOCLK, LFXT, or external clock
      *      VCORE = 1 (AM1_LDO mode)
      *      Flash BNK0 and BNK1 read wait states = 1
      *
      *   SpeedOpt_Low will configure:
-     *      MCLK =   12MHz from DCO
-     *      HSMCLK =  3MHz from DCO
-     *      SMCLK =   3MHz from DCO
-     *      ACLK =   32KHz from REFOCLK
-     *      BCLK =   32KHz from REFOCLK
+     *      MCLK =   12MHz from DCO, HFXT, or external clock
+     *      HSMCLK =  3MHz from DCO, HFXT, or external clock
+     *      SMCLK =   3MHz from DCO, HFXT, or external clock
+     *      ACLK =   32KHz from REFOCLK, LFXT, or external clock
+     *      BCLK =   32KHz from REFOCLK, LFXT, or external clock
      *      VCORE = 0 (AM0_LDO mode)
      *      Flash BNK0 and BNK1 read wait states = 0
+     *   @p
      */
     metaonly config SpeedOpt speedSelect = SpeedOpt_High;
+
+    /*!
+     *  Enable LF crystal (LFXT) flag, default is false.
+     *
+     *  If an external 32768-Hz LF crystal is available, set this flag to
+     *  true to startup and enable the LFXT, for use as the ACLK and BCLK
+     *  clock sources.
+     */
+    config Bool enableLFXT = false;
+
+    /*!
+     *  LF crystal bypass flag, default is false.
+     *
+     *  As an alternative to LFXT-sourced clocks, an external 32768-Hz square
+     *  wave can be applied to LFXIN, to be used as the ACLK and BCLK clock
+     *  sources.
+     *
+     *  To enable this mode, set Boot.enableLFXT to true to enable the LFXT
+     *  pins, and set Boot.bypassLFXT to true to disable the LFXT oscillator.
+     */
+    config Bool bypassLFXT = false;
+
+    /*!
+     *  Enable HF crystal (HFXT) flag, default is false.
+     *
+     *  If an external 48-MHz HFXT crystal is available, set this flag to
+     *  true to startup and enable the HFXT, for use as the MCLK, HSMCLK, and
+     *  SMCLK clock sources.
+     */
+    config Bool enableHFXT = false;
+
+    /*!
+     *  HF crystal bypass flag, default is false.
+     *
+     *  As an alternative to HFXT-sourced clocks, an external 48-MHz square
+     *  wave can be applied to HFXIN, to be used as the MCLK, HSMCLK, and SMCLK
+     *  clock sources.
+     *
+     *  To enable this bypass mode, set Boot.enableHFXT to true to enable the
+     *  HFXT pins, and set Boot.bypassHFXT to true to disable the HFXT
+     *  oscillator.
+     */
+    config Bool bypassHFXT = false;
 
     /*!
      *  Watchdog disable configuration flag, default is true.

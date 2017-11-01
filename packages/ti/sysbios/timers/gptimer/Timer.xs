@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,10 +56,7 @@ function getAsmFiles(targetName)
             return (["Timer_asm_gnu.sv7A"]);
             break;
 
-        case "ti.targets.C64P":
-        case "ti.targets.C64P_big_endian":
         case "ti.targets.elf.C64P":
-        case "ti.targets.elf.C64P_big_endian":
             return (["Timer_asm.s64P"]);
             break;
 
@@ -72,51 +69,7 @@ function getAsmFiles(targetName)
 if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     var deviceTable = {
         "ti.catalog.c6000": {
-            "TMS320C2430": {
-                timer: [
-                    {
-                        name: "GPTimer5",
-                        baseAddr: 0x4807C000,
-                        intNum:  14,
-                        eventId: 51,
-                        intFreq: {
-                            lo: 13000000,
-                            hi: 0,
-                        },
-                    },
-                    {
-                        name: "GPTimer6",
-                        baseAddr: 0x4807E000,
-                        intNum:  15,
-                        eventId: 52,
-                        intFreq: {
-                            lo: 13000000,
-                            hi: 0,
-                        },
-                    },
-                    {
-                        name: "GPTimer7",
-                        baseAddr: 0x48080000,
-                        intNum:  4,
-                        eventId: 53,
-                        intFreq: {
-                            lo: 13000000,
-                            hi: 0,
-                        },
-                    },
-                    {
-                        name: "GPTimer8",
-                        baseAddr: 0x48082000,
-                        intNum:  5,
-                        eventId: 54,
-                        intFreq: {
-                            lo: 13000000,
-                            hi: 0,
-                        },
-                    },
-                ]
-            },
-            "TMS320C3430": {
+            "DM37XX": {
                 timer: [
                     {
                         name: "GPTimer5",
@@ -124,7 +77,7 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                         intNum:  14,
                         eventId: 51,
                         intFreq: {
-                            lo: 13000000,
+                            lo: 26000000,
                             hi: 0,
                         },
                     },
@@ -134,7 +87,7 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                         intNum:  15,
                         eventId: 52,
                         intFreq: {
-                            lo: 13000000,
+                            lo: 26000000,
                             hi: 0,
                         },
                     },
@@ -144,7 +97,7 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                         intNum:  4,
                         eventId: 53,
                         intFreq: {
-                            lo: 13000000,
+                            lo: 26000000,
                             hi: 0,
                         },
                     },
@@ -154,7 +107,7 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                         intNum:  5,
                         eventId: 54,
                         intFreq: {
-                            lo: 13000000,
+                            lo: 26000000,
                             hi: 0,
                         },
                     },
@@ -292,6 +245,132 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                     },
                 ]
             },
+            "DM37XX": {
+                timer: [
+/* Not enabled by default
+                    {
+                        name: "GPTimer1",
+                        baseAddr: 0x48318000,
+                        intNum:  37,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+*/
+                    {
+                        name: "GPTimer2",
+                        baseAddr: 0x49032000,
+                        intNum:  38,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer3",
+                        baseAddr: 0x49034000,
+                        intNum:  39,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer4",
+                        baseAddr: 0x49036000,
+                        intNum:  40,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer5",
+                        baseAddr: 0x49038000,
+                        intNum:  41,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer6",
+                        baseAddr: 0x4903A000,
+                        intNum:  42,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer7",
+                        baseAddr: 0x4903C000,
+                        intNum:  43,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer8",
+                        baseAddr: 0x4903e000,
+                        intNum:  44,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer9",
+                        baseAddr: 0x49040000,
+                        intNum:  45,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer10",
+                        baseAddr: 0x48086000,
+                        intNum:  46,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer11",
+                        baseAddr: 0x48088000,
+                        intNum:  47,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer12",
+                        baseAddr: 0x48304000,
+                        intNum:  95,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 26000000,
+                            hi: 0,
+                        },
+                    },
+                ]
+            },
         },
         "ti.catalog.arm.cortexa9": {
             "AM437X": {
@@ -354,19 +433,6 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
             },
         },
     };
-
-    deviceTable["ti.catalog.c6000"]["OMAP2431"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP2530"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP2531"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3425"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3525"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3530"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
 
     deviceTable["ti.catalog.arm.cortexa8"]["OMAP3403"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"];

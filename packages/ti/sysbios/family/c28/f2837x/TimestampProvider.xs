@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,4 +53,14 @@ function module$use()
             this.common$[dl] = Diags.ALWAYS_OFF;
         }
     }
+}
+
+/*
+ *  ======== getFreqMeta ========
+ */
+function getFreqMeta()
+{
+    var BIOS = xdc.module("ti.sysbios.BIOS");
+
+    return (BIOS.getCpuFreqMeta());
 }

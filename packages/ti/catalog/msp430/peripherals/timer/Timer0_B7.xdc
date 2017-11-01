@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  *  ======== Timer0_B7 ========
  *  MSP430 Timer0_B7 timer
@@ -34,13 +55,13 @@ instance:
         CNTL : CNTL_0,
         TBSSEL : TBSSEL_0,
         ID : ID_0,
-        MC : MC_0,  
+        MC : MC_0,
         TBCLR : TBCLR_OFF,
         TBIE : TBIE_OFF,
         TBIFG : TBIFG_OFF
-    };               
+    };
 
-    /*! TB0CCTL0, Capture/Compare Control Register 0 */    
+    /*! TB0CCTL0, Capture/Compare Control Register 0 */
     config TBCCTLx_t TB0CCTL0 = {
         CM : CM_0,
         CCIS : CCIS_0,
@@ -54,7 +75,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL1, Capture/Compare Control Register 1 */
     config TBCCTLx_t TB0CCTL1 = {
         CM : CM_0,
@@ -69,7 +90,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL2, Capture/Compare Control Register 2 */
     config TBCCTLx_t TB0CCTL2 = {
         CM : CM_0,
@@ -84,7 +105,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL3, Capture/Compare Control Register 3 */
     config TBCCTLx_t TB0CCTL3 = {
         CM : CM_0,
@@ -99,7 +120,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL4, Capture/Compare Control Register 4 */
     config TBCCTLx_t TB0CCTL4 = {
         CM : CM_0,
@@ -114,7 +135,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL5, Capture/Compare Control Register 5 */
     config TBCCTLx_t TB0CCTL5 = {
         CM : CM_0,
@@ -129,7 +150,7 @@ instance:
         COV : COV_OFF,
         CCIFG : CCIFG_OFF
     };
-    
+
     /*! TB0CCTL6, Capture/Compare Control Register 6 */
     config TBCCTLx_t TB0CCTL6 = {
         CM : CM_0,
@@ -183,7 +204,3 @@ instance:
         { register : "TB0CCR6"  , regForceSet : false }
     ];
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.timer; 1, 0, 0,2; 1-29-2016 10:00:58; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

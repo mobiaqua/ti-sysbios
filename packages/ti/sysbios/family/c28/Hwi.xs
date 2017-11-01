@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ function getAsmFiles(targetName)
     switch(targetName) {
         case "ti.targets.C28_large":
         case "ti.targets.C28_float":
+        case "ti.targets.elf.C28_float":
             return (["Hwi_asm.s28", "Hwi_disp_asm.s28"]);
             break;
 
@@ -89,7 +90,7 @@ function module$meta$init()
     /* initialize reset vector */
     var name = "ti_sysbios_family_c28_Hwi0";
     Hwi.nonDispatchedInterrupts[name] = new Hwi.NonDispatchedInterrupt();
-    Hwi.nonDispatchedInterrupts[name].fxn = '&c_int00';
+    Hwi.nonDispatchedInterrupts[name].fxn = '&_c_int00';
     Hwi.nonDispatchedInterrupts[name].enableInt = true;
     Hwi.nonDispatchedInterrupts[name].intNum = 0;
 
@@ -221,11 +222,12 @@ function module$static$init(mod, params)
     if (Build.buildROM == false) {
         if (Program.build.target.$name.match(/elf/)) {
             mod.isrStackSize = $externPtr('__TI_STACK_SIZE');
+            mod.isrStackBase = $externPtr("__stack");
         }
         else {
             mod.isrStackSize = $externPtr("_STACK_SIZE");
+            mod.isrStackBase = $externPtr("_stack");
         }
-        mod.isrStackBase = $externPtr("_stack");
     }
     else {
         /* If building ROM, then __stack and __STACK_SIZE is undefined */
@@ -544,7 +546,12 @@ function viewInitBasic(view, obj)
     var halHwi = xdc.useModule('ti.sysbios.hal.Hwi');
 
     view.halHwiHandle =  halHwi.viewGetHandle(obj.$addr);
-    view.label = Program.getShortName(obj.$label);
+    if (view.halHwiHandle != null) {
+        view.label = Program.getShortName(halHwi.viewGetLabel(obj.$addr));
+    }
+    else {
+        view.label = Program.getShortName(obj.$label);
+    }
     view.intNum = obj.intNum;
 
     var fxn = Program.lookupFuncName(Number(obj.fxn));
@@ -568,11 +575,12 @@ function viewGetStackInfo()
     try {
         if (Program.build.target.$name.match(/elf/)) {
             var size = Program.getSymbolValue("__TI_STACK_SIZE");
+            var stackBase = Program.getSymbolValue("__stack");
         }
         else {
             var size = Program.getSymbolValue("__STACK_SIZE");
+            var stackBase = Program.getSymbolValue("_stack");
         }
-        var stackBase = Program.getSymbolValue("__stack");
         var stackData = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UChar', isScalar: true}, stackBase, size);
     }
     catch (e) {

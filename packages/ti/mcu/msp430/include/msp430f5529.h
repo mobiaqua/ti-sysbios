@@ -1,15 +1,3 @@
-/*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  Contributors:
- *      Texas Instruments - initial implementation
- *
- * */
-
 /* ============================================================================ */
 /* Copyright (c) 2014, Texas Instruments Incorporated                           */
 /*  All rights reserved.                                                        */
@@ -4962,8 +4950,3 @@ SFR_8BIT(WDTCTL_H);                           /* Watchdog Timer Control */
 #endif /* extern "C" */
 
 #endif /* #ifndef __MSP430F5529 */
-
-/*
- *  @(#) ti.mcu.msp430.include; 1,0,0,2; 1-29-2016 10:01:52; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

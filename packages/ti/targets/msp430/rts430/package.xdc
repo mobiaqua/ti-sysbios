@@ -25,7 +25,7 @@ package ti.targets.msp430.rts430 [1,0,0] {
     module Settings;
 }
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 1-29-2016 17:06:21; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-27-2017 12:30:28; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

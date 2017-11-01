@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- 
+<!--
 Copyright (c) 2011, Texas Instruments Incorporated
 All rights reserved.
 -->
@@ -17,13 +17,13 @@ All rights reserved.
         <table>
         <tr>
           <td><control type="checkbox"
-                       label="Disable the watchdog timer" 
+                       label="Disable the watchdog timer"
                        value="value:this.disableWatchdog"
                        tooltip="value:this.disableWatchdog.$summary"/></td>
         </tr>
         <tr>
-          <td><control type="checkbox" 
-                       label="Enable boot from FLASH" 
+          <td><control type="checkbox"
+                       label="Enable boot from FLASH"
                        value="value:this.bootFromFlash"
                        tooltip="value:this.bootFromFlash.$summary"/></td>
         </tr>
@@ -35,51 +35,51 @@ All rights reserved.
       <h1>PLL Configuration</h1>
       <table>
         <tr>
-          <td><control type="checkbox" 
-                       label="Configure the PLL" 
+          <td><control type="checkbox"
+                       label="Configure the PLL"
                        value="value:this.configurePll"
                        tooltip="value:this.configurePll.$summary"/></td>
         </tr>
         <tr>
-          <td><control type="label" 
-                       label="PLL input clock (OSCCLK) frequency (MHz)" 
+          <td><control type="label"
+                       label="PLL input clock (OSCCLK) frequency (MHz)"
                        align="left"/></td>
           <td><control type="editbox"
-                       value="value:this.pllOSCCLK" 
+                       value="value:this.pllOSCCLK"
                        tooltip="value:this.pllOSCCLK.$summary"
                        enabled="value:this.configurePll"/></td>
-        </tr>        
+        </tr>
         <tr>
-          <td><control type="label" 
-                       label="PLL Control Register - DIV" 
+          <td><control type="label"
+                       label="PLL Control Register - DIV"
                        align="left"/></td>
           <td><control type="editbox"
-                       value="value:this.pllcrDIV" 
+                       value="value:this.pllcrDIV"
                        tooltip="value:this.pllcrDIV.$summary"
                        enabled="value:this.configurePll"/></td>
         </tr>
         <tr>
-          <td><control type="label" 
-                       label="PLL Status Register - DIVSEL" 
+          <td><control type="label"
+                       label="PLL Status Register - DIVSEL"
                        visible="value:this.pllType!=this.Type_280x"
                        align="left"/></td>
           <td><control type="editbox"
-                       value="value:this.pllstsDIVSEL" 
+                       value="value:this.pllstsDIVSEL"
                        tooltip="value:this.pllstsDIVSEL.$summary"
                        visible="value:this.pllType!=this.Type_280x"
                        enabled="value:this.configurePll"/></td>
         </tr>
         <tr>
-          <td><control type="label" 
-                       label="Frequency" 
+          <td><control type="label"
+                       label="Frequency"
                        align="left"/></td>
-          <td><control type="label" 
-                       label="value:this.displayFrequency" 
+          <td><control type="label"
+                       label="value:this.displayFrequency"
                        align="left"/></td>
         </tr>
         <tr>
-          <td><control type="label" 
-                       label="Limp mode abort function" 
+          <td><control type="label"
+                       label="Limp mode abort function"
                        align="left"/></td>
           <td><control type="editbox"
                value="value:this.limpAbortFunction"
@@ -94,9 +94,3 @@ All rights reserved.
 <properties name="Advanced" title="All Options" enabled="true" visible="true" link="this"/>
 
 </gep>
-<!--
-/*
- * @(#) ti.catalog.c2800.init; 1, 0, 0,2; 1-29-2016 10:00:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
--->
-

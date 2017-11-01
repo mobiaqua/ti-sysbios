@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -246,6 +246,61 @@ function getEnumString(enumProperty)
 }
 
 /*
+ *  ======== viewGetCurrentClockTick ========
+ *  Compute and return the current Clock tick value.
+ */
+function viewGetCurrentClockTick()
+{
+    var tickPeriod = Program.$modules['ti.sysbios.knl.Clock'].tickPeriod;
+    var period64 = Math.floor(0x100000000 * tickPeriod / 1000000);
+    var ticks = 0;
+
+    /*
+     * ROV2 brings realtime reads of target memory and registers while a
+     * program is running.  Attempting such reads of the RTC shadow registers
+     * can freeze program execution in some cases. This problem may be
+     * addressed in the future by automatically returning a read error when
+     * realtime reads of these registers are attempted.  In the meantime, as
+     * a workaround a global Boolean (DISABLE_READ_RTC) will be
+     * set when ROV2 is in use.  In the code below, if this flag is defined and
+     * set to 'true', an error will be thrown instead of attempting to read
+     * the registers; this error will be interpreted as the Timer view code
+     * does not support dynamic tick computation, so the most recently updated
+     * tick count in Clock module state will be used instead, with a stale data
+     * indication. If DISABLE_READ_RTC is defined but set to 'false', or
+     * undefined, the RTC registers will be read and the tick count computed
+     * and returned.
+     */
+    if (typeof DISABLE_READ_RTC !== 'undefined') {
+        if (DISABLE_READ_RTC == true) {
+            throw 'RTC reads disabled';
+        }
+    }
+
+    try {
+        var SEC = Program.fetchArray(
+            { type: 'xdc.rov.support.ScalarStructs.S_UInt32', isScalar: true },
+            Number("0x40092008"), 1, false);
+        var SUBSEC = Program.fetchArray(
+            { type: 'xdc.rov.support.ScalarStructs.S_UInt32', isScalar: true },
+            Number("0x4009200C"), 1, false);
+
+        /*
+         * only 51 bits resolution in JavaScript; break into SEC & SUBSEC
+         * pieces
+         */
+        ticks = SUBSEC / period64;                    /* ticks from SUBSEC */
+        ticks = ticks + (SEC * 1000000 / tickPeriod); /* plus ticks from SEC */
+        ticks = Math.floor(ticks);                    /* clip total */
+    }
+    catch (e) {
+        print("Error: Problem fetching RTC values: " + e.toString());
+    }
+
+    return ticks;
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Initialize the 'Basic' Timer instance view.
  */
@@ -257,13 +312,9 @@ function viewInitBasic(view, obj)
     view.halTimerHandle =  halTimer.viewGetHandle(obj.$addr);
     view.label      = Program.getShortName(obj.$label);
     view.id         = obj.id;
-
     view.startMode  = getEnumString(obj.startMode);
-    view.period     = obj.period;
-
     view.tickFxn    = Program.lookupFuncName(Number(obj.tickFxn));
     view.arg        = obj.arg;
-
     view.hwiHandle  = "0x" + Number(obj.hwi).toString(16);
 }
 
@@ -275,13 +326,11 @@ function viewInitDevice(view, obj)
     var Program = xdc.useModule('xdc.rov.Program');
     var tNames = ["RTC"];
 
+    view.id = obj.id;
     view.device = tNames[obj.id];
 
-    try {
-        var timerRawView = Program.scanRawView('ti.sysbios.family.arm.cc26xx.Timer');
-    }
-    catch (e) {
-        Program.displayError(view, 'devAddr', "Caught exception retrieving Timer state: " + e);
+    if ((typeof DISABLE_READ_RTC != "undefined") && DISABLE_READ_RTC) {
+        Program.displayError(view, 'devAddr', "Realtime read of RTC is disabled");
         return;
     }
 
@@ -289,22 +338,18 @@ function viewInitDevice(view, obj)
     view.intNum	    = 20;
 
     var TMR = Program.fetchArray(
-        {   type: 'xdc.rov.support.ScalarStructs.S_UInt16',
-            isScalar: true
-        },
-        Number(view.devAddr), 10, false);
+                {   type: 'xdc.rov.support.ScalarStructs.S_UInt32',
+                    isScalar: true
+                },
+                Number(view.devAddr),
+                7,   /* fetch 7 words, including CH0CMP */
+                false); /* disable address range check */
 
-    view.period = obj.period;
-    view.currCount = view.period - (TMR[9] - TMR[8]);
-    view.remainingCount = TMR[9] - TMR[8]; /* compare - count */
+    view.currCount = ((TMR[2] & 0xffff) << 16) + ((TMR[3] >> 16) & 0xffff);
+    view.nextCompareCount = TMR[6];
+    view.remainingCount = view.nextCompareCount - view.currCount; /* compare - count */
 
-    view.id         = obj.id;
-
-    view.period64 = obj.period64;
-    view.prevThreshold = obj.prevThreshold;
-    view.nextThreshold = obj.nextThreshold;
-
-    if (TMR[1] & 0x0010) {
+    if (TMR[0] & 0x00000001) {
         view.state = "Enabled";
     }
     else {

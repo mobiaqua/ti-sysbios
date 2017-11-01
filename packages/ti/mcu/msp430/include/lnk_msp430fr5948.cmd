@@ -233,7 +233,7 @@ SECTIONS
     COMP_E       : { * ( .int52 ) } > INT52 type = VECT_INIT
     UNMI         : { * ( .int53 ) } > INT53 type = VECT_INIT
     SYSNMI       : { * ( .int54 ) } > INT54 type = VECT_INIT
-    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */ 
+    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */
 }
 
 /****************************************************************************/
@@ -306,4 +306,3 @@ SECTIONS
 /****************************************************************************/
 
 -l msp430fr5948.cmd
-

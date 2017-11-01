@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -549,6 +549,11 @@ function module$static$init(mod, params)
     }
 
     mod.curIntId = ~(0);
+
+    /* add -D to compile line to optimize code */
+    Build.ccArgs.$add(
+        "-Dti_sysbios_family_arm_gic_Hwi_initGicd__D=" +
+        (Hwi.initGicd ? "TRUE" : "FALSE"));
 }
 
 /*
@@ -711,7 +716,12 @@ function viewInitBasic(view, obj)
     var modCfg = Program.getModuleConfig('ti.sysbios.family.arm.gic.Hwi');
     var SubPriorityMask = (1 << (modCfg.BPR + modCfg.NUM_PRIORITY_BITS - 7)) - 1;
     view.halHwiHandle =  halHwi.viewGetHandle(obj.$addr);
-    view.label = Program.getShortName(obj.$label);
+    if (view.halHwiHandle != null) {
+        view.label = Program.getShortName(halHwi.viewGetLabel(obj.$addr));
+    }
+    else {
+        view.label = Program.getShortName(obj.$label);
+    }
     view.absolutePriority = "0x" +
         Number(obj.priority).toString(16).toUpperCase();
     view.relativeGrpPriority = (obj.priority >> (modCfg.BPR + 1));

@@ -229,7 +229,7 @@ SECTIONS
     COMP_B       : { * ( .int60 ) } > INT60 type = VECT_INIT
     UNMI         : { * ( .int61 ) } > INT61 type = VECT_INIT
     SYSNMI       : { * ( .int62 ) } > INT62 type = VECT_INIT
-    .reset       : {}               > RESET  /* MSP430 Reset vector         */ 
+    .reset       : {}               > RESET  /* MSP430 Reset vector         */
 }
 
 /****************************************************************************/
@@ -237,4 +237,3 @@ SECTIONS
 /****************************************************************************/
 
 -l msp430fg6426.cmd
-

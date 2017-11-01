@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,20 @@
 #include <ti/sysbios/knl/Intrinsics.h>
 
 #include "package/internal/Task.xdc.h"
+
+#if ((defined xdc_target__isaCompatible_64) || \
+     (defined xdc_target__isaCompatible_64P) || \
+     (defined xdc_target__isaCompatible_66) || \
+     (defined xdc_target__isaCompatible_67) || \
+     (defined xdc_target__isaCompatible_67P) || \
+     (defined xdc_target__isaCompatible_674))
+__extern __FAR__ UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
+#else
+extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
+#endif
+
+#define Task_moduleStateCheckValue   \
+    ti_sysbios_knl_Task_moduleStateCheckValue
 
 #ifdef __ti__
 /* disable unused local variable warning during optimized compile */
@@ -173,6 +187,11 @@ Int Task_Module_startup (Int phase)
                 }
             }
 #endif
+
+            if (Task_moduleStateCheckFlag) {
+                Task_moduleStateCheckValue =
+                    Task_moduleStateCheckValueFxn(Task_module);
+            }
 
             /* do post init on all statically Created tasks */
             for (i = 0; i < Task_Object_count(); i++) {
@@ -298,6 +317,14 @@ UInt Task_disable()
     UInt key = Task_module->locked;
 
     Task_module->locked = TRUE;
+
+    if (Task_moduleStateCheckFlag) {
+        if (Task_moduleStateCheckFxn(Task_module,
+                                     Task_moduleStateCheckValue) != 0) {
+            Error_raise(NULL, Task_E_moduleStateCheckFailed, 0, 0);
+        }
+    }
+
     return (key);
 }
 
@@ -359,7 +386,21 @@ Task_Handle Task_self()
  */
 Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
 {
+    UInt32 *checkValue;
     UInt oldTaskStack; /* used to obtain current (oldTask) stack address */
+
+    if (Task_objectCheckFlag) {
+        if (oldTask != NULL) {
+            checkValue = Task_SupportProxy_getCheckValueAddr(oldTask);
+            if (Task_objectCheckFxn(oldTask, *checkValue) != 0) {
+                Error_raise(NULL, Task_E_objectCheckFailed, oldTask, 0);
+            }
+        }
+        checkValue = Task_SupportProxy_getCheckValueAddr(newTask);
+        if (Task_objectCheckFxn(newTask, *checkValue) != 0) {
+            Error_raise(NULL, Task_E_objectCheckFailed, newTask, 0);
+        }
+    }
 
     /*
      * oldTask is NULL for the very first stack switch, skip it
@@ -698,6 +739,9 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
                 return (1);
             }
         }
+        else {
+            return (1); /* fail to construct if stack is not provided in construct-only model */
+        }
     }
 
     tsk->fxn = fxn;
@@ -724,8 +768,8 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
 
     status = Task_postInit(tsk, eb);
 
-    if (Error_check(eb)) {
-        return (3 + status);
+    if (status != 0) {
+        return (2 + status);
     }
 
     return (0);   /* no failure states */
@@ -746,10 +790,13 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
  */
 Int Task_postInit(Task_Object *tsk, Error_Block *eb)
 {
+    UInt32 *checkValue;
     UInt tskKey, hwiKey;
     Queue_Handle readyQ;
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
     Int i;
+    Error_Block localEB;
+    Error_Block *leb;
 #endif
 
     tsk->context = Task_SupportProxy_start(tsk,
@@ -757,22 +804,35 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
                 (Task_SupportProxy_FuncPtr)Task_exit,
                 eb);
 
-    if (Error_check(eb)) {
-        return (0);
+    if (tsk->context == NULL) {
+        return (1);
     }
 
     tsk->mode = Task_Mode_READY;
 
     tsk->pendElem = NULL;
 
+    if (Task_objectCheckFlag) {
+        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
+        *checkValue = Task_objectCheckValueFxn(tsk);
+    }
+
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+    if (eb != Error_IGNORE) {
+        leb = eb;
+    }
+    else {
+        Error_init(&localEB);
+        leb = &localEB;
+    }
+
     for (i = 0; i < Task_hooks.length; i++) {
         tsk->hookEnv[i] = (Ptr)0;
         if (Task_hooks.elem[i].createFxn != NULL) {
-            Task_hooks.elem[i].createFxn(tsk, eb);
+            Task_hooks.elem[i].createFxn(tsk, leb);
 
-            if (Error_check(eb)) {
-                return (i);
+            if (Error_check(leb)) {
+                return (i + 2);
             }
         }
     }
@@ -809,7 +869,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
     UInt taskKey, hwiKey;
 
     /*
-     * Task's can only be deleted from main and task threads.
+     * Tasks can only be deleted from main and task threads.
      * Running Tasks can not be deleted.
      */
     if (status == 0) {
@@ -895,7 +955,12 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
         return;
     }
 
-    /* status == 0 or status == 3 - in both cases create hook was called */
+    /* return if Task_SupportProxy_start() failed to construct a task stack image */
+    if (status == 3) {
+        return;
+    }
+
+    /* status == 0 or status == 4 - in both cases create hook was called */
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
     /* free any allocated Hook Envs */
@@ -904,7 +969,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
             cnt = Task_hooks.length;
         }
         else {
-            cnt = status - 3;   /* # successful createFxn() calls */
+            cnt = status - 4;   /* # successful createFxn() calls */
         }
 
         /*
@@ -1146,6 +1211,14 @@ Void Task_blockI(Task_Object *tsk)
     Queue_Object *readyQ = tsk->readyQ;
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
+    UInt32 *checkValue;
+
+    if (Task_objectCheckFlag) {
+        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
+        if (Task_objectCheckFxn(tsk, *checkValue) != 0) {
+            Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
+        }
+    }
 
     Log_write2(Task_LD_block, (UArg)tsk, (UArg)tsk->fxn);
 
@@ -1192,6 +1265,14 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
 #endif
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
+    UInt32 *checkValue;
+
+    if (Task_objectCheckFlag) {
+        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
+        if (Task_objectCheckFxn(tsk, *checkValue) != 0) {
+            Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
+        }
+    }
 
     Queue_enqueue(tsk->readyQ, (Queue_Elem *)tsk);
 
@@ -1269,4 +1350,87 @@ Void Task_deleteTerminatedTasksFunc()
     }
 
     Task_restore(taskKey);
+}
+
+/*
+ *  ======== Task_moduleStateCheck ========
+ */
+Int Task_moduleStateCheck(Task_Module_State *moduleState, UInt32 checkValue)
+{
+    UInt32 newCheckValue;
+
+    newCheckValue = Task_moduleStateCheckValueFxn(moduleState);
+    if (newCheckValue != checkValue) {
+        return (-1);
+    }
+
+    /* Check if curQ is within range */
+    if (((moduleState->curQ != NULL) &&
+        ((moduleState->curQ < (Queue_Handle)(moduleState->readyQ)) ||
+         (moduleState->curQ > (Queue_Handle)((UInt8 *)(moduleState->readyQ) +
+         (UInt)(Task_numPriorities*(2*sizeof(Ptr)))))))) {
+        return (-1);
+    }
+
+    return (0);
+}
+
+/*
+ *  ======== Task_getModuleStateCheckValue ========
+ */
+UInt32 Task_getModuleStateCheckValue(Task_Module_State *moduleState)
+{
+    UInt64 checksum;
+
+    checksum = (uintptr_t)moduleState->readyQ +
+               (uintptr_t)moduleState->smpCurSet +
+               (uintptr_t)moduleState->smpCurMask +
+               (uintptr_t)moduleState->smpCurTask +
+               (uintptr_t)moduleState->smpReadyQ +
+               (uintptr_t)moduleState->idleTask +
+               (uintptr_t)moduleState->constructedTasks;
+    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFF);
+    checksum = checksum + (checksum >> 32);
+
+    return ((UInt32)(~checksum));
+}
+
+/*
+ *  ======== Task_objectCheck ========
+ */
+Int Task_objectCheck(Task_Handle handle, UInt32 checkValue)
+{
+    UInt32 newCheckValue;
+
+    newCheckValue = Task_objectCheckValueFxn(handle);
+    if (newCheckValue != checkValue) {
+        return (-1);
+    }
+
+    return (0);
+}
+
+/*
+ *  ======== Task_getObjectCheckValue ========
+ */
+UInt32 Task_getObjectCheckValue(Task_Handle taskHandle)
+{
+    UInt64 checksum;
+
+    checksum = taskHandle->stackSize +
+               (uintptr_t)taskHandle->stack +
+               (uintptr_t)taskHandle->stackHeap +
+#if defined(__IAR_SYSTEMS_ICC__)
+               (UInt64)taskHandle->fxn +
+#else
+               (uintptr_t)taskHandle->fxn +
+#endif
+               taskHandle->arg0 +
+               taskHandle->arg1 +
+               (uintptr_t)taskHandle->hookEnv +
+               taskHandle->vitalTaskFlag;
+    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFF);
+    checksum = checksum + (checksum >> 32);
+
+    return ((UInt32)(~checksum));
 }

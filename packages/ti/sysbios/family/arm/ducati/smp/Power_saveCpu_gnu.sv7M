@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2012-2015, Texas Instruments Incorporated
+@  Copyright (c) 2012-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@
 @  Power_saveCpuRegs(address)
 @
 
+        .section .text.ti_sysbios_family_arm_ducati_smp_Power_saveCpuRegs__I
         .func
         .thumb_func
 

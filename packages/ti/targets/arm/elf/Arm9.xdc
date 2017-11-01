@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2015 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2016 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -95,7 +95,7 @@ metaonly module Arm9 inherits ti.targets.arm.elf.IArm {
         suffix: "$(ccOpts.suffix)"
     };
 
-    override config string includeOpts = "-I$(rootDir)/include/rts -I$(rootDir)/include ";
+    override config string includeOpts = "-I$(rootDir)/include ";
 
     override readonly config xdc.bld.ITarget.StdTypes stdTypes = {
         t_IArg          : { size: 4, align: 4 },
@@ -117,7 +117,7 @@ metaonly module Arm9 inherits ti.targets.arm.elf.IArm {
     };
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 1-29-2016 16:37:08; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.arm.elf; 1, 0, 0,1; 7-27-2017 11:47:34; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

@@ -47,7 +47,7 @@ import xdc.rov.ViewInfo;
  *  settings for this module.  This function is hooked into the
  *  `{@link xdc.runtime.Reset#fxns xdc.runtime.Reset.fxns[]}` array and
  *  is called very early at boot time (prior to C runtime initialization).
- * 
+ *
  *  The code to support the boot module is placed in a separate section
  *  named `".text:bootCodeSection"` to allow placement of this section in
  *  the linker .cmd file if necessary. This section is a subsection of the
@@ -67,7 +67,7 @@ metaonly module Boot
     }
 
     @Facet
-    metaonly config ViewInfo.Instance rovViewInfo = 
+    metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
             viewMap: [
             [
@@ -80,8 +80,8 @@ metaonly module Boot
             ],
             ]
         });
-    
-    /*! 
+
+    /*!
      *  ======== disableWatchdog ========
      *  Watchdog disable flag
      *
@@ -90,7 +90,7 @@ metaonly module Boot
      */
     config Bool disableWatchdog = true;
 
-    /*! 
+    /*!
      *  ======== watchdogAddress ========
      *  Watchdog control register address
      *
@@ -99,7 +99,7 @@ metaonly module Boot
      */
     config UInt watchdogAddress = 0x15c;
 
-    /*! 
+    /*!
      *  ======== configureDCO ========
      *  Configure DCO flag
      *
@@ -108,23 +108,23 @@ metaonly module Boot
      */
     config Bool configureDCO = false;
 
-    /*! 
+    /*!
      *  ======== useLFXT ========
      *  Use a low frequency crystal (LFXT) reference
      *
-     *  The default is `false`.  Set to `true` to indicate a 32768Hz low 
+     *  The default is `false`.  Set to `true` to indicate a 32768Hz low
      *  frequency crystal is present, and available for configuring the clock
-     *  system. 
+     *  system.
      *
      *  This configuration parameter is utilized for only a subset of MSP430
-     *  device types, and only when `configureDCO` is set to `true`. 
+     *  device types, and only when `configureDCO` is set to `true`.
      *
      *  For FR58xx/FR59xx devices: if `useLFXT` is set to `true`, an LFXT
-     *  will be used as reference, for generating more accurate clock 
-     *  frequencies.  Othewise, and by default, MODOSC will be used as 
+     *  will be used as reference, for generating more accurate clock
+     *  frequencies.  Othewise, and by default, MODOSC will be used as
      *  reference.
      *
-     *  For all other MSP430 device types: at present, the `useLFXT` parameter 
+     *  For all other MSP430 device types: at present, the `useLFXT` parameter
      *  will be ignored, and an internal reference will be used instead.
      */
     config Bool useLFXT = false;

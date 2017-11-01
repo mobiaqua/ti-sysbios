@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ Int ThreadSupport_Instance_init(ThreadSupport_Handle obj,
     Semaphore_construct(Semaphore_struct(bios6sem), 0, NULL);
 
     obj->task = Task_create(&ThreadSupport_runStub, &tpars, eb);
-    if (Error_check(eb)) {
+    if (obj->task == NULL) {
         return (ThreadSupport_TASK_FAILURE);
     }
 

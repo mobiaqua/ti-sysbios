@@ -1,11 +1,11 @@
 /*
- *  Copyright 2016 by Texas Instruments Incorporated.
+ *  Copyright 2017 by Texas Instruments Incorporated.
  *
  */
 
 /*****************************************************************************/
 /* _AUTO_INIT()   v7.0.3 - Perform initialization of C variables.            */
-/*  Copyright (c) 1993-2010  Texas Instruments Incorporated                  */
+/*  Copyright (c) 1993-2016  Texas Instruments Incorporated                  */
 /*****************************************************************************/
 #include <string.h>
 
@@ -23,6 +23,8 @@ typedef void (*PTRFUNC)();
    extern far const PTRFUNC __pinit__[];
 
 #else
+
+extern void __TI_tls_init(void * TLS_block_addr);
 
 #pragma WEAK(__TI_INITARRAY_Limit);
 #pragma WEAK(__TI_INITARRAY_Base);
@@ -130,6 +132,8 @@ void _auto_init_elf(void)
       xdc_runtime_Startup_exec__E();
    }
 
+   __TI_tls_init(NULL);
+
    /*------------------------------------------------------------------------*/
    /* Process Pinit table for ELF.                                           */
    /* The section is not NULL terminated, but can be accessed by pointers    */
@@ -145,7 +149,7 @@ void _auto_init_elf(void)
 
 #endif
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 1-29-2016 17:06:38; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.rts6000; 1, 0, 0,0; 7-27-2017 12:31:23; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

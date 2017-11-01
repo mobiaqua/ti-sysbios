@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,31 +41,11 @@ var numTimers = 4;
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "ti.catalog.c6000": {
-            "TMS320C2430": {
-                suspendMux1Addr: 0x49002294
-            },
-            "TMS320C3430": {
+            "DM37XX": {
                 suspendMux1Addr: 0x48002294
             }
         },
     }
-
-    deviceTable["ti.catalog.c6000"]["OMAP2431"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP2530"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP2531"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C2430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3425"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3525"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["OMAP3530"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["TMS320CDM740"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
-    deviceTable["ti.catalog.c6000"]["TMS320DM8168"] =
-        deviceTable["ti.catalog.c6000"]["TMS320C3430"];
 }
 
 /*
@@ -116,4 +96,3 @@ function module$static$init(mod, params)
         mod.suspSrc[i] = params.timer[i].suspSrc;
     }
 }
-

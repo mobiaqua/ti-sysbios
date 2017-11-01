@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  *  ======== Platform.xs ========
@@ -24,8 +44,8 @@ var Utils = xdc.useModule('xdc.platform.Utils');
 function module$meta$init()
 {
     if (xdc.om.$name != "cfg") {
-        return;                                                
-    }                                                                           
+        return;
+    }
     Boot = xdc.useModule('ti.catalog.c2800.init.Boot');
 
     Boot.disableWatchdog = true;
@@ -34,7 +54,7 @@ function module$meta$init()
     Boot.pllOSCCLK = 30;
     Boot.pllcrDIV = 10;
     Boot.pllstsDIVSEL = 2;
-    
+
     Boot.enableEzdspXintfConfig = true;
 }
 
@@ -43,8 +63,8 @@ function module$meta$init()
  */
 function module$use()
 {
-    /* 
-     * Force the boot code into internal memory so that it 
+    /*
+     * Force the boot code into internal memory so that it
      * can safely configure the XINTF
      */
     if (Program.sectMap[".text:.bootCodeSection"] === undefined) {
@@ -69,7 +89,7 @@ function getCpuDataSheet(cpuId)
  *  ======== Platform.getExeContext ========
  *  This Platform's implementation xdc.platform.IPlatform.getExeContext.
  *
- *  Return the xdc.platform.IPlatform.ExeContext object that will run the 
+ *  Return the xdc.platform.IPlatform.ExeContext object that will run the
  *  specified program prog.
  */
 function getExeContext(prog)
@@ -101,7 +121,7 @@ function getExeContext(prog)
 
     Utils.checkDefaults(this, cpu.memoryMap);
     this.$seal();
-    
+
     return (cpu);
 }
 
@@ -129,7 +149,7 @@ function getExecCmd(prog)
         }
     }
     else if (os == "Windows") {
-        return("cscript runtest.js " + 
+        return("cscript runtest.js " +
                java.io.File(prog.name).getCanonicalPath());
     }
     else {
@@ -161,13 +181,9 @@ function getLinkTemplate(prog)
  */
 function instance$meta$init(name)
 {
-    if (!Utils.checkFit(this.$module.PARAMS.externalMemoryMap,                 
+    if (!Utils.checkFit(this.$module.PARAMS.externalMemoryMap,
                         this.externalMemoryMap)) {
         this.$module.$logError("External memory cannot be changed on " +
             "this platform", this, null);
     }
 }
-/*
- *  @(#) ti.platforms.ezdsp28235; 1, 0, 0,; 1-29-2016 10:02:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

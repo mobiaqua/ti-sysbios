@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,7 +128,7 @@ Void Timer_initObj(Timer_Object *obj, Timer_FuncPtr tickFxn,
                 (params->tclr.pt << 12) |
                 (params->tclr.captmode << 13) |
                 (params->tclr.gpocfg << 14);
-    
+
     obj->tsicr = (params->tsicr.sft << 1) |
                  (params->tsicr.posted << 2) |
                  (params->tsicr.readmode << 3);
@@ -257,7 +257,7 @@ Int Timer_deviceConfig(Timer_Object *obj, Error_Block *eb)
             while (timer->twps & TIMER_TWPS_W_PEND_TLDR)
                 ;
         }
-        else { 
+        else {
             timer->tcrr = 0;
             while (timer->twps & TIMER_TWPS_W_PEND_TCRR)
                 ;
@@ -293,7 +293,7 @@ Int Timer_postInit(Timer_Object *obj, Error_Block *eb)
         /* Verify timer frequency */
         Timer_checkFreq(obj);
     }
-    
+
     Timer_module->firstInit = FALSE;
 
     /* configure the timer */
@@ -325,7 +325,7 @@ Void Timer_Instance_finalize(Timer_Object *obj, Int status)
             if (obj->hwi) {
                 Hwi_delete(&obj->hwi);
             }
-            break;      
+            break;
 
         /* timer not available */
         case 2:
@@ -334,7 +334,7 @@ Void Timer_Instance_finalize(Timer_Object *obj, Int status)
         case 1:
 
         default:
-            break;      
+            break;
     }
 
     key = Hwi_disable();
@@ -455,7 +455,7 @@ Int Timer_Module_startup(Int status)
     Timer_Object *obj;
 
     if (Timer_TimerSupportProxy_Module_startupDone()) {
-        if (Timer_startupNeeded) { 
+        if (Timer_startupNeeded) {
             for (i = 0; i < Timer_numTimerDevices; i++) {
                 obj = Timer_module->handles[i];
                 /* if timer was statically created/constructed */
@@ -623,18 +623,18 @@ UInt32 Timer_getCurrentTick(Timer_Object *obj, Bool saveFlag)
     UInt32 tick;
     UInt32 currCount;
     UInt64 longCount;
-    
+
     currCount = Timer_getCount(obj);
 
     longCount = (UInt64)(obj->rollovers) << 32;
     longCount += currCount;
-    
+
     tick = longCount / (UInt64)(obj->period);
-    
+
     if (saveFlag != 0) {
         obj->savedCurrCount = currCount;
-    }        
- 
+    }
+
     return ((UInt32) tick);
 }
 
@@ -688,7 +688,7 @@ UInt32 Timer_getPeriod(Timer_Object *obj)
  */
 Timer_Status Timer_getStatus(UInt timerId)
 {
-    Assert_isTrue(timerId < Timer_numTimerDevices, NULL);
+    Assert_isTrue(timerId < (UInt)Timer_numTimerDevices, NULL);
 
     if (Timer_module->availMask & (0x1 << timerId)) {
         return (Timer_Status_FREE);
@@ -703,7 +703,7 @@ Timer_Status Timer_getStatus(UInt timerId)
  */
 Timer_Handle Timer_getHandle(UInt timerId)
 {
-    Assert_isTrue((timerId < Timer_numTimerDevices), NULL);
+    Assert_isTrue((timerId < (UInt)Timer_numTimerDevices), NULL);
     return (Timer_module->handles[timerId]);
 }
 
@@ -799,7 +799,7 @@ Void Timer_reconfig(Timer_Object *obj, Timer_FuncPtr tickFxn,
 
     /* leave it to caller to check eb */
     Timer_postInit(obj, eb);
-    
+
     if (obj->startMode == Timer_StartMode_AUTO) {
         Timer_start(obj);
     }
@@ -980,7 +980,7 @@ Void Timer_startup()
     Int i;
     Timer_Object *obj;
 
-    if (Timer_startupNeeded) { 
+    if (Timer_startupNeeded) {
         for (i = 0; i < Timer_numTimerDevices; i++) {
             obj = Timer_module->handles[i];
             /* if timer was statically created/constructed */
@@ -1048,14 +1048,16 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     UInt32 period;
     UInt32 count;
     UInt key;
-    
+
     /* get CPU frequency */
     BIOS_getCpuFreq(&cpufreq);
-    cpuCounts = (cpufreq.hi * (1 < 0xffffffff)) + cpufreq.lo;
+    cpuCounts = (UInt64)cpufreq.hi << 32;
+    cpuCounts |=  cpufreq.lo;
 
     /* get Timer frequency */
     Timer_getFreq(obj, &timerfreq);
-    timerCounts = (timerfreq.hi * (1 < 0xffffffff)) + timerfreq.lo;
+    timerCounts = (UInt64)timerfreq.hi << 32;
+    timerCounts |= timerfreq.lo;
 
     ratio = cpuCounts/timerCounts;
     period = insts / ratio;
@@ -1073,6 +1075,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     Hwi_restore(key);
 }
 
+
 #define TIMERCOUNTS 100
 
 /*
@@ -1087,11 +1090,11 @@ Void Timer_checkFreq(Timer_Object *obj)
     UInt freqRatio;
     UInt32 actualFrequency;
     Timer_Object tempObj;
-    
-    /* 
+
+    /*
      *  Make a temporary copy of 'obj' and modify it to be used for the timer
      *  frequency check.  Set the period to Timer_MAX_PERIOD to ensure that
-     *  the timer does not roll over while performing the check.  
+     *  the timer does not roll over while performing the check.
      */
     memcpy((void *)&tempObj, (void *)obj, sizeof(Timer_Object));
     tempObj.period = Timer_MAX_PERIOD;
@@ -1112,8 +1115,8 @@ Void Timer_checkFreq(Timer_Object *obj)
     freqRatio = timestampFreq.lo / timerFreq.lo;
 
     key = Hwi_disable();
-    
-    /* 
+
+    /*
      *  Warning: halting the core between Timer_start and the point of
      *  code indicated below can cause the frequency check to fail.  This is
      *  is because the DMTimer will continue to run while this core is halted,
@@ -1141,7 +1144,7 @@ Void Timer_checkFreq(Timer_Object *obj)
     deltaCnt = timerCountEnd - timerCountStart;
 
     /* Check the timer frequency.  Allow a margin of error. */
-    if (((deltaTs / deltaCnt) > freqRatio * 2) || 
+    if (((deltaTs / deltaCnt) > freqRatio * 2) ||
         ((deltaTs / deltaCnt) < freqRatio / 2)) {
         actualFrequency = ((UInt64)timestampFreq.lo * (UInt64)deltaCnt) / (UInt64)deltaTs;
         Error_raise(NULL, Timer_E_freqMismatch,

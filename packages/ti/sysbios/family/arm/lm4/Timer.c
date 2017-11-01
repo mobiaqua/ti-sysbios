@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,11 @@
 #endif
 
 #ifdef ti_sysbios_family_arm_cc26xx_Boot_driverlibVersion
-#include <driverlib/prcm.h>
+
+#include <ti/devices/DeviceFamily.h>
+
+#include DeviceFamily_constructPath(driverlib/prcm.h)
+
 #endif
 
 #include "package/internal/Timer.xdc.h"
@@ -70,6 +74,9 @@
 #define RCGC1 ((volatile UInt32 *)0x400FE104) /* Run mode Clock Gate 1 */
 #define SCGC1 ((volatile UInt32 *)0x400FE114) /* Sleep mode Clock Gate 1 */
 #define DCGC1 ((volatile UInt32 *)0x400FE124) /* Deep sleep mode Clock Gate 1 */
+
+/* bitband alias for RCGC1 TIMER0 bit (used for pre-Flurry devices) */
+#define RCGC1_BB_TIMER0 0x43FC20C0
 
 /* newer reset, run, and sleep control registers */
 #define SRTIMER     ((volatile UInt32 *)0x400FE504)
@@ -569,7 +576,8 @@ Void Timer_start(Timer_Object *obj)
 
     /* Timer_RunMode_CONTINUOUS */
     if (obj->runMode == Timer_RunMode_CONTINUOUS) {
-        Timer_write(obj->altclk, &timer->GPTMTAILR, obj->period);
+        /* sub 1 from period to compensate for extra count during reload */
+        Timer_write(obj->altclk, &timer->GPTMTAILR, obj->period - 1);
         Timer_write(obj->altclk, &timer->GPTMTAMR, amr | 0x2); /* periodic */
     }
 
@@ -1172,8 +1180,8 @@ Void Timer_enableTiva(Int id)
     if (((HWREG(SYSCTL_DID0) & SYSCTL_DID0_CLASS_M) <
         SYSCTL_DID0_CLASS_FLURRY) && (id < 4)) {
 
-        /* enable run mode clock */
-        *RCGC1 |= (UInt32)(1 << (id + 16));
+        /* enable run mode clock (per SYSBIOS-185, use bitband alias) */
+        *((UInt32 *)(RCGC1_BB_TIMER0 + (id * 4))) = 1;
 
         /* ensure at least 5 clock cycle delay for clock enable */
         *RCGC1;
@@ -1271,8 +1279,8 @@ Void Timer_disableTiva(Int id)
     if (((HWREG(SYSCTL_DID0) & SYSCTL_DID0_CLASS_M) <
         SYSCTL_DID0_CLASS_FLURRY) && (id < 4)) {
 
-        /* enable run mode clock */
-        *RCGC1 &= ~(UInt32)(1 << (id + 16));
+        /* disable run mode clock (per SYSBIOS-185, use bitband alias) */
+        *((UInt32 *)(RCGC1_BB_TIMER0 + (id * 4))) = 0;
 
         /* ensure at least 5 clock cycle delay for clock disable */
         *RCGC1;

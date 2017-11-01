@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,6 +148,34 @@ function instance$static$init(obj, count, params)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Process the 'Basic' view for a Semaphore instance.
  *
@@ -160,7 +188,12 @@ function viewInitBasic(view, obj)
     var Semaphore = xdc.useModule('ti.sysbios.knl.Semaphore');
     var Clock = xdc.useModule('ti.sysbios.knl.Clock');
     var Task = xdc.useModule('ti.sysbios.knl.Task');
-    
+
+    if (viewCheckForNullObject(Semaphore, obj)) {
+        view.label = "Uninitialized Semaphore object";
+        return;
+    }
+
     view.label = Program.getShortName(obj.$label);
 
     if (obj.event != 0) {

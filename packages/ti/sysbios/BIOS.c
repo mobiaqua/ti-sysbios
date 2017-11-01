@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@
  */
 
 #include <xdc/std.h>
-#include <xdc/runtime/Startup.h>
 #include <xdc/runtime/System.h>
 #include <xdc/runtime/Types.h>
 #include <xdc/runtime/Assert.h>
@@ -43,6 +42,20 @@
 #include <ti/sysbios/hal/Core.h>
 
 #include "package/internal/BIOS.xdc.h"
+
+/*!
+ *  ======== BIOS_linkedWithIncorrectBootLibrary ========
+ */
+Void BIOS_linkedWithIncorrectBootLibrary(Void)
+{
+    /*
+     *  If execution reaches this function, it indicates that the wrong
+     *  boot library was linked with and the XDC runtime startup functions
+     *  were not called. This can happen if the code gen tool's RTS library
+     *  was before SYS/BIOS's generated linker cmd file on the link line.
+     */
+    while (1);
+}
 
 /*!
  *  ======== BIOS_getThreadType ========

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -853,6 +853,32 @@ Void Load_updateLoads(Void)
     if (Diags_query(Diags_USER4)) {
         Load_logCPULoad();
     }
+
+    if (postUpdate != NULL) {
+        postUpdate();   /* Call user-defined postUpdate fxn */
+    }
+}
+
+/*
+ *  ======== Load_updateContextsAndPost ========
+ *  Update the thread times and call the postUpdate() function.  Do not
+ *  do the CPU load calculation.  This function is called by Load_update()
+ *  when Load.enableCPULoadCalc is false.
+ */
+Void Load_updateContextsAndPost()
+{
+    Load_FuncPtr postUpdate;
+
+    postUpdate = Load_postUpdate; /* from config */
+
+    Load_updateCurrentThreadTime();
+    Load_module->idleCnt = Load_module->timeElapsed = 0;
+
+    /*
+     *  Update each task hook context, Swi, Hwi hook contexts, and Log
+     *  the thread loads.
+     */
+    Load_updateThreadContexts();
 
     if (postUpdate != NULL) {
         postUpdate();   /* Call user-defined postUpdate fxn */

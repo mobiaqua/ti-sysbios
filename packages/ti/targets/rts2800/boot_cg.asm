@@ -1,17 +1,38 @@
-; --COPYRIGHT--,EPL
-;   Copyright (c) 2008 Texas Instruments and others.
-;   All rights reserved. This program and the accompanying materials
-;   are made available under the terms of the Eclipse Public License v1.0
-;   which accompanies this distribution, and is available at
-;   http://www.eclipse.org/legal/epl-v10.html
-;  
-;   Contributors:
-;       Texas Instruments - initial implementation
-;  
-; --/COPYRIGHT--
 ;******************************************************************************
-;* BOOT  v5.0.0A07060
-;* Copyright (c) 2000-2007 Texas Instruments Incorporated
+;* BOOT  v16.9.0
+;*
+;* Copyright (c) 2000-2017 Texas Instruments Incorporated
+;* http://www.ti.com/
+;*
+;*  Redistribution and  use in source  and binary forms, with  or without
+;*  modification,  are permitted provided  that the  following conditions
+;*  are met:
+;*
+;*     Redistributions  of source  code must  retain the  above copyright
+;*     notice, this list of conditions and the following disclaimer.
+;*
+;*     Redistributions in binary form  must reproduce the above copyright
+;*     notice, this  list of conditions  and the following  disclaimer in
+;*     the  documentation  and/or   other  materials  provided  with  the
+;*     distribution.
+;*
+;*     Neither the  name of Texas Instruments Incorporated  nor the names
+;*     of its  contributors may  be used to  endorse or  promote products
+;*     derived  from   this  software  without   specific  prior  written
+;*     permission.
+;*
+;*  THIS SOFTWARE  IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS
+;*  "AS IS"  AND ANY  EXPRESS OR IMPLIED  WARRANTIES, INCLUDING,  BUT NOT
+;*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;*  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+;*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;*  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL  DAMAGES  (INCLUDING, BUT  NOT
+;*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+;*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+;*  THEORY OF  LIABILITY, WHETHER IN CONTRACT, STRICT  LIABILITY, OR TORT
+;*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+;*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;*
 ;******************************************************************************
 
 ;****************************************************************************
@@ -19,7 +40,7 @@
 ;*
 ;* THIS IS THE INITAL BOOT ROUTINE FOR C28xx C++ PROGRAMS.
 ;* IT MUST BE LINKED AND LOADED WITH ALL C++ PROGRAMS.
-;* 
+;*
 ;* THIS MODULE PERFORMS THE FOLLOWING ACTIONS:
 ;*   1) SET RESET VECTOR TO POINT AT _C_INT00
 ;*   2) ALLOCATES THE STACK AND INITIALIZES THE STACK POINTER
@@ -34,38 +55,55 @@
 ;*   2) _c_int00    BOOT ROUTINE
 ;*
 ;****************************************************************************
-CONST_COPY	.set 0
+CONST_COPY      .set 0
+        .if __TI_EABI__
+           .asg _args_main, __args_main
+           .asg xdc_runtime_System_exit__E, _xdc_runtime_System_exit__E
+           .asg copy_in, _copy_in
+           .asg _system_pre_init, __system_pre_init
+           .asg _system_post_cinit, __system_post_cinit
+           .global __TI_auto_init
+        .endif
 
-	.global  _c_int00, cinit, pinit, binit
-	.global  __args_main, _xdc_runtime_System_exit__E
-	.global  __stack
+        .global  _c_int00, cinit, binit, pinit
+        .global  __args_main, _xdc_runtime_System_exit__E, _copy_in
+        .global  __system_pre_init, __system_post_cinit
+        .global  __stack
 
 ****************************************************************************
 * Declare the stack.  Size is determined by the linker option -stack.  The *
 * default value is 1K words.                                               *
 ****************************************************************************
-__stack:	.usect	".stack",0
+__stack:        .usect  ".stack",0
 
-	.text
+****************************************************************************
+*  INITIALIZE RESET VECTOR TO POINT AT _c_int00                            *
+****************************************************************************
+;*  Not needed for SYS/BIOS boot model, removed so we don't need a .reset
+;*  SECTION placement in the linker command files.
+;*      .sect .reset
+;*      .long _c_int00
+
+        .text
 ****************************************************************************
 * FUNCTION DEF : _c_int00                                                  *
 *                                                                          *
 ****************************************************************************
 
-_c_int00:	.asmfunc
-        setc INTM,DBGM                  ; disable interrupts and  
+_c_int00:       .asmfunc stack_usage(0)
+        setc INTM,DBGM                  ; disable interrupts and
         mov @al, #0                     ; clear IER in case boot ROM
         MOV IER, @al                    ; left these enabled
 
 ****************************************************************************
 *  INITIALIZE STACK POINTER.                                               *
 ****************************************************************************
-	MOV  	SP,#__stack		; set to beginning of stack space
+        MOV     SP,#__stack             ; set to beginning of stack space
 
 ****************************************************************************
 * INITIALIZE STATUS BIT FIELDS *NOT* INITIALIZED AT RESET                  *
 ****************************************************************************
-	SPM	0			; set product shift to 0
+        SPM     0                        ; set product shift to 0
 
 ****************************************************************************
 * SET C28x MODES                                                           *
@@ -81,51 +119,65 @@ _c_int00:	.asmfunc
 * SETTING THESE STATUS BITS/REGISTER TO RESET VALUES.  IF YOU RUN          *
 * _c_int00 FROM RESET, YOU CAN REMOVE THIS CODE                            *
 ****************************************************************************
-	CLRC    PAGE0			; use stack addressing mode
-        MOVW    DP,#0			; initialize DP to point at low 64K
-	CLRC    OVM         		; turn off overflow mode
+        CLRC    PAGE0                   ; use stack addressing mode
+        MOVW    DP,#0                   ; initialize DP to point at low 64K
+        CLRC    OVM                            ; turn off overflow mode
 
-	ASP				; ensure SP is aligned
+        ASP                   ; ensure SP is aligned
+
+****************************************************************************
+*  IF _system_pre_init is 0, bypass C/C++ autoinitialization               *
+****************************************************************************
+        LCR     #__system_pre_init
+        CMP     AL, #0
+        B       BYPASS_AUTO_INIT, EQ ; Branch if _system_pre_init returns 0
+
+        .if     __TI_EABI__
+
+        .global xdc_runtime_Startup__RESETFXN__C
+        .global xdc_runtime_Startup_reset__I
+
+        MOV    AL,#xdc_runtime_Startup__RESETFXN__C
+        MOV    AH,#hi16(xdc_runtime_Startup__RESETFXN__C)
+        ADDB   ACC,#0
+        B      noreset,EQ
+        LCR    xdc_runtime_Startup_reset__I
+noreset:
+
+        LCR #__TI_auto_init
+
+        .global xdc_runtime_Startup_exec__E
+        MOV    AL,#xdc_runtime_Startup_exec__E
+        MOV    AH,#hi16(xdc_runtime_Startup_exec__E)
+        ADDB   ACC, #0
+        B      noexec,EQ
+        LCR    xdc_runtime_Startup_exec__E
+noexec:
+
+        .else
 
 ****************************************************************************
 * SET THE EALLOW BIT BEFORE THE CINIT TABLE IS COPIED.                     *
 ****************************************************************************
-	EALLOW
+        EALLOW
 
-	.global	_xdc_runtime_Startup__RESETFXN__C
-	.global	_xdc_runtime_Startup_reset__I
+        .global _xdc_runtime_Startup__RESETFXN__C
+        .global _xdc_runtime_Startup_reset__I
 
-	MOV    AL,#_xdc_runtime_Startup__RESETFXN__C
-	MOV    AH,#hi16(_xdc_runtime_Startup__RESETFXN__C)
-	ADDB   ACC,#0
-	B      noreset,EQ
-	LCR    _xdc_runtime_Startup_reset__I
+        MOV    AL,#_xdc_runtime_Startup__RESETFXN__C
+        MOV    AH,#hi16(_xdc_runtime_Startup__RESETFXN__C)
+        ADDB   ACC,#0
+        B      noreset,EQ
+        LCR    _xdc_runtime_Startup_reset__I
 noreset:
 
 ****************************************************************************
-*  IF binit IS NOT -1, PROCESS THE BINIT INITIALIZATION TABLE	           *
+*  IF cinit IS NOT -1, PROCESS CINIT INITIALIZATION TABLE                  *
 ****************************************************************************
-	MOV	AL,#binit
-	MOV	AH,#hi16(binit)
-	ADDB	ACC,#1
-	B	DO_CINIT,EQ		; if binit < 0 (-1) no init table
-
-****************************************************************************
-*  PROCESS BINIT INITIALIZATION TABLE.                                     *
-****************************************************************************
-	.global	_far_copy_in
-	MOVL	XAR4,#binit
-	LCR	_far_copy_in
-
-DO_CINIT:			
-
-****************************************************************************
-*  IF cinit IS NOT -1, PROCESS CINIT INITIALIZATION TABLE	           *
-****************************************************************************
-	MOV	AL,#cinit
-	MOV	AH,#hi16(cinit)
-	ADDB	ACC,#1
-	B	DO_PINIT,EQ		; if cinit < 0 (-1) no init tables
+        MOV     AL,#cinit
+        MOV     AH,#hi16(cinit)
+        ADDB    ACC,#1
+        B       DO_BINIT,EQ             ; if cinit < 0 (-1) no init tables
 
 ****************************************************************************
 *  PROCESS CINIT INITIALIZATION TABLE.  TABLE IS IN PROGRAM MEMORY IN THE  *
@@ -144,98 +196,116 @@ DO_CINIT:
 *  The init table is terminated with a zero length                         *
 *                                                                          *
 ****************************************************************************
-	MOVL	XAR7,#cinit		; point XAR7 at start of table	
-	CLRC    TC		        ; reset TC bit used as far flag 
-	B 	START, UNC		; jump to start processing
+        MOVL    XAR7,#cinit             ; point XAR7 at start of table
+        CLRC    TC                      ; reset TC bit used as far flag
+        B       START, UNC              ; jump to start processing
 LOOP:
-	MOVB    AH,#0		        ; zero out upper addr bits
-	PREAD   AL,*XAR7		; load address of variable to be inited
-	ADDB    XAR7,#1			; point to initialization data
-       	B	GET_DATA,NTC	        ; get data if variable is not far 
-	CLRC    TC		        ; reset TC bit used as far flag 
-	PREAD   AH,*XAR7	        ; otherwise, get hi bits of 22-bit addr
-	ADDB    XAR7,#1
-GET_DATA:	
-	MOVL	XAR6,ACC	        ; address
-	RPT	AR1			; repeat length + 1 times
-||	PREAD   *XAR6++,*XAR7		; copy data from table to memory
-	
-	MOVL	ACC,XAR7		; using ACC as temp, point XAR7 to 
-	ADD  	ACC,AR1			; next cinit record since PREAD 
-	ADDB	ACC,#1			; doesn't change value of XAR7. 
-	MOVL	XAR7,ACC	
+        MOVB    AH,#0                   ; zero out upper addr bits
+        PREAD   AL,*XAR7                ; load address of variable to be inited
+        ADDB    XAR7,#1                 ; point to initialization data
+        B       GET_DATA,NTC            ; get data if variable is not far
+        CLRC    TC                      ; reset TC bit used as far flag
+        PREAD   AH,*XAR7                ; otherwise, get hi bits of 22-bit addr
+        ADDB    XAR7,#1
+GET_DATA:
+        MOVL    XAR6,ACC                ; address
+        RPT     AR1                     ; repeat length + 1 times
+||      PREAD   *XAR6++,*XAR7           ; copy data from table to memory
+
+        MOVL    ACC,XAR7                ; using ACC as temp, point XAR7 to
+        ADD     ACC,AR1                 ; next cinit record since PREAD
+        ADDB    ACC,#1                  ; doesn't change value of XAR7.
+        MOVL    XAR7,ACC
 START:
-	PREAD	AL,*XAR7		; load length
-	B	GET_ADDR,GEQ	        ; a length < 0 denotes far data	 
-        NEG     AL		        ; negate value to get real length	
-	SETC    TC		        ; flag that the address field is 32-bits
-GET_ADDR:	
-	MOVZ	AR1,AL		        ; copy length value to loop register
-        ADDB    XAR7,#1			; point to address field
-	BANZ	LOOP,AR1--		; if (length-- != 0) continue 
+        PREAD   AL,*XAR7                ; load length
+        B       GET_ADDR,GEQ            ; a length < 0 denotes far data
+        NEG     AL                      ; negate value to get real length
+        SETC    TC                      ; flag that the address field is 32-bits
+GET_ADDR:
+        MOVZ    AR1,AL                  ; copy length value to loop register
+        ADDB    XAR7,#1                 ; point to address field
+        BANZ    LOOP,AR1--              ; if (length-- != 0) continue
+
+****************************************************************************
+*  IF binit IS NOT -1, PROCESS CINIT INITIALIZATION TABLE                  *
+****************************************************************************
+DO_BINIT:
+        MOV     AL,#binit
+        MOV     AH,#hi16(binit)
+        ADDB    ACC,#1
+        B       DO_PINIT,EQ             ; if binit < 0 (-1) no init tables
+        MOVL    XAR4,#binit
+        LCR     #_copy_in
 
 ****************************************************************************
 *  IF pinit IS NOT -1, PROCESS CONSTRUCTOR ROUTINES                        *
 ****************************************************************************
-DO_PINIT:			
+DO_PINIT:
 
 ****************************************************************************
 * CLEAR THE EALLOW BIT AFTER THE CINIT TABLE IS COPIED.                    *
 ****************************************************************************
-	EDIS
+        EDIS
 
-	.global	_xdc_runtime_Startup_exec__E
-	MOV    AL,#_xdc_runtime_Startup_exec__E
-	MOV    AH,#hi16(_xdc_runtime_Startup_exec__E)
-	ADDB   ACC, #0
-	B      noexec,EQ
-	LCR    _xdc_runtime_Startup_exec__E
+        .global _xdc_runtime_Startup_exec__E
+        MOV    AL,#_xdc_runtime_Startup_exec__E
+        MOV    AH,#hi16(_xdc_runtime_Startup_exec__E)
+        ADDB   ACC, #0
+        B      noexec,EQ
+        LCR    _xdc_runtime_Startup_exec__E
 noexec:
 
-	MOV	AL,#pinit
-	MOV	AH,#hi16(pinit)
-	ADDB	ACC,#1
-	B	DONE_INIT,EQ		; if pinit < 0 (-1) no pinit table
+****************************************************************************
+* Call the startup hook function.                                          *
+****************************************************************************
+        LCR     #__system_post_cinit
+
+        MOV     AL,#pinit
+        MOV     AH,#hi16(pinit)
+        ADDB    ACC,#1
+        B       DONE_INIT,EQ            ; if pinit < 0 (-1) no pinit table
 
 ****************************************************************************
 *  PROCESS PINIT SECTION. TABLE CONSISTS OF CONSTRUCTOR ROUTINE ADDRESSES  *
 *  THAT POINT TO C++ INITIALIZATION FUNCTIONS. THESE ROUTINES MUST EXECUTE *
 *  BEFORE MAIN IS CALLED                                                   *
 ****************************************************************************
-	MOVL    XAR7,#pinit	        ; set up pointer to initialization table
-	B	START_PINIT, UNC        ; jump to start processing
+        MOVL    XAR7,#pinit             ; set up pointer to initialization table
+        B       START_PINIT, UNC        ; jump to start processing
 
-LOOP_PINIT:	
-	ADDB    XAR7,#1			; point to next table entry	
-	PUSH	XAR7			; save off table entry address 
-	MOVL	XAR7,ACC		; load constructor routine address
-	LCR     *XAR7			; execute routine
-	POP	XAR7			; reload table entry address 
-	
-START_PINIT:	
-	PREAD   AL,*XAR7	        ; unpack constructor routine address 
-	ADDB    XAR7,#1		
-	PREAD   AH,*XAR7	
-	TEST	ACC			; test for table end condition (zero)	
-	B	LOOP_PINIT,NEQ		; process table entry if not zero
-	
-	
+LOOP_PINIT:
+        ADDB    XAR7,#1                 ; point to next table entry
+        PUSH    XAR7                    ; save off table entry address
+        MOVL    XAR7,ACC                ; load constructor routine address
+        LCR     *XAR7                   ; execute routine
+        POP     XAR7                    ; reload table entry address
+
+START_PINIT:
+        PREAD   AL,*XAR7                ; unpack constructor routine address
+        ADDB    XAR7,#1
+        PREAD   AH,*XAR7
+        TEST    ACC                     ; test for table end condition (zero)
+        B       LOOP_PINIT,NEQ          ; process table entry if not zero
+
+
 ****************************************************************************
 *  COPY CONSTANTS TO DATA MEMORY, IF NECESSARY                             *
 ****************************************************************************
 DONE_INIT:
-	.if CONST_COPY
-        LCR	_const_init
-	.endif
+        .if CONST_COPY
+        LCR     _const_init
+        .endif
 
+        .endif  ; __TI_EABI__
+BYPASS_AUTO_INIT:
 ****************************************************************************
 *  CALL USER'S PROGRAM                                                     *
 ****************************************************************************
-	LCR     __args_main			; execute main()
-	LCR  	_xdc_runtime_System_exit__E
-	.endasmfunc
+        LCR     __args_main             ; execute main()
+        LCR     _xdc_runtime_System_exit__E
+        .endasmfunc
 
-	.if CONST_COPY
+        .if CONST_COPY
 
 ****************************************************************************
 * FUNCTION DEF : __const_init                                              *
@@ -265,16 +335,16 @@ DONE_INIT:
 ****************************************************************************
         .global __const_length,  __c_load,  __const_run
         .global __econst_length, __ec_load, __econst_run
- 
-        .sect ".c_mark"              ; establish LOAD adress of
-        .label __c_load              ; .const section
- 
-        .sect ".ec_mark"              ; establish LOAD adress of
-        .label __ec_load              ; .econst section
- 
+
+        .sect ".c_mark"                  ; establish LOAD adress of
+        .label __c_load                  ; .const section
+
+        .sect ".ec_mark"                 ; establish LOAD adress of
+        .label __ec_load                 ; .econst section
+
         .text
-_const_init:	.asmfunc
- 
+_const_init:    .asmfunc stack_usage(2)
+
         MOV     AL,#__const_length
         B       __econst_init,EQ
         DEC     AL
@@ -282,7 +352,7 @@ _const_init:	.asmfunc
         MOVL    XAR7,#__c_load
         RPT     AL
 ||      PREAD   *XAR6++,*XAR7
- 
+
 __econst_init:
         MOVL    XAR6, #__econst_length
         MOVL    ACC,XAR6
@@ -304,11 +374,11 @@ __econst_loop:
         MOV     AH,AR0
         SUBB    AH,#1
         B       __econst_loop,GEQ
- 
+
 ******************************************************
 *  AT END OF CONSTANT SECTIONS RETURN TO CALLER      *
 ******************************************************
 __end_const:
         LRETR
-	.endasmfunc
-        .endif			;  if CONST_COPY
+        .endasmfunc
+        .endif                          ;  if CONST_COPY

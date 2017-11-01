@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013, Texas Instruments Incorporated
+@  Copyright (c) 2013-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@
 @ ======== Timer_readPhyCnt ========
 @ Return PL1 Physical Timer Count
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_readPhyCnt__I
         .func ti_sysbios_family_arm_systimer_Timer_readPhyCnt__I
 
 ti_sysbios_family_arm_systimer_Timer_readPhyCnt__I:
@@ -64,7 +64,7 @@ ti_sysbios_family_arm_systimer_Timer_readPhyCnt__I:
 @ ======== Timer_readPhyCtrl ========
 @ Return PL1 Physical Timer Control register contents
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_readPhyCtrl__I
         .func ti_sysbios_family_arm_systimer_Timer_readPhyCtrl__I
 
 ti_sysbios_family_arm_systimer_Timer_readPhyCtrl__I:
@@ -76,7 +76,7 @@ ti_sysbios_family_arm_systimer_Timer_readPhyCtrl__I:
 @ ======== Timer_readVirtCnt ========
 @ Return Virtual Timer Count
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_readVirtCnt__I
         .func ti_sysbios_family_arm_systimer_Timer_readVirtCnt__I
 
 ti_sysbios_family_arm_systimer_Timer_readVirtCnt__I:
@@ -90,7 +90,7 @@ ti_sysbios_family_arm_systimer_Timer_readVirtCnt__I:
 @ ======== Timer_readVirtCtrl ========
 @ Return Virtual Timer Control register contents
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_readVirtCtrl__I
         .func ti_sysbios_family_arm_systimer_Timer_readVirtCtrl__I
 
 ti_sysbios_family_arm_systimer_Timer_readVirtCtrl__I:
@@ -102,7 +102,7 @@ ti_sysbios_family_arm_systimer_Timer_readVirtCtrl__I:
 @ ======== Timer_writePhyCtrl ========
 @ Write argument to PL1 Physical Timer Control register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_writePhyCtrl__I
         .func ti_sysbios_family_arm_systimer_Timer_writePhyCtrl__I
 
 ti_sysbios_family_arm_systimer_Timer_writePhyCtrl__I:
@@ -115,7 +115,7 @@ ti_sysbios_family_arm_systimer_Timer_writePhyCtrl__I:
 @ ======== Timer_writePhyCmpVal ========
 @ Write argument to PL1 Physical Timer CompareValue register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_writePhyCmpVal__I
         .func ti_sysbios_family_arm_systimer_Timer_writePhyCmpVal__I
 
 ti_sysbios_family_arm_systimer_Timer_writePhyCmpVal__I:
@@ -130,7 +130,7 @@ ti_sysbios_family_arm_systimer_Timer_writePhyCmpVal__I:
 @ ======== Timer_writeVirtCtrl ========
 @ Write argument to Virtual Timer Control register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_writeVirtCtrl__I
         .func ti_sysbios_family_arm_systimer_Timer_writeVirtCtrl__I
 
 ti_sysbios_family_arm_systimer_Timer_writeVirtCtrl__I:
@@ -143,7 +143,7 @@ ti_sysbios_family_arm_systimer_Timer_writeVirtCtrl__I:
 @ ======== Timer_writeVirtCmpVal ========
 @ Write argument to Virtual Timer CompareValue register
 @
-        .text
+        .section .text.ti_sysbios_family_arm_systimer_Timer_writeVirtCmpVal__I
         .func ti_sysbios_family_arm_systimer_Timer_writeVirtCmpVal__I
 
 ti_sysbios_family_arm_systimer_Timer_writeVirtCmpVal__I:

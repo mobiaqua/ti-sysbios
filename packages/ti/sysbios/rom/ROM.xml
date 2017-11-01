@@ -23,8 +23,8 @@
         <tr>
           <td><control type="label" label="ROM Selection" align="left"/></td>
           <td><control type="droplist"
-               labels="NO_ROM:CC2650;CC1350;F28004x"
-               values="ROM.NO_ROM;ROM.CC2650;ROM.CC1350;ROM.F28004x"
+               labels="NO_ROM;CC2650;CC1350;CC2640R2F;F28004x"
+               values="ROM.NO_ROM;ROM.CC2650;ROM.CC1350;ROM.CC2640R2F;ROM.F28004x"
                text="value:this.romName"
                tooltip="Supported range of Timer Ids is device specific"/></td>
         </tr>

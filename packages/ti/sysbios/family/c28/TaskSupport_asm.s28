@@ -2,6 +2,12 @@
 ; ======== TaskSupport_asm.s28 ========
 ;
 ;
+    .if __TI_EABI__
+    .asg ti_sysbios_family_c28_TaskSupport_buildTaskStack, _ti_sysbios_family_c28_TaskSupport_buildTaskStack
+    .asg ti_sysbios_family_c28_TaskSupport_swap__E, _ti_sysbios_family_c28_TaskSupport_swap__E
+    .asg ti_sysbios_family_c28_TaskSupport_glue, _ti_sysbios_family_c28_TaskSupport_glue
+    .endif
+
         .global _ti_sysbios_family_c28_TaskSupport_buildTaskStack
         .global _ti_sysbios_family_c28_TaskSupport_swap__E
         .global _ti_sysbios_family_c28_TaskSupport_glue
@@ -57,8 +63,12 @@
 ;                       xar4  xar5  SP(4) SP(6) acc   SP(8)
 ;
 ;
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_TaskSupport_buildTaskStack"
+    .else
     .sect ".text:_ti_sysbios_family_c28_TaskSupport_buildTaskStack"
     .clink
+    .endif
 _ti_sysbios_family_c28_TaskSupport_buildTaskStack:
         .asmfunc
         
@@ -109,8 +119,12 @@ _ti_sysbios_family_c28_TaskSupport_buildTaskStack:
 ;
 ;  TaskSupport_swap(oldSP, newSP)
 ;
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_TaskSupport_swap__E"
+    .else
     .sect ".text:_ti_sysbios_family_c28_TaskSupport_swap__E"
     .clink
+    .endif
 _ti_sysbios_family_c28_TaskSupport_swap__E:
     .asmfunc
         ;
@@ -161,8 +175,12 @@ _ti_sysbios_family_c28_TaskSupport_swap__E:
 ;  registers - necessary for the C28 register passing model.
 ;
 ;  below used if Arg is intptr_t
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_TaskSupport_glue"
+    .else
     .sect ".text:_ti_sysbios_family_c28_TaskSupport_glue"
     .clink
+    .endif
 _ti_sysbios_family_c28_TaskSupport_glue:
         .asmfunc
         pop     xar7                            ; xar7 contains the address of

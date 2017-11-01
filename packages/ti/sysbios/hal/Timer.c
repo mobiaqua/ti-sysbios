@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ Int Timer_Instance_init(Timer_Object *timer, Int id, Timer_FuncPtr tickFxn, cons
 {
     timer->pi = Timer_TimerProxy_create(id, tickFxn, (Timer_TimerProxy_Params *)params, eb);
 
-    if (Error_check(eb)) {
+    if (timer->pi == NULL) {
         return (1);
     }
     return (0);

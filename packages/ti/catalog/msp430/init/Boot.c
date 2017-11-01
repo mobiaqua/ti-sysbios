@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -116,9 +116,9 @@ Void Boot_disableWatchdog(UInt address)
 /*
  *  ======== Boot_configureDCO ========
  *  Initializes MSP430F5xxx clocks and DCO for:
- *      ACLK = REFO = 32768Hz 
+ *      ACLK = REFO = 32768Hz
  *      MCLK = SMCLK = 8.192MHz
- *  Derived from the msp430x54x_UCS_3.c and MSP430F552x_UCS_03.c examples. 
+ *  Derived from the msp430x54x_UCS_3.c and MSP430F552x_UCS_03.c examples.
  */
 #if defined(__ICC430__)
     #pragma location="CSTART"
@@ -131,19 +131,19 @@ Void Boot_configureDCO(Void)
     __bis_SR_register(SCG0);            /* disable FLL */
     REG(UCSCTL0) = 0x0000;              /* set lowest DCOx and MODx bits */
     REG(UCSCTL1) = DCORSEL_5;           /* select 24 MHz range */
-    
-    REG(UCSCTL2)  = FLLD_1 + 249;       /* 
+
+    REG(UCSCTL2)  = FLLD_1 + 249;       /*
                                          * set multiplier for 8.192MHz:
-                                         *     (N + 1) * FLLRef = Fdco 
+                                         *     (N + 1) * FLLRef = Fdco
                                          *   (249 + 1) * 32768  = 8.192 MHz
-                                         *      FLL Div = fDCOCLK/2  
+                                         *      FLL Div = fDCOCLK/2
                                          */
 
     __bic_SR_register(SCG0);            /* enable FLL */
 
-    /* 
+    /*
      * worst-case settling time (MCLK cylces)
-     *    =  N x 32 x 32 x f_MCLK / f_FLL_ref 
+     *    =  N x 32 x 32 x f_MCLK / f_FLL_ref
      *
      * 250000 =  32 x 32 x 8 MHz / 32768 Hz
      */
@@ -153,8 +153,7 @@ Void Boot_configureDCO(Void)
     do {
        REG(UCSCTL7) &= ~(XT2OFFG + XT1LFOFFG + XT1HFOFFG + DCOFFG);
        REG(SFRIFG1) &= ~OFIFG;
-    } while (REG(SFRIFG1) &OFIFG); 
-
+    } while (REG(UCSCTL7) & (XT2OFFG + XT1LFOFFG + XT1HFOFFG + DCOFFG));
 }
 
 /*
@@ -183,7 +182,7 @@ Void Boot_configureDCO_CS_A(Void)
  *  ======== Boot_configureDCO_CS_A_useLFXT ========
  *  Initializes MSP430FR58x and FR430FR59x clocks and DCO for:
  *      MCLK = SMCLK = 8MHz
- *      ACLK = LFXT = 32768Hz (crystal required) 
+ *      ACLK = LFXT = 32768Hz (crystal required)
  *
  *  Derived from the msp430fr59xx_CS_01.c and msp430fr59xx_CS_03.c examples.
  */

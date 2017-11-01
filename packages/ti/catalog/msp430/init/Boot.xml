@@ -20,18 +20,18 @@
           <td><form><p>The options below control what initialization is performed immediately after a reset and before normal C runtime initialization.</p></form></td>
       </tr>
         <tr>
-          <td><control type="checkbox" label="Disable watchdog reset" 
-               value="value:this.disableWatchdog" 
+          <td><control type="checkbox" label="Disable watchdog reset"
+               value="value:this.disableWatchdog"
                tooltip="value:this.disableWatchdog.$summary"/></td>
         </tr>
         <tr>
-          <td><control type="checkbox" label="Configure Clocks (FR58xx/FR59xx devices require a 32768Hz LFXT crystal)" 
-               value="value:this.configureDCO" 
+          <td><control type="checkbox" label="Configure Clocks (FR58xx/FR59xx devices require a 32768Hz LFXT crystal)"
+               value="value:this.configureDCO"
                tooltip="value:this.configureDCO.$summary"/></td>
         </tr>
         <tr>
-          <td><control type="checkbox" label="Use LFXT (FR58xx/FR59xx devices only)" 
-               value="value:this.useLFXT" 
+          <td><control type="checkbox" label="Use LFXT (FR58xx/FR59xx devices only)"
+               value="value:this.useLFXT"
                tooltip="value:this.useLFXT.$summary"/></td>
         </tr>
       </table>

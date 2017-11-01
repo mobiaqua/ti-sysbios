@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,6 @@
 
 #include <xdc/runtime/Types.h>
 #include <ti/sysbios/hal/Hwi.h>
-#include <ti/sysbios/knl/Swi.h>
 
 #include "package/internal/Seconds.xdc.h"
 
@@ -108,12 +107,7 @@ UInt32 Seconds_get(Void)
     UInt32 curSeconds;
     UInt   key;
 
-    /*
-     *  Disable scheduling.  We use Swi_disable() instead of
-     *  Hwi_disable() because of the large times for accessing
-     *  these registers.
-     */
-    key = Swi_disable();
+    key = Hwi_disable();
 
     /*
      *  The CC3200 timer has a frequency of 32768 (2 ** 15), so
@@ -125,7 +119,7 @@ UInt32 Seconds_get(Void)
         Seconds_module->setSeconds;
 
     /* Re-enable scheduling */
-    Swi_restore(key);
+    Hwi_restore(key);
 
     return (curSeconds);
 }
@@ -138,12 +132,7 @@ UInt32 Seconds_getTime(Seconds_Time *ts)
     UInt64 curCount;
     UInt   key;
 
-    /*
-     *  Disable scheduling.  We use Swi_disable() instead of
-     *  Hwi_disable() because of the large times for accessing
-     *  these registers.
-     */
-    key = Swi_disable();
+    key = Hwi_disable();
 
     curCount = Seconds_getCount();
 
@@ -153,7 +142,7 @@ UInt32 Seconds_getTime(Seconds_Time *ts)
     ts->nsecs = (UInt32)(1000000000 * (curCount & 0x7FFF) / 32768);
 
     /* Re-enable scheduling */
-    Swi_restore(key);
+    Hwi_restore(key);
 
     return (0);
 }
@@ -166,12 +155,7 @@ Void Seconds_set(UInt32 seconds)
     UInt64        curCount;
     UInt          key;
 
-    /*
-     *  Disable scheduling.  We use Swi_disable() instead of
-     *  Hwi_disable() because of the large times for accessing
-     *  these registers.
-     */
-    key = Swi_disable();
+    key = Hwi_disable();
 
     /*
      *  Start the RTC counter the first time Seconds_set() is called, if
@@ -197,27 +181,22 @@ Void Seconds_set(UInt32 seconds)
     Seconds_module->setSeconds = seconds;
 
     /* Re-enable scheduling */
-    Swi_restore(key);
+    Hwi_restore(key);
 }
 
 /*
  *  ======== Seconds_getCount ========
- *  Called with scheduling disabled.
+ *  Called with Hwi disabled.
  */
 UInt64 Seconds_getCount()
 {
     UInt64 count[3];
     UInt64 curCount;
     Int    i;
-    UInt   key;
-
-    key = Hwi_disable();
 
     for (i = 0; i < 3; i++) {
         PRCMSlowClkCtrGet_HIB1p2(count[i]);
     }
-
-    Hwi_restore(key);
 
     curCount = COUNT_WITHIN_TRESHOLD(count[0], count[1], count[2], 1);
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013, Texas Instruments Incorporated
+ *  Copyright (c) 2013-2016, Texas Instruments Incorporated
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@
  *  To disable the L1 data cache, clear the C bit to 0
  *  in the SCTLR register.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_disableL1d__I
         .func ti_sysbios_family_arm_a9_Cache_disableL1d__I
 
 ti_sysbios_family_arm_a9_Cache_disableL1d__I:
@@ -99,7 +99,7 @@ ti_sysbios_family_arm_a9_Cache_disableL1d__I:
  *  To disable the L1 instruction cache, clear the I bit to 0
  *  in the SCTLR register.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_disableL1p__I
         .func ti_sysbios_family_arm_a9_Cache_disableL1p__I
 
 ti_sysbios_family_arm_a9_Cache_disableL1p__I:
@@ -116,7 +116,7 @@ ti_sysbios_family_arm_a9_Cache_disableL1p__I:
  *  ======== Cache_enableL1d ========
  *  To enable the L1 data cache set the C bit to 1 in the SCTLR register.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_enableL1d__I
         .func ti_sysbios_family_arm_a9_Cache_enableL1d__I
 
 ti_sysbios_family_arm_a9_Cache_enableL1d__I:
@@ -133,7 +133,7 @@ ti_sysbios_family_arm_a9_Cache_enableL1d__I:
  *  To enable the L1 instruction cache set the I bit to 1 in the SCTLR register.
  *  Invalidate instruction cache before enabling it.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_enableL1p__I
         .func ti_sysbios_family_arm_a9_Cache_enableL1p__I
 
 ti_sysbios_family_arm_a9_Cache_enableL1p__I:
@@ -151,7 +151,7 @@ ti_sysbios_family_arm_a9_Cache_enableL1p__I:
  *  ======== Cache_setL1Prefetch ========
  *  Enable and disable L1 data prefetching
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_setL1Prefetch__I
         .func ti_sysbios_family_arm_a9_Cache_setL1Prefetch__I
 
 ti_sysbios_family_arm_a9_Cache_setL1Prefetch__I:
@@ -171,7 +171,7 @@ ti_sysbios_family_arm_a9_Cache_setL1Prefetch__I:
  *  Write the argument passed to this function into the L2 prefetch control
  *  register.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_setL2PrefetchControl__E
         .func ti_sysbios_family_arm_a9_Cache_setL2PrefetchControl__E
 
 ti_sysbios_family_arm_a9_Cache_setL2PrefetchControl__E:
@@ -190,7 +190,7 @@ ti_sysbios_family_arm_a9_Cache_setL2PrefetchControl__E:
  *  ======== Cache_debugWriteL2 ========
  *  Write the argument passed to this function into the L2 cache debug register
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_debugWriteL2__I
         .func ti_sysbios_family_arm_a9_Cache_debugWriteL2__I
 
 ti_sysbios_family_arm_a9_Cache_debugWriteL2__I:
@@ -209,7 +209,7 @@ ti_sysbios_family_arm_a9_Cache_debugWriteL2__I:
  *  ======== Cache_disableL2 ========
  *  Disable the L2 cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_disableL2__I
         .func ti_sysbios_family_arm_a9_Cache_disableL2__I
 
 ti_sysbios_family_arm_a9_Cache_disableL2__I:
@@ -229,7 +229,7 @@ ti_sysbios_family_arm_a9_Cache_disableL2__I:
  *  ======== Cache_disableWbInvL2 ========
  *  Disable and Write-Back Invalidate the L2 cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_disableWbInvL2__I
         .func ti_sysbios_family_arm_a9_Cache_disableWbInvL2__I
 
 ti_sysbios_family_arm_a9_Cache_disableWbInvL2__I:
@@ -252,7 +252,7 @@ ti_sysbios_family_arm_a9_Cache_disableWbInvL2__I:
  *  ======== Cache_enableL2 ========
  *  Enable the L2 cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_enableL2__I
         .func ti_sysbios_family_arm_a9_Cache_enableL2__I
 
 ti_sysbios_family_arm_a9_Cache_enableL2__I:
@@ -279,7 +279,7 @@ ti_sysbios_family_arm_a9_Cache_enableL2__I:
  *    r2 - contains wait
  */
 
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_invL1d__I
         .func ti_sysbios_family_arm_a9_Cache_invL1d__I
 
 ti_sysbios_family_arm_a9_Cache_invL1d__I:
@@ -315,7 +315,7 @@ invL1d_finished:
  *   r1 - contains byteCnt
  *   r2 - contains wait
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_invL1p__I
         .func ti_sysbios_family_arm_a9_Cache_invL1p__I
 
 ti_sysbios_family_arm_a9_Cache_invL1p__I:
@@ -348,7 +348,7 @@ invL1p_finished:
  *  Only use this function if you know for sure the data cache contains unwanted
  *  information.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_invL1dAll__E
         .func ti_sysbios_family_arm_a9_Cache_invL1dAll__E
 
 ti_sysbios_family_arm_a9_Cache_invL1dAll__E:
@@ -368,7 +368,7 @@ ti_sysbios_family_arm_a9_Cache_invL1dAll__E:
  *  Only use this function if you know for sure the data cache contains unwanted
  *  information.
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_invL1dAllInternal__I
         .func ti_sysbios_family_arm_a9_Cache_invL1dAllInternal__I
 
 ti_sysbios_family_arm_a9_Cache_invL1dAllInternal__I:
@@ -429,7 +429,7 @@ invfinished:
  *  ======== Cache_invL1pAll ========
  *  Invalidates all entries in the instruction cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_invL1pAll__E
         .func ti_sysbios_family_arm_a9_Cache_invL1pAll__E
 
 ti_sysbios_family_arm_a9_Cache_invL1pAll__E:
@@ -445,7 +445,7 @@ ti_sysbios_family_arm_a9_Cache_invL1pAll__E:
  *  Writes back (cleans/flushes) all entries in the data cache to the
  *  point of coherency (PoC).
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbL1dAll__I
         .func ti_sysbios_family_arm_a9_Cache_wbL1dAll__I
 
 ti_sysbios_family_arm_a9_Cache_wbL1dAll__I:
@@ -507,7 +507,7 @@ finished:
  *  Writes back and Invalidate all entries in the data cache to the
  *  point of coherency (PoC).
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbInvL1dAll__I
         .func ti_sysbios_family_arm_a9_Cache_wbInvL1dAll__I
 
 ti_sysbios_family_arm_a9_Cache_wbInvL1dAll__I:
@@ -577,7 +577,7 @@ wbInvL1dFinished:
  *   r1 - contains byteCnt
  *   r2 - contains wait
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbL1d__I
         .func ti_sysbios_family_arm_a9_Cache_wbL1d__I
 
 ti_sysbios_family_arm_a9_Cache_wbL1d__I:
@@ -611,7 +611,7 @@ writeback_finished:
  *    r1 - contains byteCnt
  *    r2 - contains wait
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbInvL1d__I
         .func ti_sysbios_family_arm_a9_Cache_wbInvL1d__I
 
 ti_sysbios_family_arm_a9_Cache_wbInvL1d__I:
@@ -637,7 +637,7 @@ exitWbInvL1d:
  *  ======== Cache_wbAll ========
  *  Write back entire L1 & L2 data cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbAll__E
         .func ti_sysbios_family_arm_a9_Cache_wbAll__E
 
 ti_sysbios_family_arm_a9_Cache_wbAll__E:
@@ -668,7 +668,7 @@ ti_sysbios_family_arm_a9_Cache_wbAll__E:
  *  ======== Cache_wbInvAll ========
  *  Write back and invalidate entire L1 & L2 data cache
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wbInvAll__E
         .func ti_sysbios_family_arm_a9_Cache_wbInvAll__E
 
 ti_sysbios_family_arm_a9_Cache_wbInvAll__E:
@@ -709,7 +709,7 @@ ti_sysbios_family_arm_a9_Cache_wbInvAll__E:
  *  ======== Cache_wait ========
  *  Wait for the 'Drain write buffer' to complete
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_wait__E
         .func ti_sysbios_family_arm_a9_Cache_wait__E
 
 ti_sysbios_family_arm_a9_Cache_wait__E:
@@ -722,7 +722,7 @@ ti_sysbios_family_arm_a9_Cache_wait__E:
  *  ======== Cache_getEnabled ========
  *  Determine the mask of enabled caches
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_getEnabled__E
         .func ti_sysbios_family_arm_a9_Cache_getEnabled__E
 
 ti_sysbios_family_arm_a9_Cache_getEnabled__E:
@@ -755,7 +755,7 @@ l2ControlReg:
 /*
  *  ======== Cache_getCacheLevelInfo ========
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_getCacheLevelInfo__I
         .func ti_sysbios_family_arm_a9_Cache_getCacheLevelInfo__I
 
 ti_sysbios_family_arm_a9_Cache_getCacheLevelInfo__I:
@@ -768,7 +768,7 @@ ti_sysbios_family_arm_a9_Cache_getCacheLevelInfo__I:
 /*
  *  ======== Cache_setL2AuxControlReg ========
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_setL2AuxControlReg__E
         .func ti_sysbios_family_arm_a9_Cache_setL2AuxControlReg__E
 
 ti_sysbios_family_arm_a9_Cache_setL2AuxControlReg__E:
@@ -784,7 +784,7 @@ ti_sysbios_family_arm_a9_Cache_setL2AuxControlReg__E:
 /*
  *  ======== Cache_disableBP ========
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_disableBP__E
         .func ti_sysbios_family_arm_a9_Cache_disableBP__E
 
 ti_sysbios_family_arm_a9_Cache_disableBP__E:
@@ -798,7 +798,7 @@ ti_sysbios_family_arm_a9_Cache_disableBP__E:
 /*
  *  ======== Cache_enableBP ========
  */
-        .text
+        .section .text.ti_sysbios_family_arm_a9_Cache_enableBP__E
         .func ti_sysbios_family_arm_a9_Cache_enableBP__E
 
 ti_sysbios_family_arm_a9_Cache_enableBP__E:

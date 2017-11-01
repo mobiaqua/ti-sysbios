@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -303,6 +303,34 @@ function getEnumString(enumProperty)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Initialize the 'Basic' Timer instance view.
  */
@@ -310,6 +338,12 @@ function viewInitBasic(view, obj)
 {
     var Program = xdc.useModule('xdc.rov.Program');
     var halTimer = xdc.useModule('ti.sysbios.hal.Timer');
+    var Timer = xdc.useModule('ti.sysbios.family.arm.lm4.Timer');
+    
+    if (viewCheckForNullObject(Timer, obj)) {
+        view.halTimerHandle = "Uninitialized Timer object";
+        return;
+    }
 
     view.halTimerHandle =  halTimer.viewGetHandle(obj.$addr);
     view.label       = Program.getShortName(obj.$label);
@@ -336,6 +370,13 @@ function viewInitBasic(view, obj)
 function viewInitDevice(view, obj)
 {
     var Program = xdc.useModule('xdc.rov.Program');
+
+    var Timer = xdc.useModule('ti.sysbios.family.arm.lm4.Timer');
+    
+    if (viewCheckForNullObject(Timer, obj)) {
+        view.id = "Uninitialized Timer object";
+        return;
+    }
 
     view.id          = obj.id;
     view.device      = "GPTM["+view.id+"]";

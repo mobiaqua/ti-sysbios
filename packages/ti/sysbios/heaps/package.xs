@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,29 @@
 /*
  *  ======== package.xs ========
  */ 
+
+function init() 
+{
+    /* Add HeapMem's primaryHeap addresses range to ROV's memory sections */
+    if (xdc.om.$name == "rov") {
+        var HeapMem = xdc.module('ti.sysbios.heaps.HeapMem');
+//        if (xdc.om['ti.sysbios.heaps'].HeapMem.$used) {
+            var Program = xdc.useModule('xdc.rov.Program');
+            var HeapMemCfg =  Program.getModuleConfig(HeapMem.$name);
+            if  (HeapMemCfg.primaryHeapBaseAddr != null) {
+                var base = Program.getSymbolValue(HeapMemCfg.primaryHeapBaseAddr.substr(1));
+                var end = Program.getSymbolValue(HeapMemCfg.primaryHeapEndAddr.substr(1));
+                /* Retrieve the MemoryImage java object. */
+                var Model = xdc.module("xdc.rov.Model");
+                var memReader = Model.getMemoryImageInst();
+
+                /* retrieve the sections list and add a new section */
+                var sections = memReader.getSections();
+                sections.addSection(base, end-base);
+            }
+//        }
+    }
+}
 
 /*
  *  ======== Package.getLibs ========

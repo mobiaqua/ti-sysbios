@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2015, Texas Instruments Incorporated
+@  Copyright (c) 2015-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@
 @       sp + 0x00 =  tskKey
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_gic_Hwi_dispatchIRQ__I
         .func ti_sysbios_family_arm_gic_Hwi_dispatchIRQ__I
         .align 2
 
@@ -164,7 +164,7 @@ ti_sysbios_family_arm_gic_Hwi_dispatchIRQ__I:
 @  Low level ARM mode-specific register initialization
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_gic_Hwi_init__E
         .func ti_sysbios_family_arm_gic_Hwi_init__E
 
 ti_sysbios_family_arm_gic_Hwi_init__E:
@@ -182,7 +182,7 @@ ti_sysbios_family_arm_gic_Hwi_init__E:
 @  Low level ARM mode-specific register initialization
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_gic_Hwi_initFIQStack__I
         .func ti_sysbios_family_arm_gic_Hwi_initFIQStack__I
 
 ti_sysbios_family_arm_gic_Hwi_initFIQStack__I:

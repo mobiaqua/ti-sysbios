@@ -79,4 +79,3 @@ ULong Boot_sysCtlClockFreqSet(ULong ulConfig, ULong ulSysClock)
 
     return (Boot_sysCtlClockFreqSetI(ulConfig, ulSysClock));
 }
-

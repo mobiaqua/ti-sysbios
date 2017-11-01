@@ -231,6 +231,6 @@ instance:
     config String projFile = "";
 }
 /*
- *  @(#) iar.tools.configuro; 1, 0, 0,62; 2-13-2016 16:55:42; /db/ztree/library/trees/xdctools/xdctools-g06x/src/
+ *  @(#) iar.tools.configuro; 1, 0, 0,0; 1-9-2017 12:51:04; /db/ztree/library/trees/xdctools/xdctools-h00/src/
  */
 

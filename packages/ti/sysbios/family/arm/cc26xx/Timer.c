@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,17 +43,15 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/hal/Hwi.h>
 
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_aon_rtc.h>
-#include <inc/hw_ints.h>
-#include <driverlib/aon_rtc.h>
-#include <driverlib/aon_event.h>
-#include <driverlib/interrupt.h>
+#include <ti/devices/DeviceFamily.h>
+
+#include DeviceFamily_constructPath(driverlib/aon_rtc.h)
+#include DeviceFamily_constructPath(driverlib/aon_event.h)
+#include DeviceFamily_constructPath(driverlib/interrupt.h)
 
 #include "package/internal/Timer.xdc.h"
 
-#define COMPARE_MARGIN 4
+#define COMPARE_MARGIN 6
 
 #define MAX_SKIP  (0x7E9000000000)    /* 32400 seconds (9 hours) */
 
@@ -91,7 +89,6 @@ UInt32 Timer_getMaxTicks(Timer_Object *obj)
     UInt32 ticks;
     UInt64 temp;
 
-    /* for PG1 max suppress for only 1 hour */
     temp = (UInt64)(MAX_SKIP) / obj->period64;
 
     /* clip value to Clock tick count limit of 32-bits */
@@ -111,6 +108,10 @@ UInt32 Timer_getMaxTicks(Timer_Object *obj)
 Void Timer_setThreshold(Timer_Object *obj, UInt32 next, Bool wrap)
 {
     UInt32 now;
+    Bool key;
+
+    /* prevent preemption by setting PRIMASK */
+    key = IntMasterDisable();
 
     /* get the current RTC count corresponding to compare window */
     now = AONRTCCurrentCompareValueGet();
@@ -129,6 +130,11 @@ Void Timer_setThreshold(Timer_Object *obj, UInt32 next, Bool wrap)
 
     /* set next compare threshold in RTC */
     AONRTCCompareValueSet(AON_RTC_CH0, next);
+
+    /* restore PRIMASK */
+    if (!key) {
+        IntMasterEnable();
+    }
 }
 
 /*

@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2015 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2016 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -74,16 +74,22 @@ function getVersion()
     var File = xdc.module("xdc.services.io.File");
     if (!(File.exists(this.rootDir + "/bin/armcl")
         || File.exists(this.rootDir + "/bin/armcl.exe"))) {
-        throw new Error("The compiler in " + this.rootDir + " is not compatible"
-            + " with this version of TI-RTOS or SYS/BIOS. Please use Arm"
-            + " compiler 5.2.2 or newer.");
-
+        if (!(File.exists(this.rootDir + "/bin/cl470")
+            || File.exists(this.rootDir + "/bin/cl470.exe"))) {
+            throw new Error("Cannot find compiler in " + this.rootDir
+                + ". Please check compiler path.");
+        }
+        else {
+            throw new Error("The compiler in " + this.rootDir + " is not compatible"
+                + " with this version of TI-RTOS or SYS/BIOS. Please use Arm"
+                + " compiler 5.2.2 or newer.");
+        }
     }
 
     return (xdc.module("ti.targets.ITarget").getVersion.$fxn.call(this));
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 1-29-2016 16:37:08; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.arm.elf; 1, 0, 0,1; 7-27-2017 11:47:34; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

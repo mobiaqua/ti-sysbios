@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -263,6 +263,13 @@ function module$use()
             "setting the Cache MAR registers.", Cache);
     }
 
+    /*
+     *  If generic C6x platform detected, return immediately as the
+     *  platform does not contain any cache settings.
+     */
+    if (Program.platformName.match(/ti\.platforms\.c6x/)) {
+        return;
+    }
 
     /* 
      *  Override the original sizes if we find the cache settings

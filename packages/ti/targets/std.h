@@ -1,13 +1,13 @@
 /* 
- *  Copyright (c) 2008 Texas Instruments and others.
+ *  Copyright (c) 2008-2016 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
  *  http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  *  Contributors:
  *      Texas Instruments - initial implementation
- * 
+ *
  * */
 /*
  *  ======== ti/targets/std.h ========
@@ -38,7 +38,7 @@
         #define xdc__ARG__
         typedef int xdc_Arg;    /* deprecated, but compatible with BIOS 5.x */
     #endif
-#endif    
+#endif
 
 /*
  * xdc__LONGLONG__ indicates if compiler supports 'long long' type
@@ -86,6 +86,18 @@
     #define xdc__BITS32__
     #define xdc__BITS64__
     #define xdc__INT64__
+
+#elif defined(__C7100__)
+    #define xdc__LONGLONG__
+    #define xdc__BITS8__
+    #define xdc__BITS16__
+    #define xdc__BITS32__
+    #define xdc__BITS64__
+//    #define xdc__INT40__
+    #define xdc__INT64__
+
+    #define __FAR__
+
 #else
     #error <ti/targets/std.h> is not supported for this target
 #endif
@@ -154,9 +166,19 @@ typedef uintptr_t       xdc_UArg;
 /*
  *  ======== xdc__META ========
  */
-#define xdc__META(n,s) \
+#if (defined(_TMS320C6X) && (__TI_COMPILER_VERSION__ < 8001000)) \
+    || (defined(_TMS320C28X) && (__TI_COMPILER_VERSION__ < 6004000)) \
+    || defined (__ARP32__)
+
+#define xdc__META(n,s)                               \
     ti_targets_mkPragma(DATA_SECTION(n, "xdc.meta")) \
     const char (n)[] = {s}
+#else
+
+#define xdc__META(n,s)                               \
+    ti_targets_mkPragma(DATA_SECTION(n, "xdc.meta")) \
+    const char (n)[] = {(s)} /* unnecessary ()'s for MISRA checkers */
+#endif
 
 /*
  *  ======== __ti__ ========
@@ -181,7 +203,7 @@ static inline xdc_Fxn xdc_uargToFxn(xdc_UArg a) { return ((xdc_Fxn)(int)a); }
 
 #endif /* ti_targets_STD_ */
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 1-29-2016 16:37:07; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,1; 7-27-2017 11:47:28; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

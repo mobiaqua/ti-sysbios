@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2015, Texas Instruments Incorporated
+;  Copyright (c) 2015-2017, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,8 @@ ti_sysbios_family_arm_exc_Exception_excHandlerAsm__I:
 
         msr     cpsr_cf, r2     ; switch back to previous mode
 
-        push    {r0}            ; dummy store to 8-byte align the stack
+        sub     sp, sp, #16     ; adjust sp to account for lr/sp/cpsr push
+                                ; and to align the stack to 8-bytes
 
         ldr     pc, excHandlerAddr
 
@@ -143,7 +144,8 @@ ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I:
 
         msr     cpsr_cf, r2     ; switch back to previous mode
 
-        push    {r0}            ; dummy store to 8-byte align the stack
+        sub     sp, sp, #16     ; adjust sp to account for lr/sp/cpsr push
+                                ; and to align the stack to 8-bytes
 
         ldr     pc, excHandlerAddr
         .endasmfunc

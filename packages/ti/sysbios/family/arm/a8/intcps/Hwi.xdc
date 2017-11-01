@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -332,6 +332,14 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     };
 
     /*!
+     *  Error raised if an attempt is made to create a Hwi
+     *  with a priority of 0
+     */
+    config Error.Id E_invalidPriority = {
+        msg: "E_invalidPriority, priority: %d is either invalid or not supported"
+    };
+
+    /*!
      *  Issued just prior to Hwi function invocation (with interrupts disabled)
      */
     config Log.Event LM_begin = {
@@ -407,6 +415,18 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
 
     /*!
      *  ======== restore ========
+     *  @a(NOTE)
+     *  When using TI compiler, Hwi_restore() uses the key to restore all
+     *  the bits in the processor status register. This has the effect that
+     *  both IRQ and FIQ interrupts are restored to their original status.
+     *  Therefore, if FIQ interrupts are disabled but a key obtained when
+     *  FIQ interrupts were still enabled is passed to Hwi_restore(), FIQ
+     *  interrupts will be re-enabled. Care must be taken to avoid this.
+     *
+     *  @a(NOTE)
+     *  When using GCC compiler, Hwi_restore() only toggles the control bits
+     *  corresponding to IRQ interrupts and therefore, FIQ interrupts are not
+     *  affected.
      */
     @Macro
     override Void restore(UInt key);

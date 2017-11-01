@@ -2,6 +2,10 @@
 ; ======== IntrinsicsSupport_asm.s28 ========
 ;
 ;
+
+    .if __TI_EABI__
+    .asg ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E, _ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E
+    .endif
         
         .text
         .global _ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E
@@ -30,8 +34,12 @@
 ; This is written most efficiently in assembly as
 ; maxbit = |T - 30|
 ;
+    .if __TI_EABI__
+        .sect ".text:ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E"
+    .else
         .sect ".text:_ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E"
         .clink
+    .endif
 _ti_sysbios_family_c28_IntrinsicsSupport_maxbit__E:
         .asmfunc
         mov     ah, #0

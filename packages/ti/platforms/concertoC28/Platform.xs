@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2010 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*
  *  ======== Platform.xs ========
  *  Generic platform support for concerto C28 devices.
@@ -22,8 +43,8 @@ var Utils = xdc.useModule('xdc.platform.Utils');
 function module$meta$init()
 {
     if (xdc.om.$name != "cfg") {
-        return;                                                
-    }                                                                           
+        return;
+    }
 
     var Boot = xdc.useModule('ti.catalog.c2800.concertoInit.Boot');
 }
@@ -107,8 +128,8 @@ function getLinkTemplate(prog)
  *  @param(name)        the name used to identify this instance (without
  *                      the package name prefix).
  *
- *  For this platform, 'name' must identify a device. Besides the catalog 
- *  module, this parameter may encode values for other configuration 
+ *  For this platform, 'name' must identify a device. Besides the catalog
+ *  module, this parameter may encode values for other configuration
  *  parameters, as defined by `nameFormat`. The values are separated by ':'.
  */
 function instance$meta$init(name)
@@ -119,13 +140,13 @@ function instance$meta$init(name)
     if (nameParams.length > maxParamsLength) {
         this.$module.$logWarning("The platform ti.platforms.concertoC28 "
             + "accepts only " + maxParamsLength + " instance parameters in its "
-            + "name. The supplied string '" + name + "' contains additional " 
+            + "name. The supplied string '" + name + "' contains additional "
             + "values, which will be ignored.", this, this.$module.nameFormat);
     }
 
     if (nameParams[0] != "" && this.deviceName != null
         && this.deviceName != nameParams[0]) {
-        this.$module.$logError(this.$package.$name 
+        this.$module.$logError(this.$package.$name
             + " was passed two different device names: '" + nameParams[0]
             + "' and '" + this.deviceName + "'.", this, this.deviceName);
     }
@@ -176,14 +197,10 @@ function instance$meta$init(name)
         this.clockRate = 150.0;
     }
     else {
-        this.$module.$logError(this.$package.$name 
+        this.$module.$logError(this.$package.$name
             + " was passed unrecognized device name: '"
             + this.deviceName + "'.", this);
     }
-    
+
     this.CPU.clockRate = this.clockRate;
 }
-/*
- *  @(#) ti.platforms.concertoC28; 1, 0, 0,2; 1-29-2016 10:01:06; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

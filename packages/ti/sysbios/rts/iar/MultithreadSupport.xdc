@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,6 +109,12 @@ internal:   /* not for client use */
      *
      */
     Void *perThreadAccess(Void *symbp);
+
+    /*!
+     *  ======== getTlsPtr ========
+     *  Returns a pointer to the current task's TLS memory
+     */
+    Void *getTlsPtr();
 
     /*!
      *  ======== initLock ========

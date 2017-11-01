@@ -77,4 +77,3 @@ xdc_Void ti_catalog_msp430_init_Boot_init(xdc_Void)
 }
 
 %}
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,8 @@
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/knl/Task.h>
 
-#include <ti/sysbios/posix/pthread.h>
-#include <ti/sysbios/posix/_pthread_error.h>
+#include "pthread.h"
+#include "errno.h"
 
 /*
  *************************************************************************

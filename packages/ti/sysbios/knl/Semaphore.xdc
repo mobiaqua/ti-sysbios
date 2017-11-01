@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -303,6 +303,11 @@ instance:
      *  count.
      *
      *  @param(count)   initial semaphore count
+     *
+     *  @a(NOTE)
+     *  The "count" argument should not be a negative number as the Semaphore
+     *  count is stored as a 16-bit unsigned integer inside the Semaphore
+     *  object.
      */
     create(Int count);
 

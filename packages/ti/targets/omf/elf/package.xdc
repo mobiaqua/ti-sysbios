@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 by Texas Instruments Incorporated.
+ *  Copyright 2017 by Texas Instruments Incorporated.
  *
  */
 
@@ -10,7 +10,7 @@
 package ti.targets.omf.elf {
 }
 /*
- *  @(#) ti.targets.omf.elf; 1,0,0,0; 1-29-2016 17:06:30; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets.omf.elf; 1,0,0,0; 7-27-2017 12:30:59; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

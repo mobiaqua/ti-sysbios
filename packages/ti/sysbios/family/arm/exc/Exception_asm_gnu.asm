@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014, Texas Instruments Incorporated
+@  Copyright (c) 2014-2017, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 @  Common Exception handler
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_exc_Exception_excHandlerAsm__I
         .func ti_sysbios_family_arm_exc_Exception_excHandlerAsm__I
 
 ti_sysbios_family_arm_exc_Exception_excHandlerAsm__I:
@@ -79,10 +79,12 @@ ti_sysbios_family_arm_exc_Exception_excHandlerAsm__I:
 
         msr     cpsr_cf, r2     @ switch back to previous mode
 
-        push    {r0}            @ dummy store to 8-byte align the stack
+        sub     sp, sp, #16     @ adjust sp to account for lr/sp/cpsr push
+                                @ and to align the stack to 8-bytes
 
         ldr     pc, excHandlerAddr
 
+        .align  2
 excHandlerAddr:
         .word   ti_sysbios_family_arm_exc_Exception_excHandler__I
         .endfunc
@@ -92,6 +94,7 @@ excHandlerAddr:
 @  Data Abort Exception handler
 @
 
+        .section .text.ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I
         .func ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I
 
 ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I:
@@ -126,9 +129,14 @@ ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I:
 
         msr     cpsr_cf, r2     @ switch back to previous mode
 
-        push    {r0}            @ dummy store to 8-byte align the stack
+        sub     sp, sp, #16     @ adjust sp to account for lr/sp/cpsr push
+                                @ and to align the stack to 8-bytes
 
-        ldr     pc, excHandlerAddr
+        ldr     pc, excDataHandlerAddr
+
+        .align  2
+excDataHandlerAddr:
+        .word   ti_sysbios_family_arm_exc_Exception_excHandler__I
         .endfunc
 
 
@@ -137,7 +145,7 @@ ti_sysbios_family_arm_exc_Exception_excHandlerDataAsm__I:
 @  Low level ARM mode-specific register initialization
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_exc_Exception_initCore0__I
         .func ti_sysbios_family_arm_exc_Exception_initCore0__I
 
 ti_sysbios_family_arm_exc_Exception_initCore0__I:
@@ -151,7 +159,7 @@ ti_sysbios_family_arm_exc_Exception_initCore0__I:
         movw    sp, #:lower16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         movt    sp, #:upper16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         ldr     sp, [sp]        @ base of core0's exc stack
-        ldr     r12, excStackSize
+        ldr     r12, excStackSizeCore0
         ldr     r12, [r12]      @ size of exc stack
         add     sp, r12, sp     @ sp = initial exc stack
 
@@ -164,7 +172,7 @@ ti_sysbios_family_arm_exc_Exception_initCore0__I:
         movw    sp, #:lower16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         movt    sp, #:upper16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         ldr     sp, [sp]        @ base of core0's exc stack
-        ldr     r12, excStackSize
+        ldr     r12, excStackSizeCore0
         ldr     r12, [r12]      @ size of exc stack
         add     sp, r12, sp     @ sp = initial exc stack
 
@@ -176,13 +184,17 @@ ti_sysbios_family_arm_exc_Exception_initCore0__I:
         bx      lr
         .endfunc
 
+        .align  2
+excStackSizeCore0:
+        .word   ti_sysbios_family_arm_exc_Exception_Module__state__V + 0x10
+
 
 @
 @  ======== Exception_initCoreX ========
 @  Low level ARM mode-specific register initialization
 @
 
-        .text
+        .section .text.ti_sysbios_family_arm_exc_Exception_initCoreX__E
         .func ti_sysbios_family_arm_exc_Exception_initCoreX__E
 
 ti_sysbios_family_arm_exc_Exception_initCoreX__E:
@@ -202,7 +214,7 @@ ti_sysbios_family_arm_exc_Exception_initCoreX__E:
         movw    sp, #:lower16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         movt    sp, #:upper16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         ldr     sp, [sp, r0, lsl #2]    @ base of core0's exc stack
-        ldr     r12, excStackSize
+        ldr     r12, excStackSizeCoreX
         ldr     r12, [r12]      @ size of exc stack
         add     sp, r12, sp     @ sp = initial exc stack
 
@@ -215,7 +227,7 @@ ti_sysbios_family_arm_exc_Exception_initCoreX__E:
         movw    sp, #:lower16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         movt    sp, #:upper16:ti_sysbios_family_arm_exc_Exception_Module_State_0_excStack__A
         ldr     sp, [sp, r0, lsl #2]     @ base of core0's exc stack
-        ldr     r12, excStackSize
+        ldr     r12, excStackSizeCoreX
         ldr     r12, [r12]      @ size of exc stack
         add     sp, r12, sp     @ sp = initial exc stack
 
@@ -228,6 +240,7 @@ ti_sysbios_family_arm_exc_Exception_initCoreX__E:
         bx      lr
         .endfunc
 
-excStackSize:
+        .align  2
+excStackSizeCoreX:
         .word   ti_sysbios_family_arm_exc_Exception_Module__state__V + 0x10
         .end

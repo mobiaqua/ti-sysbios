@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,5 +54,4 @@ function module$static$init(mod, params)
  */
 function module$use()
 {
-    xdc.useModule('ti.sysbios.knl.Swi');
 }

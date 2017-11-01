@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -215,8 +215,8 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
 
     status = Hwi_postInit(hwi, eb);
 
-    if (Error_check(eb)) {
-        return (3 + status);
+    if (status) {
+        return (2 + status);
     }
 
     return (0);
@@ -230,18 +230,28 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
  *  returns 'eb' *and* 'n' for number of successful createFxn() calls iff
  *      one of the createFxn() calls fails
  */
-Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
+Int Hwi_postInit(Hwi_Object *hwi, Error_Block *eb)
 {
-    Int i;
-
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
+    Int i;
+    Error_Block localEB;
+    Error_Block *leb;
+
+    if (eb != Error_IGNORE) {
+        leb = eb;
+    }
+    else {
+        Error_init(&localEB);
+        leb = &localEB;
+    }
+
     for (i = 0; i < Hwi_hooks.length; i++) {
         hwi->hookEnv[i] = (Ptr)0;
         if (Hwi_hooks.elem[i].createFxn != NULL) {
-            Hwi_hooks.elem[i].createFxn((IHwi_Handle)hwi, eb);
+            Hwi_hooks.elem[i].createFxn((IHwi_Handle)hwi, leb);
 
-            if (Error_check(eb)) {
-                return (i);
+            if (Error_check(leb)) {
+                return (i + 1);
             }
         }
     }
@@ -611,7 +621,7 @@ Void Hwi_setupSC()
     /* Register secure contexts */
     rv = SK_registerSCWP(&Hwi_module->scw, 1);
 
-    if (rv < 0) {
+    if (rv != (Int)&Hwi_module->scw) {
         Error_raise(NULL, Hwi_E_registerSCFailed, 0, 0);
     }
 
@@ -683,6 +693,16 @@ Bool Hwi_getStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth)
     }
 
     return stackOverflow;
+}
+
+/*
+ *  ======== Hwi_getCoreStackInfo ========
+ *  Used to get Hwi stack usage info.
+ */
+Bool Hwi_getCoreStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth,
+    UInt coreId)
+{
+    return (Hwi_getStackInfo(stkInfo, computeStackDepth));
 }
 
 /*

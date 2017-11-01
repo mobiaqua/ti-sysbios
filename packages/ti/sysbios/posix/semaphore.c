@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,9 @@
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Semaphore.h>
 
-#include <ti/sysbios/posix/_pthread_error.h>
-#include <ti/sysbios/posix/semaphore.h>
+#include "pthread_util.h"
+#include "errno.h"
+#include "semaphore.h"
 
 /*
  *  ======== sem_destroy ========
@@ -97,41 +98,21 @@ int sem_post(sem_t *semaphore)
 int sem_timedwait(sem_t *semaphore, const struct timespec *abstime)
 {
     Bool               retVal;
-    struct timespec    curtime;
     UInt32             timeout;
-    long               usecs = 0;
-    time_t             secs = 0;
-    int                retc = 0;
 
-    if ((abstime->tv_nsec < 0) || (1000000000 <= abstime->tv_nsec)) {
-        return (EINVAL);
-    }
-
-    clock_gettime(0, &curtime);
-    secs = abstime->tv_sec - curtime.tv_sec;
-
-    if ((abstime->tv_sec < curtime.tv_sec) ||
-            ((secs == 0) && (abstime->tv_nsec <= curtime.tv_nsec))) {
-        timeout = 0;
-    }
-    else {
-        usecs = (abstime->tv_nsec - curtime.tv_nsec) / 1000;
-
-        if (usecs < 0) {
-            usecs += 1000000;
-            secs--;
-        }
-        usecs += (long)secs * 1000000;
-        timeout = (UInt32)(usecs / Clock_tickPeriod);
+    if (_pthread_abstime2ticks(CLOCK_REALTIME, abstime, &timeout) != 0) {
+        /* EINVAL */
+        return (-1);
     }
 
     retVal = Semaphore_pend(Semaphore_handle(&(semaphore->sem)), timeout);
 
     if (!retVal) {
-        retc = ETIMEDOUT;
+        /* ETIMEDOUT */
+        return (-1);
     }
 
-    return (retc);
+    return (0);
 }
 
 /*
@@ -145,7 +126,8 @@ int sem_trywait(sem_t *semaphore)
     retVal = Semaphore_pend(Semaphore_handle(&(semaphore->sem)), 0);
 
     if (!retVal) {
-        return (EAGAIN);
+        /* EAGAIN */
+        return (-1);
     }
 
     return (0);

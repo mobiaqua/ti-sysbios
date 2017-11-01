@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,10 @@ function getCFiles(targetName)
              "pthread_key.c",
              "pthread_mutex.c",
              "pthread_rwlock.c",
+             "pthread_util.c",
              "clock.c",
+             "mqueue.c",
+             "sched.c",
              "semaphore.c",
              "sleep.c",
              "timer.c"]);
@@ -92,6 +95,7 @@ function module$use()
 
     xdc.useModule('ti.sysbios.hal.Seconds');
     xdc.useModule('ti.sysbios.knl.Clock');
+    xdc.useModule('ti.sysbios.knl.Mailbox');
     xdc.useModule('ti.sysbios.knl.Queue');
     xdc.useModule('ti.sysbios.knl.Semaphore');
     xdc.useModule('ti.sysbios.knl.Task');

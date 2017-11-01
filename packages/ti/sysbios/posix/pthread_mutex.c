@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,16 +54,15 @@
 #define ti_sysbios_posix_Settings_supportsMutexPriority__D TRUE
 #endif
 
-#include <ti/sysbios/posix/pthread.h>
-#include <ti/sysbios/posix/types.h>
-#include <ti/sysbios/posix/_time.h>
+#include "pthread.h"
+#include "sys/types.h"
+#include "time.h"
 
-#include <ti/sysbios/posix/_pthread.h>
-#include <ti/sysbios/posix/_pthread_error.h>
+#include "_pthread.h"
+#include "errno.h"
+#include "pthread_util.h"
 
-#include <ti/sysbios/posix/Settings.h>
-
-#include <time.h>
+#include "Settings.h"
 
 /*
  *  ======== pthread_mutex_Obj ========
@@ -200,7 +199,7 @@ int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr,
         const int prioceiling)
 {
 #if ti_sysbios_posix_Settings_supportsMutexPriority__D
-    if ((prioceiling >= Task_numPriorities) || (prioceiling < 1)) {
+    if ((prioceiling >= (int)Task_numPriorities) || (prioceiling < 1)) {
         /* Bad priority value */
         return (EINVAL);
     }
@@ -259,10 +258,10 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex)
 {
     pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
 
-    Assert_isTrue(mutexObj->owner == NULL, NULL);
+    Assert_isTrue(mutexObj->owner == NULL, 0);
 
 #if ti_sysbios_posix_Settings_supportsMutexPriority__D
-    Assert_isTrue(Queue_empty(Queue_handle(&(mutexObj->waitList))), NULL);
+    Assert_isTrue(Queue_empty(Queue_handle(&(mutexObj->waitList))), 0);
     Queue_destruct(&mutexObj->waitList);
 #endif
 
@@ -383,7 +382,7 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling,
         return (EINVAL);
     }
 
-    if ((prioceiling >= Task_numPriorities) || (prioceiling < 1)) {
+    if ((prioceiling >= (int)Task_numPriorities) || (prioceiling < 1)) {
         /* Bad priority value */
         return (EINVAL);
     }
@@ -448,32 +447,11 @@ int pthread_mutex_timedlock(pthread_mutex_t *mutex,
         const struct timespec *abstime)
 {
     pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
-    struct timespec    curtime;
     UInt32             timeout;
-    long               usecs = 0;
-    time_t             secs = 0;
     int                retc;
 
-    if ((abstime->tv_nsec < 0) || (1000000000 <= abstime->tv_nsec)) {
+    if (_pthread_abstime2ticks(CLOCK_REALTIME, abstime, &timeout) != 0) {
         return (EINVAL);
-    }
-
-    clock_gettime(0, &curtime);
-    secs = abstime->tv_sec - curtime.tv_sec;
-
-    if ((abstime->tv_sec < curtime.tv_sec) ||
-            ((secs == 0) && (abstime->tv_nsec <= curtime.tv_nsec))) {
-        timeout = 0;
-    }
-    else {
-        usecs = (abstime->tv_nsec - curtime.tv_nsec) / 1000;
-
-        if (usecs < 0) {
-            usecs += 1000000;
-            secs--;
-        }
-        usecs += (long)secs * 1000000;
-        timeout = (UInt32)(usecs / Clock_tickPeriod);
     }
 
     retc = acquireMutex(mutexObj, timeout);
@@ -626,7 +604,7 @@ static int acquireMutexNone(pthread_mutex_Obj *mutex, UInt32 timeout)
          *  If we get here, the mutex type is PTHREAD_MUTEX_NORMAL, so
          *  deadlock will occur (with an infinite timeout).
          */
-        Assert_isTrue(mutex->type != PTHREAD_MUTEX_NORMAL, NULL);
+        Assert_isTrue(mutex->type != PTHREAD_MUTEX_NORMAL, 0);
     }
 
     /* See if the lock is available first */
@@ -649,8 +627,8 @@ static int acquireMutexNone(pthread_mutex_Obj *mutex, UInt32 timeout)
     /* Got the semaphore, now set the owner, etc. */
     key = Task_disable();
 
-    Assert_isTrue(mutex->owner == NULL, NULL);
-    Assert_isTrue(mutex->lockCnt == 0, NULL);
+    Assert_isTrue(mutex->owner == NULL, 0);
+    Assert_isTrue(mutex->lockCnt == 0, 0);
 
     mutex->owner = thisThread;
     mutex->lockCnt = 1;
@@ -700,7 +678,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
          *  If we get here, the mutex type is PTHREAD_MUTEX_NORMAL, so
          *  deadlock will occur with an infinite timeout.
          */
-        Assert_isTrue(timeout != BIOS_WAIT_FOREVER, NULL);
+        Assert_isTrue(timeout != BIOS_WAIT_FOREVER, 0);
     }
 
     /* See if the lock is available first */
@@ -777,8 +755,8 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
         }
     }
 
-    Assert_isTrue(mutex->owner == NULL, NULL);
-    Assert_isTrue(mutex->lockCnt == 0, NULL);
+    Assert_isTrue(mutex->owner == NULL, 0);
+    Assert_isTrue(mutex->lockCnt == 0, 0);
 
     mutex->owner = thisThread;
     mutex->lockCnt = 1;
@@ -941,7 +919,7 @@ static int setPrioCeiling(pthread_mutex_Obj *mutex)
     Queue_Handle       waitList;
     int                priority = 0;
 
-    Assert_isTrue(mutex->protocol == PTHREAD_PRIO_INHERIT, NULL);
+    Assert_isTrue(mutex->protocol == PTHREAD_PRIO_INHERIT, 0);
 
     waitList = Queue_handle(&(mutex->waitList));
     pthread = (pthread_t)Queue_head(waitList);

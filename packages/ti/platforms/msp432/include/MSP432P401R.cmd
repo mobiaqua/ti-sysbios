@@ -62,8 +62,8 @@ MEMORY
 SECTIONS
 {
     .text   :   > MAIN
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc : {} load=MAIN, run=SRAM_CODE, table(BINIT)
 #endif
 #endif

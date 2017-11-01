@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,6 +120,10 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
      * The stack buffer is already aligned on 8 bytes.
      * buildTaskStack creates a stack image that results in 8 byte alignment
      * on Task func entry only if passed a 4 byte aligned stack ptr
+     *
+     * The top 32-bits of the stack are reclaimed by
+     * TaskSupport_getCheckValueAddr() as storage for the Task object's
+     * check value when Task object data integrity checking is enabled.
      */
     sp = TaskSupport_buildTaskStack((Ptr)((SizeT)tsk->stack + tsk->stackSize-4), tsk->fxn, exit, enter, tsk->arg0, tsk->arg1);
 
@@ -173,4 +177,14 @@ SizeT TaskSupport_getDefaultStackSize()
 UInt TaskSupport_getStackAlignment()
 {
     return (TaskSupport_stackAlignment);
+}
+
+/*
+ *  ======== getCheckValueAddr ========
+ */
+Ptr TaskSupport_getCheckValueAddr(Ptr curTask)
+{
+    Task_Object *tsk = (Task_Object *)(curTask);
+
+    return ((Ptr)((SizeT)tsk->stack + tsk->stackSize - 4));
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,4 +41,11 @@
 module CoreNull inherits ti.sysbios.interfaces.ICore
 {
     override config UInt numCores = 1;
+
+    /*!
+     *  Core ID, default is Core 0
+     *
+     *  Used for making static decisions based on Core ID
+     */
+    config UInt id = 0;
 }

@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  *  ======== Boot.xdc ========
@@ -28,7 +48,7 @@ import xdc.rov.ViewInfo;
  *  settings for this module.  This function is hooked into the
  *  xdc.runtime.Reset.fxns[] array and called very early at boot time (prior
  *  to cinit processing).
- * 
+ *
  *  The code to support the boot module is placed in a separate section
  *  named `".text:.bootCodeSection"` to allow placement of this section in
  *  the linker .cmd file if necessary. This section is a subsection of the
@@ -75,7 +95,7 @@ module Boot
     }
 
     @Facet
-    metaonly config ViewInfo.Instance rovViewInfo = 
+    metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
             viewMap: [
             [
@@ -88,7 +108,7 @@ module Boot
             ],
             ]
         });
-    
+
      /*!
      *  Flash controller configuration flag, default is true.
      *
@@ -97,10 +117,10 @@ module Boot
      */
     metaonly config Bool configureFlashController = true;
 
-    /*! 
+    /*!
      *  Clock configuration flag, default is false.
      *
-     *  Set to true to configure the PLL and system and M3 subsystem clock 
+     *  Set to true to configure the PLL and system and M3 subsystem clock
      *  dividers.
      */
     config Bool configureClocks = false;
@@ -164,7 +184,7 @@ module Boot
     /*! M3 Subsystem Clock Divider (M3SSDIVSEL) value */
     metaonly config M3Div M3SSDIVSEL = M3Div_4;
 
-    /*! 
+    /*!
      *  Flash controller wait states configuration flag, default is true.
      *
      *  Set to true to configure the Flash controller wait states.  The number
@@ -172,14 +192,14 @@ module Boot
      */
     metaonly config Bool configureFlashWaitStates = true;
 
-    /*! 
+    /*!
      *  Flash controller program cache enable flag, default is true.
      *
      *  Set to true to enable the Flash controller's program cache.
      */
     metaonly config Bool enableFlashProgramCache = true;
 
-    /*! 
+    /*!
      *  Flash controller data cache enable flag, default is true.
      *
      *  Set to true to enable the Flash controller's data cache.
@@ -199,34 +219,34 @@ module Boot
     metaonly config Fxn limpAbortFunction;
 
     /*!
-     *  Boot from Flash flag.  Default is true. 
+     *  Boot from Flash flag.  Default is true.
      *
-     *  Set to true to enable booting the M3 from Flash. 
+     *  Set to true to enable booting the M3 from Flash.
      */
     metaonly config Bool bootFromFlash = true;
 
     /*!
-     *  Initiate booting of the C28 processor.  Default is false. 
+     *  Initiate booting of the C28 processor.  Default is false.
      *
-     *  Set to true to enable the M3 to initiate boot of the C28.  
+     *  Set to true to enable the M3 to initiate boot of the C28.
      *
-     *  If enabled, this will occur after the optional clock configuration 
+     *  If enabled, this will occur after the optional clock configuration
      *  step, enabled by `{@link #configureClocks}`.
      */
     metaonly config Bool bootC28 = false;
 
     /*!
-     *  Initialize C28 RAM regions before booting the C28 processor.  
+     *  Initialize C28 RAM regions before booting the C28 processor.
      *  Default is true.
      *
      *  Set to true to enable initialization of these C28 RAM regions: M1,
-     *  CtoM, LO, L1, L2, and L3.  RAM locations will be zeroed, and the ECC or 
+     *  CtoM, LO, L1, L2, and L3.  RAM locations will be zeroed, and the ECC or
      *  parity bits will be initialized.
      */
     metaonly config Bool initC28RAMs = true;
 
     /*!
-     *  Configure Shared RAM regions before booting the C28 processor.  
+     *  Configure Shared RAM regions before booting the C28 processor.
      *  Default is true.
      *
      *  Set to true to enable Shared RAM regions S0-S7, to set the
@@ -257,14 +277,14 @@ module Boot
     /*!
      *  @_nodoc
      *  ======== getFrequency ========
-     *  Gets the resulting M3 CPU frequency (in Hz) given the Clock 
-     *  configuration parameters. 
+     *  Gets the resulting M3 CPU frequency (in Hz) given the Clock
+     *  configuration parameters.
      *
      */
     UInt32 getFrequency();
-    
+
     /*!
-     *  @_nodoc    
+     *  @_nodoc
      *  ======== registerFreqListener ========
      *  Register a module to be notified whenever the frequency changes.
      *
@@ -274,7 +294,7 @@ module Boot
     function registerFreqListener();
 
 internal:
-    
+
     /* The computed timestamp frequency */
     metaonly config UInt timestampFreq;
 
@@ -291,7 +311,3 @@ internal:
     metaonly config Bits32 MSxSRCR[2];
 
 };
-/*
- *  @(#) ti.catalog.arm.cortexm3.concertoInit; 1, 0, 0,2; 1-29-2016 10:00:33; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -116,7 +116,7 @@ SECTIONS
     TIMER1_A0    : { * ( .int12 ) } > INT12 type = VECT_INIT
     UNMI         : { * ( .int13 ) } > INT13 type = VECT_INIT
     SYSNMI       : { * ( .int14 ) } > INT14 type = VECT_INIT
-    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */ 
+    .reset       : {}               > RESET  /* MSP430 RESET VECTOR         */
 }
 
 /****************************************************************************/
@@ -124,4 +124,3 @@ SECTIONS
 /****************************************************************************/
 
 -l msp430c091.cmd
-

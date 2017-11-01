@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2013-2014, Texas Instruments Incorporated
+;  Copyright (c) 2013-2017, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,19 @@
 
         .cdecls C,NOLIST,"package/internal/Hwi.xdc.h" 
 
+    .if __TI_EABI__
+
+    .asg ti_sysbios_family_c28_Hwi_Module__state__V, _ti_sysbios_family_c28_Hwi_Module__state__V
+    .asg ti_sysbios_family_c28_Hwi_getIFR__I, _ti_sysbios_family_c28_Hwi_getIFR__I
+    .asg ti_sysbios_family_c28_Hwi_interruptReturn__I, _ti_sysbios_family_c28_Hwi_interruptReturn__I
+    .asg ti_sysbios_family_c28_Hwi_switchAndDispatch__I, _ti_sysbios_family_c28_Hwi_switchAndDispatch__I
+    .asg ti_sysbios_family_xxx_Hwi_switchAndRunFunc, _ti_sysbios_family_xxx_Hwi_switchAndRunFunc
+    .asg ti_sysbios_family_c28_Hwi_dispatchCore__I, _ti_sysbios_family_c28_Hwi_dispatchCore__I
+
+    .endif
+
         .global _ti_sysbios_family_c28_Hwi_getIFR__I
+        .global _ti_sysbios_family_c28_Hwi_dispatchCore__I
 
 _ti_sysbios_family_c28_Hwi_Module__state__V .tag ti_sysbios_family_c28_Hwi_Module_State
 
@@ -44,8 +56,13 @@ _ti_sysbios_family_c28_Hwi_Module__state__V .tag ti_sysbios_family_c28_Hwi_Modul
 ;  Returns the value of the IFR register.
 ;  IFR only supports PUSH, POP, AND, OR
 ;  
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_Hwi_getIFR__I"
+    .else
     .sect ".text:_ti_sysbios_family_c28_Hwi_getIFR__I"
     .clink
+    .endif
+
 _ti_sysbios_family_c28_Hwi_getIFR__I:
     .asmfunc
     push    ifr        ; Push the IFR on the stack (Only way to read IFR).
@@ -60,8 +77,13 @@ _ti_sysbios_family_c28_Hwi_getIFR__I:
 ;  for more information.
 ;  For internal use only.
 ;  
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_Hwi_interruptReturn__I"
+    .else
     .sect ".text:_ti_sysbios_family_c28_Hwi_interruptReturn__I"
     .clink
+    .endif
+
 _ti_sysbios_family_c28_Hwi_interruptReturn__I:
     .asmfunc
     iret                ; Return from interrupt
@@ -71,8 +93,13 @@ _ti_sysbios_family_c28_Hwi_interruptReturn__I:
 ;
 ;  ======== ti_sysbios_family_c28_Hwi_switchAndDispatch ========
 ;
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_c28_Hwi_switchAndDispatch__I"
+    .else
     .sect ".text:_ti_sysbios_family_c28_Hwi_switchAndDispatch__I"
     .clink
+    .endif
+
 _ti_sysbios_family_c28_Hwi_switchAndDispatch__I
     .asmfunc
 
@@ -122,8 +149,13 @@ nonZero$:
 ;
 ;
         .global _ti_sysbios_family_xxx_Hwi_switchAndRunFunc
+    .if __TI_EABI__
+    .sect ".text:ti_sysbios_family_xxx_Hwi_switchAndRunFunc"
+    .else
     .sect ".text:_ti_sysbios_family_xxx_Hwi_switchAndRunFunc"
     .clink
+    .endif
+
 _ti_sysbios_family_xxx_Hwi_switchAndRunFunc:
     .asmfunc
     movl xar0, #_ti_sysbios_family_c28_Hwi_Module__state__V.taskSP

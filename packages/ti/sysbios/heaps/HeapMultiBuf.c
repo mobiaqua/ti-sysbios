@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,7 +117,7 @@ Int HeapMultiBuf_Instance_init(HeapMultiBuf_Object *obj,
     obj->bufsByAddr =
         Memory_alloc(NULL, params->numBufs * sizeof(HeapMultiBuf_AddrPair),
                      0, eb);
-    if (Error_check(eb)) {
+    if (obj->bufsByAddr == NULL) {
         return (1); /* Failed at 1 */
     }
 
@@ -133,14 +133,14 @@ Int HeapMultiBuf_Instance_init(HeapMultiBuf_Object *obj,
      */
     obj->bufsBySize =
         Memory_calloc(NULL, obj->numBufs * sizeof(HeapBuf_Object*), 0, eb);
-    if (Error_check(eb)) {
+    if (obj->bufsBySize == NULL) {
         return (2); /* Failed at 2 */
     }
 
     /* Create all of the HeapBufs */
     for (i = 0; i < obj->numBufs; i++) {
         heapBuf = HeapBuf_create(&(params->bufParams[i]), eb);
-        if (Error_check(eb)) {
+        if (heapBuf == NULL) {
             return (3); /* Failed at 3 */
         }
 

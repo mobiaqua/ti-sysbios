@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ var Core = null;
 var BIOS = null;
 var Task = null;
 var Build = null;
+var Reset = null;
 var HalHwi = null;
 var Memory = null;
 var System = null;
@@ -107,6 +108,7 @@ function module$use()
     Hwi = xdc.module('ti.sysbios.family.arm.gic.Hwi');
     Task = xdc.module('ti.sysbios.knl.Task');
     Build = xdc.module('ti.sysbios.Build');
+    Reset = xdc.useModule('xdc.runtime.Reset');
     Memory = xdc.module('xdc.runtime.Memory');
     System = xdc.useModule('xdc.runtime.System');
     Startup = xdc.useModule('xdc.runtime.Startup');
@@ -147,6 +149,9 @@ function module$use()
     }
 
     Core.initStackFlag = HalHwi.initStackFlag;
+
+    /* Install Core_enableActlrSmp() as a reset function */
+    Reset.fxns[Reset.fxns.length++] = Core.enableActlrSmp;
 }
 
 /*

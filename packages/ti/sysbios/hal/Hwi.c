@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum, Hwi_FuncPtr fxn, const Hwi_Pa
 {
     hwi->pi = Hwi_HwiProxy_create(intNum, fxn, (Hwi_HwiProxy_Params *)params, eb);
     
-    if (Error_check(eb)) {
+    if (hwi->pi == NULL) {
         return (1);
     }
     return (0);

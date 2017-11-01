@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,6 @@
  */
 /*
  *  ======== ClockFreqs.xdc ========
- *
- *
  */
 
 package ti.sysbios.family.arm.msp432;
@@ -124,12 +122,15 @@ import xdc.rov.ViewInfo;
  *  @p
  */
 
+
+@Template("./ClockFreqs.xdt")
+
+
 @DirectCall
 module ClockFreqs
 {
     metaonly struct ModuleView {
         UInt    ACLK;
-        UInt    MCLK;
         UInt    SMCLK;
         UInt    HSMCLK;
     }

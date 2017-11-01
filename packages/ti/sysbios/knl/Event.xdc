@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -193,6 +193,7 @@ import ti.sysbios.knl.Task;
  *  To remove Event.Ids not defined for targets with 16 bit Ints
  */
 @CustomHeader
+@InstanceInitStatic     /* Construct/Destruct CAN becalled at runtime */
 
 module Event
 {

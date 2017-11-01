@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -106,8 +106,8 @@ SECTIONS
     .esysmem        : > L01SARAM | M01SARAM     PAGE = 1
     .cio            : > L01SARAM | M01SARAM     PAGE = 1
 
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc         : {} LOAD = FLASH    PAGE = 0,
                              RUN  = L01SARAM PAGE = 1,
                              table(BINIT)

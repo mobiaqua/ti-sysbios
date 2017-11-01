@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,9 @@ PAGE 0:    /* Program Memory */
 
     FLASH       : origin = 0x100000, length = 0x3FF80
     BEGIN       : origin = 0x13FFF0, length = 0x2
-    
+
 PAGE 1 :   /* Data Memory */
-   
+
     M01SARAM    : origin = 0x0,      length = 0x800     /* on-chip RAM block M0, M1 */
     PIEVECT     : origin = 0xD00,    length = 0x100
     L03SARAM    : origin = 0x8000,   length = 0x4000    /* on-chip RAM block L0-L3 */
@@ -64,8 +64,8 @@ SECTIONS
                   LOAD_SIZE(_RamfuncsLoadSize),
                   LOAD_END(_RamfuncsLoadEnd),
                   RUN_START(_RamfuncsRunStart)
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc : {} LOAD = FLASH     PAGE = 0,
                      RUN  = L03SARAM  PAGE = 1,
                      TABLE(BINIT)

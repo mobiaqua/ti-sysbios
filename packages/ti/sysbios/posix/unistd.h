@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 extern "C" {
 #endif
 
-#include <ti/sysbios/posix/types.h>
+#include "sys/types.h"
 
 extern unsigned sleep(unsigned seconds);
 extern int usleep(useconds_t useconds);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -420,9 +420,12 @@ Void Timer_start(Timer_Object *obj)
     amr = timer->GPTMTAMR & ~0x3; /* clear mode bits */
 
     if (obj->runMode == Timer_RunMode_CONTINUOUS) {
+        /* sub 1 from period to compensate for extra count during reload */
+        timer->GPTMTAILR = obj->period - 1;
         timer->GPTMTAMR = amr + 2; /* Periodic Timer mode */
     }
     else {
+        timer->GPTMTAILR = obj->period; /* set the period */
         timer->GPTMTAMR = amr + 1; /* Oneshot Timer mode */
     }
 
@@ -473,13 +476,8 @@ Void Timer_stop(Timer_Object *obj)
  */
 Void Timer_setPeriod(Timer_Object *obj, UInt32 period)
 {
-    ti_catalog_arm_peripherals_timers_TimerRegs *timer;
-
-    timer = (ti_catalog_arm_peripherals_timers_TimerRegs *)Timer_module->device[obj->id].baseAddr;
-
     Timer_stop(obj);
     obj->period = period;
-    timer->GPTMTAILR = obj->period; /* set the period */
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -328,7 +328,15 @@ function getTargetFilter(family, opts, toolchain)
     var filter = [
     ];
 
-    if (opts.deviceId != "") {
+    if ((opts.deviceId != "") && (opts.deviceVariant != "")) {
+        filter.push({
+                        deviceFamily: family,
+                        deviceVariant: opts.deviceVariant,
+                        deviceId: opts.deviceId,
+                        toolChain: toolchain
+                    });
+    }
+    else if (opts.deviceId != "") {
         filter.push({
                         deviceFamily: family,
                         deviceId: opts.deviceId,

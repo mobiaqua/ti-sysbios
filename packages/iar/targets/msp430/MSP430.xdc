@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2012 Texas Instruments and others.
+ *  Copyright (c) 2012-2016 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -55,7 +55,7 @@ metaonly module MSP430 inherits ITarget
      */
     override readonly config Command asm = {
         cmd: "a430",
-        opts: ""
+        opts: "--data_model small"
     };
 
     /*!
@@ -109,7 +109,7 @@ metaonly module MSP430 inherits ITarget
 
 }
 /*
- *  @(#) iar.targets.msp430; 1, 0, 0,0; 1-29-2016 16:37:06; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) iar.targets.msp430; 1, 0, 0,1; 7-27-2017 11:47:15; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

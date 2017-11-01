@@ -27,8 +27,8 @@ SECTIONS
     /* Interrupt Vectors at 0x00000000 */
     .intvecs      : {} > 0x00000000
     .text         : {} > FRAM
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc   : {} > FRAM
 #endif
 #endif

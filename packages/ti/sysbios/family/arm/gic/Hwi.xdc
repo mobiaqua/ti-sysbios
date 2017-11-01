@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -502,6 +502,16 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  Hwi dispatcher epilog.
      */
     config Bool enableAsidTagging = false;
+
+    /*!
+     *  ======== initGicd ========
+     *  Initialize all GIC Distributor registers. True by default.
+     *
+     *  Flag determines whether to initialize certain global GIC distributor
+     *  registers. It is set to false when running under a hypervisor and
+     *  should be true if not running under a hypervisor.
+     */
+    config Bool initGicd = true;
 
     /*!
      *  @_nodoc

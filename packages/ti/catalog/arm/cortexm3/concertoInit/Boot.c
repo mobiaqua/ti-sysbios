@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  *  ======== Boot.c ========
@@ -130,7 +150,7 @@ Void Boot_bootC28(Void)
 
     /* specify the boot mode */
     REG(MTOCIPCBOOTMODE_REG) = MTOC_BOOTMODE_BOOT_FROM_FLASH;
-   
+
     /* generate interrupt to C28 */
     REG(MTOCIPCSET_REG) |= (INTR_SET1 | INTR_SET2);
 
@@ -221,7 +241,7 @@ Void Boot_initC28RAMs(Void)
  *  ======== Boot_configurePllDivs ========
  *
  */
-Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL, 
+Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL,
     UInt M3SSDIVSEL)
 {
 #if 0
@@ -241,7 +261,7 @@ Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL,
     allow = REG(SYSCTL_MWRALLOW);
     REG(SYSCTL_MWRALLOW) = SYSCTL_UNLOCK;
 
-#if 0 
+#if 0
     /* test teams see instabilities w/disabling MCLK, leave enabled for now */
     /* get missing clock detect enable status */
     missDetect = REG(MCLKEN_REG);
@@ -252,7 +272,7 @@ Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL,
 
     /* set SYS and M3 dividers to maximum */
     REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M) | SYSDIVSEL_DIV8;
-    REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M) 
+    REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M)
         | M3SSDIVSEL_DIV4;
     sysdiv = SYSDIVSEL_DIV8;
     m3div = M3SSDIVSEL_DIV4;
@@ -279,13 +299,13 @@ Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL,
     /* step M3SS divider downwards from max to target value */
     while(m3div != M3SSDIVSEL) {
         if (m3div == M3SSDIVSEL_DIV4 ) {        /* if DIV4, step to DIV2 */
-            REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M) 
+            REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M)
                 | M3SSDIVSEL_DIV2;
             m3div = M3SSDIVSEL_DIV2;
             Boot_stepDelay(15);
         }
         else {                                  /* for DIV2, step to DIV1 */
-            REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M) 
+            REG(M3SSDIVSEL_REG) = (REG(M3SSDIVSEL_REG) & ~M3SSDIVSEL_M)
                 | M3SSDIVSEL_DIV1;
             m3div = M3SSDIVSEL_DIV1;
             Boot_stepDelay(15);
@@ -295,19 +315,19 @@ Void Boot_configurePllDivs(UInt SPLLIMULT, UInt SPLLFMULT, UInt SYSDIVSEL,
     /* step SYSDIV divider downwards from max to target value */
     while(sysdiv != SYSDIVSEL) {
         if (sysdiv == SYSDIVSEL_DIV8 ) {        /* if DIV8, step to DIV4 */
-            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M) 
+            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M)
                 | SYSDIVSEL_DIV4;
             sysdiv = SYSDIVSEL_DIV4;
             Boot_stepDelay(15);
         }
         else if (sysdiv == SYSDIVSEL_DIV4 ) {   /* if DIV4, step to DIV2 */
-            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M) 
+            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M)
                 | SYSDIVSEL_DIV2;
             sysdiv = SYSDIVSEL_DIV2;
             Boot_stepDelay(15);
         }
         else {                                  /* for DIV2, step to DIV1 */
-            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M) 
+            REG(SYSDIVSEL_REG) = (REG(SYSDIVSEL_REG) & ~SYSDIVSEL_M)
                 | SYSDIVSEL_DIV1;
             sysdiv = SYSDIVSEL_DIV1;
             Boot_stepDelay(15);
@@ -337,9 +357,9 @@ void Boot_defaultLimpAbortFunction(void)
 /*
  *  ======== Boot_initFlash ========
  */
-void Boot_initFlash(Bool configWaitStates, UInt waitStates, 
-    Bool enableProgramCache, Bool enableDataCache) 
-{ 
+void Boot_initFlash(Bool configWaitStates, UInt waitStates,
+    Bool enableProgramCache, Bool enableDataCache)
+{
     UInt cacheEnable = 0;
     UInt allow;
     UInt i;
@@ -381,7 +401,7 @@ void Boot_initFlash(Bool configWaitStates, UInt waitStates,
  *
  *  Provides a small delay.
  *
- *  The count argument is the number of delay loop iterations to perform.  
+ *  The count argument is the number of delay loop iterations to perform.
  *  Each loop takes 3 cycles/loop.
  *
  */
@@ -392,8 +412,3 @@ ti_catalog_arm_cortexm3_concertoInit_Boot_stepDelay:    \n\
          bne.n   _ti_catalog_arm_cortexm3_concertoInit_Boot_stepDelay \n\
          bx      lr                             \n\
 ");
-
-/*
- *  @(#) ti.catalog.arm.cortexm3.concertoInit; 1, 0, 0,2; 1-29-2016 10:00:33; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -387,6 +387,15 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  @b(returns)     hal Hwi handle
      */
     metaonly Handle viewGetHandle(Ptr pi);
+
+    /*!
+     *  ======== viewGetLabel ========
+     *  @_nodoc
+     *  Returns the corresponding hal Hwi label for a delegate Hwi handle
+     *
+     *  @b(returns)     hal Hwi Label
+     */
+    metaonly String viewGetLabel(Ptr pi);
 
 instance:
 

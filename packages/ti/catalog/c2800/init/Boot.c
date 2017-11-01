@@ -1,14 +1,34 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  *  ======== Boot.c ========
@@ -65,7 +85,7 @@ extern Fxn Boot_limpAbort();
 #define PLLCR_REG               0x7021
 #define PLLSTS_REG              0x7011
 #define PLLSTS_DIVSEL_BITS      0x0180
-#define PLLSTS_DIVSEL_SHIFTBITS 7       
+#define PLLSTS_DIVSEL_SHIFTBITS 7
 #define PLLSTS_MCLKOFF_BIT      0x0040
 #define PLLSTS_MCLKSTS_BIT      0x0008
 #define PLLSTS_PLLLOCKS_BIT     0x0001
@@ -107,7 +127,7 @@ Void Boot_configurePll2802x(UInt16 pllcrDIV, UInt16 pllstsDIVSEL)
     /* check if running in Limp mode; if yes, abort */
     if (REG(PLLSTS_REG) & PLLSTS_MCLKSTS_BIT) {
         Boot_limpAbort();
-    } 
+    }
 
     EALLOW;
 
@@ -143,7 +163,7 @@ Void Boot_configurePll2834x(UInt16 pllcrDIV, UInt16 pllstsDIVSEL)
     /* check if running in Limp mode; if yes, abort */
     if (REG(PLLSTS_REG) & PLLSTS_MCLKSTS_BIT) {
         Boot_limpAbort();
-    } 
+    }
 
     EALLOW;
 
@@ -227,7 +247,7 @@ void Boot_configEzdspGpio()
      EDIS;
 }
 
-/* 
+/*
  * Configure the timing paramaters for Zone 7.
  * Notes:
  *    This function should not be executed from XINTF
@@ -244,30 +264,30 @@ void Boot_configEzdspXintf(void)
 
     EALLOW;
     /* All Zones */
-    
+
     /* Timing for all zones based on XTIMCLK = SYSCLKOUT */
     xintfRegs.XINTCNF2.bit.XTIMCLK = 0;
-    
+
     /* Buffer up to 3 writes */
     xintfRegs.XINTCNF2.bit.WRBUFF = 3;
-    
+
     /* XCLKOUT is enabled */
     xintfRegs.XINTCNF2.bit.CLKOFF = 0;
-    
+
     /* XCLKOUT = XTIMCLK */
     xintfRegs.XINTCNF2.bit.CLKMODE = 0;
 
-    /* 
+    /*
      * Zone 7
      * When using ready, ACTIVE must be 1 or greater
      * Lead must always be 1 or greater
      */
-     
+
     /* Zone write timing */
     xintfRegs.XTIMING7.bit.XWRLEAD = 1;
     xintfRegs.XTIMING7.bit.XWRACTIVE = 2;
     xintfRegs.XTIMING7.bit.XWRTRAIL = 1;
-    
+
     /* Zone read timing */
     xintfRegs.XTIMING7.bit.XRDLEAD = 1;
     xintfRegs.XTIMING7.bit.XRDACTIVE = 3;
@@ -305,9 +325,3 @@ void Boot_defaultLimpAbortFunction(void)
     while(1) {
     }
 }
-
-
-/*
- *  @(#) ti.catalog.c2800.init; 1, 0, 0,2; 1-29-2016 10:00:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

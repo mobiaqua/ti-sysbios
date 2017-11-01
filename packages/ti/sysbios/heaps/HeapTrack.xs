@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -157,8 +157,10 @@ function viewInitTask()
         /* Fetch the queue structure */
         var queElem = modHeapTrack.instStates[index].trackQueue.elem;
         var start = queElem.$addr;
+        var continueFlag = true;
 
-        while(Number(queElem.next) != start) {
+        /* Loop while through the list but stop if a corrupted scribble found */
+        while ((Number(queElem.next) != start) && (continueFlag == true)) {
             var heapView = Program.newViewStruct('ti.sysbios.heaps.HeapTrack',
                                                                'TaskAllocList');
             var tracker = Program.fetchStruct(HeapTrack.Tracker$fetchDesc,
@@ -181,9 +183,11 @@ function viewInitTask()
             /* Check scribble */
             if (tracker.scribble == HeapTrack.STARTSCRIBBLE) {
                 heapView.overflow = "NO";
+                queElem = tracker.queElem;
             }
             else {
                 heapView.overflow = "YES";
+                continueFlag = false;
                 Program.displayError(heapView, "overflow",
                                                       "Error: Memory overflow");
             }
@@ -200,8 +204,6 @@ function viewInitTask()
             /* Set the block number and save the individual heapView */
             heapView.block = (heapViews.length + 1).toString();
             heapViews[heapViews.length++] = heapView;
-
-            queElem = tracker.queElem;
         }
     }
 
@@ -241,8 +243,10 @@ function viewInitHeapList(view, obj)
     var queElem = obj.trackQueue.elem;
     var start = queElem.$addr;
     var block = 1;
+    var continueFlag = true;
 
-    while(Number(queElem.next) != start) {
+    /* Loop while through the list but stop if a corrupted scribble found */
+    while((Number(queElem.next) != start) && (continueFlag == true)) {
         var listView = Program.newViewStruct('ti.sysbios.heaps.HeapTrack',
                                                                'HeapAllocList');
         var tracker = Program.fetchStruct(HeapTrack.Tracker$fetchDesc,
@@ -272,16 +276,16 @@ function viewInitHeapList(view, obj)
         /* Check scribble */
         if (tracker.scribble == HeapTrack.STARTSCRIBBLE) {
             listView.overflow = "NO";
+            queElem = tracker.queElem;
+            block++;
         }
         else {
             listView.overflow = "YES";
+            continueFlag = false;
             Program.displayError(listView, "overflow","Error: Memory overflow");
         }
 
         listViews[listViews.length] = listView;
-
-        queElem = tracker.queElem;
-        block++;
     }
 
     view.elements = listViews;

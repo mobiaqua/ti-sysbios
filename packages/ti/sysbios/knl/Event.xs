@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,6 +104,34 @@ function syncMeta(eventId, count)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Process the 'Basic' view for an Event instance.
  */
@@ -113,6 +141,11 @@ function viewInitBasic(view, obj)
     var Event = xdc.useModule('ti.sysbios.knl.Event');
     var Queue = xdc.useModule('ti.sysbios.knl.Queue');
     var Task = xdc.useModule('ti.sysbios.knl.Task');
+
+    if (viewCheckForNullObject(Event, obj)) {
+        view.label = "Uninitialized Event object";
+        return;
+    }
 
     view.label = Program.getShortName(obj.$label);
     view.postedEvents = "0x" + obj.postedEvents.toString(16);

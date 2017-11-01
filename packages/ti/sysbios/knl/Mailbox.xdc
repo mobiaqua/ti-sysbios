@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -139,6 +139,7 @@ import xdc.runtime.IHeap;
 @ModuleStartup     /* Instances require more initialization at startup */
 @InstanceFinalize
 @InstanceInitError
+@InstanceInitStatic     /* Construct/Destruct CAN becalled at runtime */
 
 module Mailbox 
 {
@@ -234,7 +235,7 @@ instance:
      *  Be careful with the msgSize parameter!  The 'msg' pointer passed to
      *  {@link #pend()} must point to a buffer whose size matches this msgSize
      *  parameter.  {@link #pend()} does a blind copy of size 'msgSize' into
-     *  the destination pointer, so he destination buffer must be big enough to
+     *  the destination pointer, so the destination buffer must be big enough to
      *  handle this copy.
      *
      */
@@ -330,6 +331,11 @@ instance:
      *  'round up' the total size of the buffer to the next multiple of the
      *  alignment for odd sized messages.
      *
+     *  Also note that if {@link ti.sysbios.BIOS#runtimeCreatesEnabled
+     *  BIOS.runtimeCreatesEnabled} is set to false, then the user is required
+     *  to provide this buffer when constructing the Mailbox object. If 'buf'
+     *  is not set, then Mailbox_construct() will fail.
+     *
      *  @see #MbxElem
      */
     config Ptr buf = null;
@@ -424,6 +430,16 @@ instance:
      *  @param(msg)     message pointer
      *  @param(timeout) maximum duration in system clock ticks
      *  @b(returns)     TRUE if successful, FALSE if timeout
+     *
+     *  @a(NOTE)
+     *  The operation of adding a message to the mailbox and signalling
+     *  the task (if any) waiting on the mailbox is not atomic. This can
+     *  result in a priority inversion with respect to message delivery.
+     *  This can for example affect the order of message delivery for 2
+     *  tasks with different priorities. The lower priority task's message
+     *  may be delivered first while the higher priority task's message
+     *  may not unblock the task waiting on the mailbox until the lower
+     *  priority task resumes and completes its Mailbox_post() call.
      */
     Bool post(Ptr msg, UInt32 timeout);
 

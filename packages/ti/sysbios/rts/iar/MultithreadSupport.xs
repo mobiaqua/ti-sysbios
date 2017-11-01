@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 
 var BIOS = null;
 var Task = null;
+var Startup = null;
 var MultithreadSupport = null;
 
 /*
@@ -45,11 +46,11 @@ function module$use()
     MultithreadSupport = this;
 
     BIOS = xdc.module("ti.sysbios.BIOS");
+    Startup = xdc.useModule('xdc.runtime.Startup');
 
     if (BIOS.taskEnabled == true) {
         Task = xdc.module("ti.sysbios.knl.Task");
     }
-
 }
 
 /*
@@ -67,6 +68,11 @@ function module$static$init(mod, params)
             exitFxn: null,
             deleteFxn: MultithreadSupport.taskDeleteHook
         });
+    }
+
+    if ((MultithreadSupport.enableMultithreadSupport == true) &&
+        Program.build.target.isa.match(/v7M/)) {
+        Startup.lastFxns.$add("&__iar_Initlocks");
     }
 
     mod.taskHId = 0;

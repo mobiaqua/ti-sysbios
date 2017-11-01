@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,11 +44,9 @@ extern "C" {
 
 #include <ti/sysbios/knl/Task.h>
 
-#include <ti/sysbios/posix/types.h>
-#include <ti/sysbios/posix/_time.h>
-
-#define sched_get_priority_min() 1
-#define sched_get_priority_max() Task_numPriorities
+#include "sys/types.h"
+#include "time.h"
+#include "sched.h"
 
 #define PTHREAD_BARRIER_SERIAL_THREAD -1
 
@@ -60,7 +58,16 @@ extern "C" {
 #define PTHREAD_CANCEL_DISABLE      1
 #define PTHREAD_CANCELED            ((void *) -1)
 
-/* Mutex attributes - type */
+/*
+ *  Mutex attributes - type
+ *
+ *  PTHREAD_MUTEX_NORMAL: Owner of mutex cannot relock it. Attempting
+ *      to relock will cause deadlock.
+ *  PTHREAD_MUTEX_RECURSIVE: Owner can relock the mutex.
+ *  PTHREAD_MUTEX_ERRORCHECK: If owner attempts to relock the mutex, an
+ *      error is returned.
+ *
+ */
 #define PTHREAD_MUTEX_NORMAL        0
 #define PTHREAD_MUTEX_RECURSIVE     1
 #define PTHREAD_MUTEX_ERRORCHECK    2
@@ -69,7 +76,17 @@ extern "C" {
 /* Passed to pthread_once() */
 #define PTHREAD_ONCE_INIT 0
 
-/* Mutex attributes - protocol */
+/*
+ *  Mutex attributes - protocol
+ *
+ *  PTHREAD_PRIO_NONE: Ownership of mutex does not affect priority.
+ *  PTHREAD_PRIO_INHERIT: Owner's priority is boosted to the priority of
+ *      highest priority thread blocked on the mutex.
+ *  PTHREAD_PRIO_PROTECT:  Mutex has a priority ceiling.  The owner's
+ *      priority is boosted to the highest priority ceiling of all mutexes
+ *      owned (regardless of whether or not other threads are blocked on
+ *      any of these mutexes).
+ */
 #define PTHREAD_PRIO_NONE           0
 #define PTHREAD_PRIO_INHERIT        1
 #define PTHREAD_PRIO_PROTECT        2
@@ -131,12 +148,7 @@ extern void _pthread_cleanup_push(struct _pthread_cleanup_context *context,
 extern int pthread_create(pthread_t *newthread, const pthread_attr_t *attr,
             void *(*startroutine)(void *), void *arg);
 extern int pthread_detach(pthread_t pthread);
-
-static inline int pthread_equal(pthread_t pt1, pthread_t pt2)
-{
-    return (pt1 == pt2);
-}
-
+extern int pthread_equal(pthread_t pt1, pthread_t pt2);
 extern void pthread_exit(void *ptr);
 extern int pthread_getschedparam(pthread_t thread, int *policy,
         struct sched_param *param);
@@ -171,7 +183,11 @@ extern int pthread_barrier_wait(pthread_barrier_t *barrier);
  *************************************************************************
  */
 extern int pthread_condattr_destroy(pthread_condattr_t *attr);
+extern int pthread_condattr_getclock(const pthread_condattr_t *attr,
+        clockid_t *clock_id);
 extern int pthread_condattr_init(pthread_condattr_t * attr);
+extern int pthread_condattr_setclock(pthread_condattr_t *attr,
+        clockid_t clock_id);
 
 /*
  *************************************************************************

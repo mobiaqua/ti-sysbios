@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,10 +53,10 @@
 #define ti_sysbios_posix_Settings_supportsMutexPriority__D TRUE
 #endif
 
-#include <ti/sysbios/posix/pthread.h>
-#include <ti/sysbios/posix/_pthread.h>
-#include <ti/sysbios/posix/_time.h>
-#include <ti/sysbios/posix/_pthread_error.h>
+#include "pthread.h"
+#include "_pthread.h"
+#include "time.h"
+#include "errno.h"
 
 static Void timerFxn(UArg arg);
 static Void *timerThreadFxn(Void *arg);
@@ -72,6 +72,7 @@ typedef struct TimerObj {
     pthread_t        thread;
     Semaphore_Handle sem;
     Int              notifyType;    /* e.g., SIGEV_SIGNAL */
+    clockid_t        clockId;
 } TimerObj;
 
 /*
@@ -100,10 +101,15 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
     Int                priority;
     Int                retc;
 
-    Assert_isTrue(evp != NULL, NULL);
-    Assert_isTrue(evp->sigev_notify_function != NULL, NULL);
+    Assert_isTrue(evp != NULL, 0);
+    Assert_isTrue(evp->sigev_notify_function != NULL, 0);
     Assert_isTrue((evp->sigev_notify == SIGEV_THREAD) ||
-            (evp->sigev_notify == SIGEV_SIGNAL), NULL);
+            (evp->sigev_notify == SIGEV_SIGNAL), 0);
+
+    if ((clockid != CLOCK_MONOTONIC) && (clockid != CLOCK_REALTIME)) {
+        /* EINVAL */
+        return (-1);
+    }
 
     pthread_attr_init(&pDefAttrs);
 
@@ -118,7 +124,8 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
             sizeof(TimerObj), 0, &eb);
 
     if (timer == NULL) {
-        return (ENOMEM);
+        /* ENOMEM */
+        return (-1);
     }
 
     Clock_Params_init(&params);
@@ -131,6 +138,7 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
     timer->notifyType = evp->sigev_notify;
     timer->thread = NULL;
     timer->sem = NULL;
+    timer->clockId = clockid;
 
     if (evp->sigev_notify == SIGEV_THREAD) {
         /* Create semaphore that will be posted when timer expires */
@@ -140,7 +148,8 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
 
         if (timer->sem == NULL) {
             timer_delete((timer_t)timer);
-            return (ENOMEM);
+            /* ENOMEM */
+            return (-1);
         }
 
         /* Save the priority since we'll create the thread with priority -1 */
@@ -157,7 +166,8 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
 
         if (retc != 0) {
             timer_delete((timer_t)timer);
-            return (ENOMEM);
+            /* ENOMEM */
+            return (-1);
         }
     }
 
@@ -171,7 +181,8 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
 
         if (retc != 0) {
             timer_delete((timer_t)timer);
-            return (EINVAL);
+            /* EINVAL */
+            return (-1);
         }
     }
 
@@ -212,16 +223,10 @@ int timer_gettime(timer_t timerid, struct itimerspec *its)
     long         timeoutUs;
     long         periodUs;
 
-    if (Clock_isActive(Clock_handle(&(timer->clock)))) {
-        /*
-         *  Clock_getTimeout() returns number of clock ticks until
-         *  timer expires.
-         */
-        timeout = Clock_getTimeout(Clock_handle(&(timer->clock)));
-    }
-    else {
-        timeout = 0;
-    }
+    /*
+     *  Clock_getTimeout() returns number of clock ticks until timer expires.
+     */
+    timeout = Clock_getTimeout(Clock_handle(&(timer->clock)));
 
     timeoutUs = timeout * Clock_tickPeriod;
     periodUs = Clock_getPeriod(Clock_handle(&timer->clock)) * Clock_tickPeriod;
@@ -255,12 +260,14 @@ int timer_settime(timer_t timerid, int flags,
 
     if ((value->it_interval.tv_nsec < 0) ||
             (value->it_interval.tv_nsec >= 1000000000)) {
-        return (EINVAL);
+        /* EINVAL */
+        return (-1);
     }
 
     if ((value->it_value.tv_nsec < 0) ||
             (value->it_value.tv_nsec >= 1000000000)) {
-        return (EINVAL);
+        /* EINVAL */
+        return (-1);
     }
 
     /*
@@ -288,7 +295,7 @@ int timer_settime(timer_t timerid, int flags,
     }
 
     if (flags & TIMER_ABSTIME) {
-        clock_gettime(0, &curtime);
+        clock_gettime(timer->clockId, &curtime);
 
         if ((curtime.tv_sec > value->it_value.tv_sec) ||
                 ((curtime.tv_sec == value->it_value.tv_sec) &&

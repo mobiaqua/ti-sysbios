@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  * Universal Serial Communication Interface A1 UART 2xx
  */
@@ -26,7 +47,7 @@ instance:
         UCSYNC      : UCSYNC_OFF,
     };
 
-    /*! Control Register 1 */    
+    /*! Control Register 1 */
     config UCxCTL1_t UCA1CTL1 = {
         UCSSEL      : UCSSEL_0,
         UCRXEIE     : UCRXEIE_OFF,
@@ -36,14 +57,14 @@ instance:
         UCTXBRK     : UCTXBRK_OFF,
         UCSWRST     : UCSWRST,
     };
-    
+
     /*! Modulation Control Register */
     config UCxMCTL_t UCA1MCTL = {
         UCBRF       : UCBRF_0,
         UCBRS       : UCBRS_0,
         UCOS16      : UCOS16_OFF,
     };
-    
+
     /*! Status Register */
     config UCxSTAT_t UCA1STAT = {
         UCLISTEN    : UCLISTEN_OFF,
@@ -56,8 +77,8 @@ instance:
         UCIDLE      : UCIDLE_OFF,
         UCBUSY      : UCBUSY,
     };
-    
-    /*! IrDA Transmit Control Register */    
+
+    /*! IrDA Transmit Control Register */
     config UCxIRTCTL_t UCA1IRTCTL = {
         UCIRTXPL5   : UCIRTXPL5_OFF,
         UCIRTXPL4   : UCIRTXPL4_OFF,
@@ -68,7 +89,7 @@ instance:
         UCIRTXCLK   : UCIRTXCLK_OFF,
         UCIREN      : UCIREN_OFF,
     };
-    
+
     /*! IrDA Receive Control Register */
     config UCxIRRCTL_t UCA1IRRCTL = {
         UCIRRXFL5   : UCIRRXFL5_OFF,
@@ -80,7 +101,7 @@ instance:
         UCIRRXPL    : UCIRRXPL_OFF,
         UCIRRXFE    : UCIRRXFE_OFF,
     };
-    
+
     /*! Auto Baud Rate Control Register */
     config UCxABCTL_t UCA1ABCTL = {
         UCDELIM1    : UCDELIM1_OFF,
@@ -89,20 +110,16 @@ instance:
         UCBTOE      : UCBTOE_OFF,
         UCABDEN     : UCABDEN_OFF,
     };
-    
-    /*! Receive Buffer Register */    
+
+    /*! Receive Buffer Register */
     config Bits8 UCA1RXBUF = 0;
 
     /*! Transmit Buffer Register */
     config Bits8 UCA1TXBUF = 0;
-    
+
     /*! Baud rate control register 0 */
     config Bits8 UCA1BR0 = 0;
-    
+
     /*! Baud rate control register 1 */
     config Bits8 UCA1BR1 = 0;
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.communication; 1, 0, 0,2; 1-29-2016 10:00:48; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

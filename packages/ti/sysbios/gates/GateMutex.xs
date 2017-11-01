@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,11 +79,45 @@ function queryMeta(qual)
 }
 
 /*
+ *  ======== viewCheckForNullObject ========
+ *  Returns true if the object is all zeros.
+ */
+function viewCheckForNullObject(mod, obj)
+{
+    var Program = xdc.useModule('xdc.rov.Program');
+    var objSize = mod.Instance_State.$sizeof();
+
+    /* skip uninitialized objects */
+    try {
+        var objArray = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UInt8',
+                                    isScalar: true},
+                                    Number(obj.$addr),
+                                    objSize,
+                                    true);
+    }
+    catch(e) {
+        print(e.toString());
+    }
+
+    for (var i = 0; i < objSize; i++) {
+        if (objArray[i] != 0) return (false);
+    }
+
+    return (true);
+}
+
+/*
  *  ======== viewInitBasic ========
  *  Initialize the 'Basic' Task instance view.
  */
 function viewInitBasic(view, obj)
 {   
+    var GateMutex = xdc.useModule('ti.sysbios.gates.GateMutex');
+    if (viewCheckForNullObject(GateMutex, obj)) {
+        view.status = "Uninitialized GateMutex object";
+        return;
+    }
+
     /* Get owner task. Note: if NULL, there is no owner. */
     if (obj.owner == 0) {
         view.owner  = "N/A";

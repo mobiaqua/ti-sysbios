@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 package ti.sysbios.family.c66;
 
 import xdc.rov.ViewInfo;
+
+import xdc.runtime.Error;
 
 /*!
  *  ======== Cache ========
@@ -96,6 +98,9 @@ import xdc.rov.ViewInfo;
  *  </table>
  *  @p
  */
+
+
+@ModuleStartup      /* generate a call to Cache_Module_startup at startup */
 
 module Cache inherits ti.sysbios.interfaces.ICache
 {
@@ -274,6 +279,20 @@ module Cache inherits ti.sysbios.interfaces.ICache
      */
     metaonly config UInt32 MAR224_255;
 
+    /*!
+     *  Error raised when invalid L1 cache size defined
+     */
+    config Error.Id E_invalidL1CacheSize = {
+        msg: "E_invalidL1CacheSize: Invalid L1 cache size %d"
+    };
+
+    /*!
+     *  Error raised when invalid L2 cache size defined
+     */
+    config Error.Id E_invalidL2CacheSize = {
+        msg: "E_invalidL2CacheSize: Invalid L2 cache size %d"
+    };
+
     /*! @_nodoc
      *
      *  This parameter is used to break up large blocks into multiple
@@ -283,6 +302,16 @@ module Cache inherits ti.sysbios.interfaces.ICache
      *  cache operations are not done atomically.
      */
     config UInt32 atomicBlockSize = 1024;
+
+    /*!
+     *  ======== registerRTSSynch ========
+     *  Boolean flag controlling registration of data synchronization
+     *  functions that are called by the RTS when accessing shared RTS
+     *  data objects.  The compiler option "--multithread" needs to be
+     *  applied in order for this feature to be functional (otherwise,
+     *  empty stubs are used in RTS).
+     */
+    config Bool registerRTSSynch = false;
 
     /*!
      *  ======== getMarMeta ========
@@ -389,6 +418,41 @@ module Cache inherits ti.sysbios.interfaces.ICache
     Void setMar(Ptr baseAddr, SizeT byteSize, UInt32 value);
 
     /*!
+     *  ======== inv ========
+     *  Invalidate the range of memory within the specified starting address and
+     *  byte count.  The range of addresses operated on gets quantized to whole
+     *  cache lines in each cache.  All cache lines in range are invalidated in
+     *  L1P cache.  All cache lines in range are invalidated in L1D cache.
+     *  All cache lines in range are invaliated in L2 cache.
+     */
+    override Void inv(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait);
+
+    /*!
+     *  ======== wb ========
+     *  Writes back the range of memory within the specified starting address
+     *  and byte count.  The range of addresses operated on gets quantized to
+     *  whole cache lines in each cache.  There is no effect on L1P cache.
+     *  All cache lines within the range are left valid in L1D cache and the
+     *  data within the range in L1D cache will be written back to L2 or
+     *  external memory. All cache lines within the range are left valid in
+     *  L2 cache and the data within the range in L2 cache will be written back
+     *  to external memory.
+     */
+    override Void wb(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait);
+
+    /*!
+     *  ======== wbInv ========
+     *  Writes back and invalidates the range of memory within the specified
+     *  starting address and byte count.  The range of addresses operated on
+     *  gets quantized to whole cache lines in each cache.  All cache lines
+     *  within range are invalidated in L1P cache.  All cache lines within the
+     *  range are written back to L2 or external and then invalidated in L1D
+     *  cache. All cache lines within the range are written back to external
+     *  memory and then invalidated in L2 cache.
+     */
+    override Void wbInv(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait);
+
+    /*!
      *  ======== invL1pAll ========
      *  Invalidate all of L1 Program cache
      *
@@ -454,6 +518,27 @@ module Cache inherits ti.sysbios.interfaces.ICache
 internal:
 
     /*!
+     *  ======== RTSSynchInv ========
+     *  @_nodoc
+     *  Called by RTS for shared data synch invalidate
+     */
+    Void RTSSynchInv(Ptr blockPtr, SizeT byteCnt);
+
+    /*!
+     *  ======== RTSSynchWb ========
+     *  @_nodoc
+     *  Called by RTS for shared data synch writeback
+     */
+    Void RTSSynchWb(Ptr blockPtr, SizeT byteCnt);
+
+    /*!
+     *  ======== RTSSynchWbInv ========
+     *  @_nodoc
+     *  Called by RTS for shared data synch writeback/invalidate
+     */
+    Void RTSSynchWbInv(Ptr blockPtr, SizeT byteCnt);
+
+    /*!
      *  ======== invPrefetchBuffer ========
      *  Invalidate the prefetch buffer
      */
@@ -470,6 +555,21 @@ internal:
      */
     Void block(Ptr blockPtr, SizeT byteCnt, Bool wait,
                volatile UInt32 *barReg);
+
+    /*
+     *  ======== getL1DInitSize ========
+     */
+    Void getL1DInitSize(Size *size);
+
+    /*
+     *  ======== getL1PInitSize ========
+     */
+    Void getL1PInitSize(Size *size);
+
+    /*
+     *  ======== getL2InitSize ========
+     */
+    Void getL2InitSize(Size *size);
 
     /* cache configuration registers */
     const UInt32 L2CFG  = 0x01840000;

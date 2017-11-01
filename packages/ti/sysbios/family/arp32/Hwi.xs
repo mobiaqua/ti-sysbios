@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -496,7 +496,12 @@ function viewInitBasic(view, obj)
     var halHwi = xdc.useModule('ti.sysbios.hal.Hwi');
 
     view.halHwiHandle =  halHwi.viewGetHandle(obj.$addr);
-    view.label = Program.getShortName(obj.$label);
+    if (view.halHwiHandle != null) {
+        view.label = Program.getShortName(halHwi.viewGetLabel(obj.$addr));
+    }
+    else {
+        view.label = Program.getShortName(obj.$label);
+    }
     var fxn = Program.lookupFuncName(Number(obj.fxn));
     view.fxn = fxn[0];
     view.arg = obj.arg;

@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008 Texas Instruments and others.
+ *  Copyright (c) 2008-2017 Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -24,6 +24,9 @@ var ITarget = xdc.loadCapsule("ITarget.xs");
 function init()
 {
     ITarget._init(this);
+
+    /* Remove target checks */
+    environment["xdc.cfg.check.exclude"] = ".*";
 
     /* initialize module configuration params that are computed */
     var ma = this.$modules;
@@ -126,7 +129,7 @@ function validate()
 
 }
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 1-29-2016 16:37:07; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,1; 7-27-2017 11:47:28; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

@@ -1,21 +1,41 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
  *
- *  Contributors:
- *      Texas Instruments - initial implementation
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * */
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 
 /*
  *  ======== _Gpio.h ========
  *  Register definitions for the general purpose IO pins (GPIO).
  *
- *  This header file was originally taken from DSP2833x_Gpio.h in the 
+ *  This header file was originally taken from DSP2833x_Gpio.h in the
  *  2833x examples
  */
 
@@ -108,7 +128,7 @@ struct GPB1_BITS {            /* bits   description */
    Uint16 GPIO45:2;           /* 27:26  GPIO45 */
    Uint16 GPIO46:2;           /* 29:28  GPIO46 */
    Uint16 GPIO47:2;           /* 31:30  GPIO47 */
-};                                        
+};
 
 struct GPB2_BITS  {           /* bits   description */
    Uint16 GPIO48:2;           /* 1:0    GPIO48 */
@@ -127,7 +147,7 @@ struct GPB2_BITS  {           /* bits   description */
    Uint16 GPIO61:2;           /* 27:26  GPIO61 */
    Uint16 GPIO62:2;           /* 29:28  GPIO62 */
    Uint16 GPIO63:2;           /* 31:30  GPIO63 */
-};                                        
+};
 
 struct GPC1_BITS {            /* bits   description */
    Uint16 GPIO64:2;           /* 1:0    GPIO64 */
@@ -146,7 +166,7 @@ struct GPC1_BITS {            /* bits   description */
    Uint16 GPIO77:2;           /* 27:26  GPIO77 */
    Uint16 GPIO78:2;           /* 29:28  GPIO78 */
    Uint16 GPIO79:2;           /* 31:30  GPIO79 */
-};                                        
+};
 
 
 struct GPC2_BITS {            /* bits   description */
@@ -159,7 +179,7 @@ struct GPC2_BITS {            /* bits   description */
    Uint16 GPIO86:2;           /* 13:12  GPIO86 */
    Uint16 GPIO87:2;           /* 15:14  GPIO87 */
    Uint16 rsvd:16;            /* 31:16  reserved */
-};                                        
+};
 
 
 union GPA1_REG {
@@ -227,7 +247,7 @@ struct GPADAT_BITS {          /* bits   description */
    Uint16 GPIO30:1;           /* 30     GPIO30 */
    Uint16 GPIO31:1;           /* 31     GPIO31 */
 };
-                                         
+
 struct GPBDAT_BITS {          /* bits   description */
    Uint16 GPIO32:1;           /* 0      GPIO32 */
    Uint16 GPIO33:1;           /* 1      GPIO33 */
@@ -262,7 +282,7 @@ struct GPBDAT_BITS {          /* bits   description */
    Uint16 GPIO62:1;           /* 30     GPIO62 */
    Uint16 GPIO63:1;           /* 31     GPIO63 */
 };
-                                         
+
 struct GPCDAT_BITS {          /* bits   description */
    Uint16 GPIO64:1;           /* 0      GPIO64 */
    Uint16 GPIO65:1;           /* 1      GPIO65 */
@@ -294,7 +314,7 @@ struct GPCDAT_BITS {          /* bits   description */
 union GPADAT_REG {
    Uint32              all;
    struct GPADAT_BITS  bit;
-};                                            
+};
 
 union GPBDAT_REG {
    Uint32              all;
@@ -385,7 +405,3 @@ extern volatile struct GPIO_INT_REGS GpioIntRegs;
  * End of file.
  * ===========================================================================
  */
-/*
- *  @(#) ti.catalog.c2800.init; 1, 0, 0,2; 1-29-2016 10:00:38; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -223,7 +223,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
            (((UInt)sem->mode & 0x2) != 0)) {    /* if PRIORITY bit is set */
             Semaphore_PendElem *tmpElem;
             Task_Handle tmpTask;
-            UInt selfPri;
+            Int selfPri;
 
             tmpElem = Queue_head(pendQ);
             selfPri = Task_getPri(elem.tpElem.task);

@@ -4,7 +4,11 @@
 %var BIOS = xdc.module("ti.sysbios.BIOS");
 %var Build = xdc.module("ti.sysbios.Build");
 %var ROM = xdc.module("ti.sysbios.rom.ROM");
-
+%
+%if (ROM.groupFuncPtrs == true) {
+%   xdc.loadTemplate("ROM_group.xdt").genStream($out, this, $args);
+%   return;
+%}
 %if ((Build.buildROM == true) || (Build.buildROMApp == true)) {
 %   for (var i = 0; i < ROM.otherLibIncludes.length; i++) {
 #include <`ROM.otherLibIncludes[i]`>
@@ -69,13 +73,23 @@ xdc_Void * const ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]` __attribute__((secti
 %       }
 %       else {
 %           if (Program.build.target.$name.match(/C28/)) {
+%               if (ROM.generatedFuncs[i] != "null") {
 #pragma DATA_SECTION(ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]`, ".econst:ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]`");
+%               }
+%               else {
+#pragma DATA_SECTION(ti_sysbios_rom_ROM_null`i`, ".econst:ti_sysbios_rom_ROM_null`i`");
+%               }
 %           }
 %           else {
 #pragma DATA_SECTION(ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]`, ".const:ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]`");
 %           }
 %       }
+%       if (ROM.generatedFuncs[i] != "null") {
 xdc_Void * const ti_sysbios_rom_ROM_`ROM.generatedFuncs[i]` = (xdc_Void *)`ROM.generatedFuncs[i]`;
+%       }
+%       else {
+xdc_Void * const ti_sysbios_rom_ROM_null`i` = NULL;
+%       }
 %       if (i < ROM.generatedFuncs.length) {
 
 %       }

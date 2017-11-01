@@ -338,7 +338,7 @@ function _mkCmds(target)
     _targetCmds[target.suffix] = tool2cmd;
 }
 /*
- *  @(#) iar.targets.msp430; 1, 0, 0,0; 1-29-2016 16:37:06; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) iar.targets.msp430; 1, 0, 0,1; 7-27-2017 11:47:15; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

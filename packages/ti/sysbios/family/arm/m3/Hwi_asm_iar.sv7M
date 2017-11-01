@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2013, Texas Instruments Incorporated
+;  Copyright (c) 2013-2017, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
         PUBLIC ti_sysbios_family_arm_m3_Hwi_pendSV__I
         PUBLIC ti_sysbios_family_arm_m3_Hwi_excHandlerAsm__I
         PUBLIC ti_sysbios_family_arm_m3_Hwi_return
+        PUBLIC ti_sysbios_family_arm_m3_Hwi_interruptsAreDisabledButShouldNotBe
 
         EXTERN ti_sysbios_family_arm_m3_Hwi_doSwiRestore__I
         EXTERN ti_sysbios_family_arm_m3_Hwi_doTaskRestore__I
@@ -50,6 +51,10 @@
 
 ;
 ; Here on all dispatched interrupts
+;
+; Warning! Do not overwrite r3 prior to jumping to dispatcher.
+; When in sparse dispatch table mode, r3 contains the address of
+; the Hwi object.
 ;
 
         SECTION CODE:CODE:NOROOT
@@ -69,14 +74,13 @@ ti_sysbios_family_arm_m3_Hwi_dispatch__I:
         ldr     r0, [r1, #24]   ; get IRP (2nd of 8 items to be pushed)
 
 #if defined (__ARMVFP__)
+        sub     r2, r1, #72     ; make room for 9 FP regs
+        ite     NE              ; CCs are still valid from tst lr above
+        msrne   psp, r2         ; update appropriate SP
+        moveq   sp, r2
         vstmdb  r1!, {d0-d7}    ; push vfp scratch regs on appropriate stack
         fmrx    r2, fpscr       ; push fpscr too
         str     r2, [r1, #-8]!  ; (keep even align)
-
-        tst     lr, #4          ; context on PSP?
-        ite     NE
-        msrne   psp, r1         ; update appropriate SP
-        moveq   sp, r1
 #endif
 
         mrs     r1, basepri
@@ -88,10 +92,10 @@ ti_sysbios_family_arm_m3_Hwi_dispatch__I:
                                 ; dispatcher returns swi and task keys in r0
 
 ; Here on return from dispatcher, r0 = tskKey, interrupts disabled
-        ldr     lr, swiTaskKeyAddr
-        ldr     r1, [lr]
+        ldr     r2, swiTaskKeyAddr
+        ldr     r1, [r2]
         and     r0, r1, r0
-        str     r0, [lr]
+        str     r0, [r2]
 
         pop     {lr}            ; restore EXC_RETURN
         tst     lr, #8          ; returning to thread mode?
@@ -130,6 +134,15 @@ lab$2:
         msrne   psp, r1         ; update appropriate SP
         moveq   sp, r1
 
+        str     r2, [r1, #4]    ; old basepri pops into r1
+
+        mov     r0, #0x01000000 ; dummy xPSR with T bit set
+        str     r0, [r1, #28]
+        ldr     r0, lab$1Addr
+        str     r0, [r1, #24]   ; last str with imm offset
+                                ; 5 more inst before bx lr
+                                ; (See ARM errata #838869)
+
 ; copy saved swi and task keys into interrupt context
 
         ldr     r3, swiTaskKeyAddr
@@ -137,13 +150,6 @@ lab$2:
         str     r0, [r1]        ; tskkey pops into r0
         movw.w  r0, #0x00000101
         str     r0, [r3]        ; re-init swiTaskKey
-
-        str     r2, [r1, #4]    ; old basepri pops into r1
-
-        mov     r0, #0x01000000 ; dummy xPSR with T bit set
-        str     r0, [r1, #28]
-        ldr     r0, lab$1Addr
-        str     r0, [r1, #24]
 
         bx      lr              ; EXC_RETURN to $1 below
 
@@ -212,11 +218,20 @@ lab$1:
 
 ; CAUTION!!! Do NOT single step thru the next instruction
 ; else, the processor won't arrive at pendSV thru the
-; exception mechanism.
+; exception mechanism and catastrophic things will happen
+; afterwards.
 
         msr     basepri, r0     ; causes pendSV to happen
         nop                     ; 2 nops required for prefetch
         nop                     ;
+
+; Arriving here can only happen if interrupts were globally disabled
+; when the pendSV interrupt was posted above. This can happen if
+; user code has set the PRIMASK and not cleared it, or when single
+; stepping with interrupts disabled.
+
+ti_sysbios_family_arm_m3_Hwi_interruptsAreDisabledButShouldNotBe:
+        b       ti_sysbios_family_arm_m3_Hwi_interruptsAreDisabledButShouldNotBe
 
         SECTION CODE:CODE:NOROOT
         THUMB

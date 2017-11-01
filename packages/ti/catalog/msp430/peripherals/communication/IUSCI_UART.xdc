@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 /*!
  * Universal Serial Communication Interface
  */
@@ -17,25 +38,25 @@ metaonly interface IUSCI_UART inherits IUSCI {
     //*****************************************************************
     //* REGISTER BIT DEFINITIONS                                      *
     //*****************************************************************
-    
+
     /*! Parity enable */
     enum UCPEN_t {
         UCPEN_OFF = 0x00,       /*! Parity Disabled */
         UCPEN = 0x02            /*! Parity Enabled */
     };
-    
+
     /*! Parity select. UCPAR is not used when parity is disabled. */
     enum UCPAR_t {
         UCPAR_OFF = 0x00,       /*! Odd parity */
         UCPAR = 0x02            /*! Even parity */
     };
-    
+
     /*! Stop bit select. Number of stop bits. */
     enum UCSPB_t {
         UCSPB_OFF = 0x00,       /*! One stop bit */
         UCSPB = 0x02            /*! Two stop bits */
     };
-    
+
     /*! First modulation stage select */
     enum UCBRF_t {
         UCBRF_0 = 0x00,         /*! First stage 0 */
@@ -55,7 +76,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCBRF_14 = 0xE0,        /*! First stage 14 */
         UCBRF_15 = 0xF0         /*! First stage 15 */
     };
-    
+
     /*! Second modulation stage select */
     enum UCBRS_t {
         UCBRS_0 = 0x00,         /*! Second stage 0 */
@@ -65,58 +86,58 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCBRS_4 = 0x08,         /*! Second stage 4 */
         UCBRS_5 = 0x0A,         /*! Second stage 5 */
         UCBRS_6 = 0x0C,         /*! Second stage 6 */
-        UCBRS_7 = 0x0E          /*! Second stage 7 */    
+        UCBRS_7 = 0x0E          /*! Second stage 7 */
     };
-    
+
     /*! Oversampling mode enabled */
     enum UCOS16_t {
         UCOS16_OFF = 0x00,      /*! Disabled. */
         UCOS16 = 0x02           /*! Enabled. */
     };
-    
-    
+
+
         /*! IRDA Transmit Pulse Length Bit 5 */
     enum UCIRTXPL5_t {
         UCIRTXPL5_OFF = 0x00,   /*! Bit 5 OFF */
         UCIRTXPL5 = 0x80        /*! Bit 5 ON */
     };
-    
+
     /*! IRDA Transmit Pulse Length Bit 4 */
     enum UCIRTXPL4_t {
         UCIRTXPL4_OFF = 0x00,   /*! Bit 4 OFF */
         UCIRTXPL4 = 0x40        /*! Bit 4 ON */
     };
-    
+
     /*! IRDA Transmit Pulse Length Bit 3 */
     enum UCIRTXPL3_t {
         UCIRTXPL3_OFF = 0x00,   /*! Bit 3 OFF */
         UCIRTXPL3 = 0x20        /*! Bit 3 ON */
     };
-    
+
     /*! IRDA Transmit Pulse Length Bit 2 */
     enum UCIRTXPL2_t {
         UCIRTXPL2_OFF = 0x00,   /*! Bit 2 OFF */
         UCIRTXPL2 = 0x10        /*! Bit 2 ON */
     };
-    
+
     /*! IRDA Transmit Pulse Length Bit 1 */
     enum UCIRTXPL1_t {
         UCIRTXPL1_OFF = 0x00,   /*! Bit 1 OFF */
         UCIRTXPL1 = 0x08        /*! Bit 1 ON */
     };
-    
+
     /*! IRDA Transmit Pulse Length Bit 0 */
     enum UCIRTXPL0_t {
         UCIRTXPL0_OFF = 0x00,   /*! Bit 0 OFF */
         UCIRTXPL0 = 0x04        /*! Bit 0 ON */
     };
-    
+
     /*! IrDA transmit pulse clock select. */
     enum UCIRTXCLK_t {
         UCIRTXCLK_OFF = 0x00,   /*! BRCLK. */
         UCIRTXCLK = 0x02        /*! BITCLK16 when UCOS16 = 1. Otherwise, BRCLK. */
     };
-    
+
     /*! IrDA encoder/decoder enable. */
     enum UCIREN_t {
         UCIREN_OFF = 0x00,      /*! IrDA encoder/decoder disabled. */
@@ -128,73 +149,73 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCIRRXFL5_OFF = 0x00,   /*! Bit 5 OFF */
         UCIRRXFL5 = 0x80        /*! Bit 5 ON */
     };
-    
+
     /*! IRDA Receive Filter Length Bit 4 */
     enum UCIRRXFL4_t {
         UCIRRXFL4_OFF = 0x00,   /*! Bit 4 OFF */
         UCIRRXFL4 = 0x40        /*! Bit 4 ON */
     };
-    
+
     /*! IRDA Receive Filter Length Bit 3 */
     enum UCIRRXFL3_t {
         UCIRRXFL3_OFF = 0x00,   /*! Bit 3 OFF */
         UCIRRXFL3 = 0x20        /*! Bit 3 ON */
     };
-    
+
     /*! IRDA Receive Filter Length Bit 2 */
     enum UCIRRXFL2_t {
         UCIRRXFL2_OFF = 0x00,   /*! Bit 2 OFF */
         UCIRRXFL2 = 0x10        /*! Bit 2 ON */
     };
-    
+
     /*! IRDA Receive Filter Length Bit 1 */
     enum UCIRRXFL1_t {
         UCIRRXFL1_OFF = 0x00,   /*! Bit 1 OFF */
         UCIRRXFL1 = 0x08        /*! Bit 1 ON */
     };
-    
+
     /*! IRDA Receive Filter Length Bit 0 */
     enum UCIRRXFL0_t {
         UCIRRXFL0_OFF = 0x00,   /*! Bit 0 OFF */
         UCIRRXFL0 = 0x04        /*! Bit 0 ON */
     };
-      
+
     /*! IrDA receive input UCAxRXD polarity. */
     enum UCIRRXPL_t {
         UCIRRXPL_OFF = 0x00,    /*! IrDA transceiver delivers a high pulse when a light pulse is seen. */
         UCIRRXPL = 0x02         /*! IrDA transceiver delivers a low pulse when a light pulse is seen. */
     };
-    
+
     /*! IrDA receive filter enabled. */
     enum UCIRRXFE_t {
         UCIRRXFE_OFF = 0x00,    /*! Receive filter disabled. */
         UCIRRXFE = 0x02         /*! Receive filter enabled. */
     };
-    
+
     /*! Break/synch delimiter length bit 0 */
     enum UCDELIM0_t {
         UCDELIM0_OFF = 0x00,    /*! Break Sync Delimiter bit 0 Off */
         UCDELIM0 = 0x02         /*! Break Sync Delimiter bit 0 On */
     };
-    
+
     /*! Break/synch delimiter length bit 1 */
     enum UCDELIM1_t {
         UCDELIM1_OFF = 0x00,    /*! Break Sync Delimiter bit 1 Off */
         UCDELIM1 = 0x02         /*! Break Sync Delimiter bit 1 On */
     };
-    
+
     /*! Synch field time out error. */
     enum UCSTOE_t {
         UCSTOE_OFF = 0x00,      /*! No error. */
         UCSTOE = 0x02           /*! Length of synch field exceeded measurable time. */
     };
-    
+
     /*! Break time out error. */
     enum UCBTOE_t {
         UCBTOE_OFF = 0x00,      /*! No error. */
         UCBTOE = 0x02           /*! Length of break field exceeded 22 bit times. */
     };
-    
+
     /*! Automatic baud rate detect enable. */
     enum UCABDEN_t {
         UCABDEN_OFF = 0x00,     /*! Baud rate detection disabled. Length of break and synch field is not
@@ -202,7 +223,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCABDEN = 0x02          /*! Baud rate detection enabled. Length of break and synch field is
                                  * measured and baud rate settings are changed accordingly. */
     };
-    
+
     /*! USCI mode. The UCMODEx bits select the asynchronous mode when UCSYNC = 0. */
     enum UCMODE_ASYNC_t {
         UCMODE_0 = 0x00,        /*! UART Mode. */
@@ -210,7 +231,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCMODE_2 = 0x02,        /*! Address-Bit Multiprocessor Mode. */
         UCMODE_3 = 0x04         /*! UART Mode with automatic baud rate detection. */
     };
-    
+
     /*! USCI clock source select. These bits select the BRCLK source clock. */
     enum UCSSEL_UART_t {
         UCSSEL_0 = 0x00,        /*! UCLK */
@@ -218,7 +239,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCSSEL_2 = 0x02         /*! SMCLK */
 /*        UCSSEL_3 = 0x04         /*! SMCLK */
     };
-    
+
     struct UCxCTL0_t {
         UCPEN_t     UCPEN;      /*! Parity enable
                                  *  0  Parity disabled.
@@ -273,7 +294,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *  1  Next frame transmitted is an address */
         UCTXBRK_t   UCTXBRK;    /*! Transmit break. Transmits a break with the next write to the transmit buffer.
                                  *In UART mode with automatic baud rate detection 055h must be written
-                                 *into UCAxTXBUF to generate the required break/synch fields. Otherwise 
+                                 *into UCAxTXBUF to generate the required break/synch fields. Otherwise
                                  *0h must be written into the transmit buffer.
                                  *   0  Next frame transmitted is not a break
                                  *   1  Next frame transmitted is a break or a break/synch */
@@ -291,7 +312,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *  0  Disabled
                                  *  1  Enabled */
     }
-    
+
     struct UCxSTAT_t {
         UCLISTEN_t  UCLISTEN;   /*! Listen enable. The UCLISTEN bit selects loopback mode.
                                  *  0  Disabled
@@ -327,7 +348,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *  0  USCI inactive
                                  *  1  USCI transmitting or receiving */
     }
-    
+
     struct UCxIRTCTL_t {
         UCIRTXPL5_t  UCIRTXPL5; /*! IRDA Transmit Pulse Length Bit 5 */
         UCIRTXPL4_t  UCIRTXPL4; /*! IRDA Transmit Pulse Length Bit 4 */
@@ -340,7 +361,7 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *  1  BITCLK16 when UCOS16 = 1. Otherwise, BRCLK */
         UCIREN_t     UCIREN;    /*! IrDA encoder/decoder enable.
                                  *  0  IrDA encoder/decoder disabled
-                                 *  1  IrDA encoder/decoder enabled */   
+                                 *  1  IrDA encoder/decoder enabled */
     }
 
     struct UCxIRRCTL_t {
@@ -352,12 +373,12 @@ metaonly interface IUSCI_UART inherits IUSCI {
         UCIRRXFL0_t  UCIRRXFL0; /*! IRDA Receive Filter Length Bit 0 */
         UCIRRXPL_t   UCIRRXPL;  /*! IrDA receive input UCAxRXD polarity
                                  *  0  IrDA transceiver delivers a high pulse when a light pulse is seen
-                                 *  1  IrDA transceiver delivers a low pulse when a light pulse is seen */ 
+                                 *  1  IrDA transceiver delivers a low pulse when a light pulse is seen */
         UCIRRXFE_t   UCIRRXFE;  /*! IrDA receive filter enabled
                                  *  0  Receive filter disabled
-                                 *  1  Receive filter enabled */ 
+                                 *  1  Receive filter enabled */
     }
-    
+
     struct UCxABCTL_t {
         UCDELIM1_t   UCDELIM1;  /*! Break/synch delimiter length
                                  *  00  1 bit time
@@ -371,10 +392,10 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *  11  4 bit times */
         UCSTOE_t     UCSTOE;    /*! Synch field time out error
                                  *  0  No error
-                                 *  1  Length of synch field exceeded measurable time */ 
+                                 *  1  Length of synch field exceeded measurable time */
         UCBTOE_t     UCBTOE;    /*! Break time out error
                                  *  0  No error
-                                 *  1  Length of break field exceeded 22 bit times */ 
+                                 *  1  Length of break field exceeded 22 bit times */
         UCABDEN_t    UCABDEN;   /*! Automatic baud rate detect enable
                                  *  0  Baud rate detection disabled. Length of break and synch field is not
                                  *     measured.
@@ -382,7 +403,3 @@ metaonly interface IUSCI_UART inherits IUSCI {
                                  *     measured and baud rate settings are changed accordingly. */
     }
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.communication; 1, 0, 0,2; 1-29-2016 10:00:48; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

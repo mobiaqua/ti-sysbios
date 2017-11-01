@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,12 +48,12 @@ extern "C" {
  *  sys/types.h header file, while GNU toolchain does.  For
  *  GNU, sys/types.h is included in time.h.
  */
-#include <ti/sysbios/posix/_time.h>
+#include "time.h"
 
 #include <ti/sysbios/knl/Semaphore.h>
 
 typedef struct sem_t {
-    Semaphore_Struct  sem;
+    ti_sysbios_knl_Semaphore_Struct  sem;
 } sem_t;
 
 

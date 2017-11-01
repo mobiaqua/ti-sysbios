@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,6 @@
 function getAsmFiles(targetName)
 {
     switch(targetName) {
-        case "ti.targets.C674":
         case "ti.targets.elf.C674":
         case "ti.targets.elf.C66":
         case "ti.targets.elf.C66_big_endian":

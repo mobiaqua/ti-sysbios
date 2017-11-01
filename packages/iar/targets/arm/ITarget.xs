@@ -220,7 +220,7 @@ function getISAChain(isa) {
 /*
  *  ======== _langOpts ========
  */
-var _langOpts = {asm: "", c: "", cpp: "--eec++ --guard_calls"};
+var _langOpts = {asm: "", c: "", cpp: "--c++ --no_exceptions --no_rtti --guard_calls"};
 
 /*
  *  ======== _compile ========
@@ -357,7 +357,7 @@ function _mkCmds(target)
     _targetCmds[target.suffix] = tool2cmd;
 }
 /*
- *  @(#) iar.targets.arm; 1, 0, 0,0; 1-29-2016 16:37:03; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) iar.targets.arm; 1, 0, 0,1; 7-27-2017 11:47:09; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

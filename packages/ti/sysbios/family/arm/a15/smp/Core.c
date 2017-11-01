@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,6 +75,19 @@ Int Core_Module_startup(Int status)
     Core_lock();
 
     return (Startup_DONE);
+}
+
+/*
+ *  ======== Core_enableActlrSmp ========
+ */
+Void __attribute__((naked)) Core_enableActlrSmp()
+{
+    __asm__ __volatile__ (
+        /* Enable ACTLR SMP bit if non-secure access allowed */
+        "mov   r0, #0x40\n\t"
+        "mcr   p15, #0, r0, c1, c0, #1\n\t"
+        "bx    lr"
+    );
 }
 
 /*
@@ -337,6 +350,10 @@ Void __attribute__((naked)) Core_smpBoot()
         "mcr   p15, #0, r0, c8, c7, #0\n\t"
         "dsb\n\t"
         "isb\n\t"
+
+        /* Enable ACTLR SMP bit if non-secure access allowed */
+        "mov   r0, #0x40\n\t"
+        "mcr   p15, #0, r0, c1, c0, #1\n\t"
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
         /* Enable access to cp10 and cp11 - required for SIMD and VFP to work */

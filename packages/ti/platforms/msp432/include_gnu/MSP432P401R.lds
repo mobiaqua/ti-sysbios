@@ -1,6 +1,6 @@
 /******************************************************************************
 *
-* Copyright (C) 2012 - 2015 Texas Instruments Incorporated - http://www.ti.com/
+* Copyright (C) 2012 - 2016 Texas Instruments Incorporated - http://www.ti.com/
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -64,7 +64,7 @@ SECTIONS {
     PROVIDE (_vtable_base_address =
         DEFINED(_vtable_base_address) ? _vtable_base_address : 0x20000000);
 
-    .vtable (_vtable_base_address) : AT (_vtable_base_address) {
+    .vtable (_vtable_base_address) (NOLOAD) : {
         KEEP (*(.vtable))
     } > REGION_DATA
 

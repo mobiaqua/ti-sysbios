@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013, Texas Instruments Incorporated
+@  Copyright (c) 2013-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -74,8 +74,7 @@
         .set ARG0,  0       @ 5th argument (stack offset)
         .set ARG1,  4       @ 6th argument (stack offset)
 
-        .text
-
+        .section .text.ti_sysbios_family_arm_m3_TaskSupport_buildTaskStack
         .func ti_sysbios_family_arm_m3_TaskSupport_buildTaskStack
         .thumb_func
 ti_sysbios_family_arm_m3_TaskSupport_buildTaskStack:
@@ -137,8 +136,7 @@ glueAddr:
 @  TaskSupport_swap(oldSP, newSP)
 @
 
-        .text
-
+        .section .text.ti_sysbios_family_arm_m3_TaskSupport_swap__E
         .func ti_sysbios_family_arm_m3_TaskSupport_swap__E
         .thumb_func
 ti_sysbios_family_arm_m3_TaskSupport_swap__E:
@@ -172,8 +170,7 @@ ti_sysbios_knl_Task_swapReturn:
 @  registers - necessary for the m3 register passing model.
 @
 
-        .text
-
+        .section .text.ti_sysbios_family_arm_m3_TaskSupport_glue
         .func ti_sysbios_family_arm_m3_TaskSupport_glue
         .thumb_func
 ti_sysbios_family_arm_m3_TaskSupport_glue:

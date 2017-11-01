@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -520,7 +520,8 @@ module Clock
      *  ======== setTicks ========
      *  Set the internal Clock tick counter
      *
-     *  Used internally by Power modules.
+     *  Used internally by Power modules. Only applicable for
+     *  Clock.TickMode_PERIODIC
      */
     Void setTicks(UInt32 ticks);
 
@@ -747,13 +748,16 @@ instance:
      *  The first argument is the function that gets called when the timeout
      *  expires.
      *
-     *  The 'timeout' argument is used to specify the initial timeout
-     *  for both one-shot and periodic Clock instances (in Clock ticks).
-     *
-     *  The {@link #period} parameter is used to set the subsequent timeout
-     *  interval (in Clock ticks) for periodic instances.
-     *
-     *  For one-shot instances, the period parameter must be set to zero.
+     *  The 'timeout' argument is used to specify the startup timeout for
+     *  both one-shot and periodic Clock instances (in Clock ticks).  This
+     *  timeout is applied when the Clock instance is started.  For periodic
+     *  instances, the configured Clock function will be called initially
+     *  after an interval equal to the timeout, and will be subsequently
+     *  called at the rate specified by the {@link #period} parameter.  For
+     *  one-shot instances (where the {@link #period} parameter is 0), once
+     *  the Clock instance is started (with {@link #start Clock_start()} or
+     *  automatically if {@link #startFlag} is true) the configured Clock
+     *  function will be called once after an interval equal to the timeout.
      *
      *  When instances are created they are placed upon a linked list managed
      *  by the Clock module.  For this reason, instances cannot be created
@@ -810,6 +814,9 @@ instance:
     /*!
      *  ======== period ========
      *  Period of this instance (in clock ticks)
+     *
+     *  This parameter is used to set the subsequent timeout interval (in
+     *  Clock ticks) for periodic instances.
      *
      *  The default value of this parameter is 0, which indicates this is
      *  a one-shot Clock object.
@@ -928,7 +935,8 @@ instance:
      *  ======== getTimeout ========
      *  Get timeout of instance
      *
-     *  Returns the remaining time if instance has been started.
+     *  Returns the remaining time if the instance is active; if the instance
+     *  is not active, returns zero.
      *
      *  @b(returns)             returns timeout in clock ticks
      */
@@ -996,17 +1004,17 @@ internal:
      *  ======== Module_State ========
      */
     struct Module_State {
-        volatile UInt32	    ticks;          // last tick serviced
-        UInt		    swiCount;       // num of Swi posts before Swi runs
+        volatile UInt32     ticks;          // last tick serviced
+        UInt                swiCount;       // num of Swi posts before Swi runs
         TimerProxy.Handle   timer;          // timer used
-				            // points to generated Clock_doTick()
-        Queue.Object	    clockQ;         // clock que
-        Swi.Handle	    swi;            // clock swi
-        volatile UInt	    numTickSkip;    // number of ticks being suppressed
-        UInt32		    nextScheduledTick;
-        UInt32		    maxSkippable;   // timer dependent (in tickPeriods)
-        Bool		    inWorkFunc;     // true if in Clock Swi servicing Q
-        Bool		    startDuringWorkFunc; // Clock_start during workFunc?
-        Bool		    ticking;        // set true during first Clock tick
+                                            // points to generated Clock_doTick()
+        Queue.Object        clockQ;         // clock que
+        Swi.Handle          swi;            // clock swi
+        volatile UInt       numTickSkip;    // number of ticks being suppressed
+        UInt32              nextScheduledTick;
+        UInt32              maxSkippable;   // timer dependent (in tickPeriods)
+        Bool                inWorkFunc;     // true if in Clock Swi servicing Q
+        Bool                startDuringWorkFunc; // Clock_start during workFunc?
+        Bool                ticking;        // set true during first Clock tick
     };
 }

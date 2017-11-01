@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,6 @@
 #define MAR160       0xA0
 #define MAR192       0xC0
 #define MAR224       0xE0
-
 
 /*
  *  ======== emifRange ========
@@ -324,9 +323,14 @@ Void Cache_marInit(UInt32 mask, UInt32 index)
  */
 Int Cache_Module_startup(Int phase)
 {
+    Cache_Size cacheSize;
+
     Cache_module->emifAddr = NULL;
 
-    Cache_setSize((Cache_Size *)&(Cache_initSize));
+    Cache_getL1DInitSize(&cacheSize);
+    Cache_getL1PInitSize(&cacheSize);
+    Cache_getL2InitSize(&cacheSize);
+    Cache_setSize(&cacheSize);
 
     Cache_marInit(Cache_MAR0_31, MAR16);
     Cache_marInit(Cache_MAR32_63, MAR32);
@@ -342,7 +346,7 @@ Int Cache_Module_startup(Int phase)
 
 /*
  *  ======== Cache_enable ========
- *  For L1P and L1D, set the size to the Cache_initSize.
+ *  For L1P and L1D, set the size to the Cache init size.
  *  For L2, set the cache mode to NORMAL.
  */
 Void Cache_enable(Bits16 type)
@@ -351,15 +355,17 @@ Void Cache_enable(Bits16 type)
 
     Cache_getSize(&size);
 
-    if (type == Cache_Type_L1P) {
-        size.l1pSize = Cache_initSize.l1pSize;
+    if (type & Cache_Type_L1P) {
+        Cache_getL1PInitSize(&size);
         Cache_setSize(&size);
     }
-    else if (type == Cache_Type_L1D) {
-        size.l1dSize = Cache_initSize.l1dSize;
+
+    if (type & Cache_Type_L1D) {
+        Cache_getL1DInitSize(&size);
         Cache_setSize(&size);
     }
-    else {
+
+    if (type & Cache_Type_L2) {
         Cache_setMode(Cache_Type_L2, Cache_Mode_NORMAL);
     }
 }
@@ -374,19 +380,19 @@ Void Cache_disable(Bits16 type)
 {
     Cache_Size size;
 
+    /* Only L1 is supported, reject any other type */
+    Assert_isTrue((type & ~Cache_Type_L1) == 0, NULL);
+
     Cache_getSize(&size);
 
-    if (type == Cache_Type_L1P) {
+    if (type & Cache_Type_L1P) {
         size.l1pSize = Cache_L1Size_0K;
         Cache_setSize(&size);
     }
-    else if (type == Cache_Type_L1D) {
+
+    if (type & Cache_Type_L1D) {
         size.l1dSize = Cache_L1Size_0K;
         Cache_setSize(&size);
-    }
-    else {
-        /* Disable of L2 Cache here is not allowed */
-        Assert_isTrue(FALSE, NULL);
     }
 }
 
@@ -750,5 +756,113 @@ Void Cache_wait()
     Hwi_restore(mask);
 }
 
+/*
+ *  ======== Cache_getL1DInitSize ========
+ */
+Void Cache_getL1DInitSize(Cache_Size *cacheSize)
+{
+    __extern __FAR__ UInt32 ti_sysbios_family_c64p_Cache_l1dSize;
 
+    /*
+     *  Copy cache size extern to local variable instead of using
+     *  it directly in switch expression in order to avoid compiler
+     *  warning.
+     */
+    UInt32 l1dSize = (UInt32)&ti_sysbios_family_c64p_Cache_l1dSize;
 
+    switch (l1dSize) {
+        case 0:
+            cacheSize->l1dSize = Cache_L1Size_0K;
+            break;
+        case (4*1024):
+            cacheSize->l1dSize = Cache_L1Size_4K;
+            break;
+        case (8*1024):
+            cacheSize->l1dSize = Cache_L1Size_8K;
+            break;
+        case (16*1024):
+            cacheSize->l1dSize = Cache_L1Size_16K;
+            break;
+        case (32*1024):
+            cacheSize->l1dSize = Cache_L1Size_32K;
+            break;
+        default:
+            Error_raise(NULL, Cache_E_invalidL1CacheSize, l1dSize, 0);
+    }
+}
+
+/*
+ *  ======== Cache_getL1PInitSize ========
+ */
+Void Cache_getL1PInitSize(Cache_Size *cacheSize)
+{
+    __extern __FAR__ UInt32 ti_sysbios_family_c64p_Cache_l1pSize;
+
+    /*
+     *  Copy cache size extern to local variable instead of using
+     *  it directly in switch expression in order to avoid compiler
+     *  warning.
+     */
+    UInt32 l1pSize = (UInt32)&ti_sysbios_family_c64p_Cache_l1pSize;
+
+    switch (l1pSize) {
+        case 0:
+            cacheSize->l1pSize = Cache_L1Size_0K;
+            break;
+        case (4*1024):
+            cacheSize->l1pSize = Cache_L1Size_4K;
+            break;
+        case (8*1024):
+            cacheSize->l1pSize = Cache_L1Size_8K;
+            break;
+        case (16*1024):
+            cacheSize->l1pSize = Cache_L1Size_16K;
+            break;
+        case (32*1024):
+            cacheSize->l1pSize = Cache_L1Size_32K;
+            break;
+        default:
+            Error_raise(NULL, Cache_E_invalidL1CacheSize, l1pSize, 0);
+    }
+}
+
+/*
+ *  ======== Cache_getL2InitSize ========
+ */
+Void Cache_getL2InitSize(Cache_Size *cacheSize)
+{
+    __extern __FAR__ UInt32 ti_sysbios_family_c64p_Cache_l2Size;
+
+    /*
+     *  Copy cache size extern to local variable instead of using
+     *  it directly in switch expression in order to avoid compiler
+     *  warning.
+     */
+    UInt32 l2Size = (UInt32)&ti_sysbios_family_c64p_Cache_l2Size;
+
+    switch (l2Size) {
+        case 0:
+            cacheSize->l2Size = Cache_L2Size_0K;
+            break;
+        case (32*1024):
+            cacheSize->l2Size = Cache_L2Size_32K;
+            break;
+        case (64*1024):
+            cacheSize->l2Size = Cache_L2Size_64K;
+            break;
+        case (128*1024):
+            cacheSize->l2Size = Cache_L2Size_128K;
+            break;
+        case (256*1024):
+            cacheSize->l2Size = Cache_L2Size_256K;
+            break;
+        case (512*1024):
+            cacheSize->l2Size = Cache_L2Size_512K;
+            break;
+        case (1024*1024):
+            cacheSize->l2Size = Cache_L2Size_1024K;
+            break;
+        default:
+            Error_raise(NULL, Cache_E_invalidL2CacheSize, l2Size, 0);
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,8 +95,13 @@ SECTIONS
                             FLASHF | FLASHG PAGE = 0
     .binit              : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0
+#ifdef __TI_EABI__
+    .init_array         : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
+                            FLASHF | FLASHG PAGE = 0
+#else
     .pinit              : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0
+#endif
     .text               : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0
     codestart           : > BEGIN   PAGE = 0
@@ -110,8 +115,8 @@ SECTIONS
                           RUN_SIZE(_RamfuncsRunSize),
                           RUN_END(_RamfuncsRunEnd)
 
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc : {} LOAD = FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0,
                      RUN  = LS05SARAM PAGE = 1,
@@ -121,13 +126,24 @@ SECTIONS
 
     /* Allocate uninitalized data sections: */
     .stack              : > M01SARAM | LS05SARAM    PAGE = 1
+#ifdef __TI_EABI__
+    .bss                : > M01SARAM | LS05SARAM    PAGE = 1
+    .sysmem             : > LS05SARAM | M01SARAM    PAGE = 1
+    .data               : > M01SARAM | LS05SARAM    PAGE = 1
+#else
     .ebss               : > M01SARAM | LS05SARAM    PAGE = 1
     .esysmem            : > LS05SARAM | M01SARAM    PAGE = 1
+#endif
     .cio                : > LS05SARAM | M01SARAM    PAGE = 1
 
     /* Initalized sections go in Flash */
+#ifdef __TI_EABI__
+    .const              : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
+                            FLASHF | FLASHG PAGE = 0
+#else
     .econst             : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0
+#endif
     .switch             : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |
                             FLASHF | FLASHG PAGE = 0
     .args               : > FLASHA | FLASHB | FLASHC | FLASHD | FLASHE |

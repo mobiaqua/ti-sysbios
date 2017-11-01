@@ -1,14 +1,35 @@
-/* 
- *  Copyright (c) 2008 Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- * 
- *  Contributors:
- *      Texas Instruments - initial implementation
- * 
- * */
+/*
+ * Copyright (c) 2016, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 
 /*
  *  ======== BCSplus.xs ========
@@ -61,7 +82,7 @@ function instance$meta$init()
             return;
         }
         var inputHz;
-    
+
         /* Check if device has XT2 present first */
         if (inst.hasXT2) {
             /* Device has XT2 */
@@ -78,11 +99,11 @@ function instance$meta$init()
             /* Device does not have XT2 */
             inst.enableXT2 = false;
             inst.BCSCTL1.XT2OFF = BCSplus.XT2OFF;
-        }    
+        }
 
         if (inst.BCSCTL1.XTS & BCSplus.XTS) {   /* If XTS == 1 */
             debug("if XTS == 1");
-            
+
             /* TODO: Check frequency range and print error */
             inputHz = inst.LFXT1CLKHz;
         }
@@ -100,9 +121,9 @@ function instance$meta$init()
                 case BCSplus.LFXT1S_2:
                     inputHz = inst.VLOCLKHz;
                     break;
-            }    
+            }
         }
-        
+
         /* Calculate ACLK/DIVA */
         inst.$unseal("ACLKHz");
         switch (inst.BCSCTL1.DIVA) {
@@ -134,9 +155,9 @@ function instance$meta$init()
                 inputHz = inst.LFXT1CLKHz;
                 break;
         }
-        
+
         debug("inputHz @ MCLK = " + inputHz);
-        
+
         /* Calculate MCLK/DIVM */
         inst.$unseal("MCLKHz");
         switch (inst.BCSCTL2.DIVM) {
@@ -154,19 +175,19 @@ function instance$meta$init()
                 break;
         }
         inst.$seal("MCLKHz");
-        
+
         /********* Calculate SMCLK *********/
         if (inst.BCSCTL2.SELS & BCSplus.SELS) {
             debug("Inside SELS");
-            inputHz = inst.enableXT2 ? inst.XT2CLKHz : inst.LFXT1CLKHz;    
+            inputHz = inst.enableXT2 ? inst.XT2CLKHz : inst.LFXT1CLKHz;
         }
         else {
             debug("Inside SELS_OFF");
             inputHz = inst.DCOCLKHz;
         }
-        
+
         debug("inputHz @ SMCLK = " + inputHz);
-        
+
         /* Calculate SMCLK/DIVS */
         inst.$unseal("SMCLKHz");
         switch (inst.BCSCTL2.DIVS) {
@@ -193,7 +214,7 @@ function instance$meta$init()
         debug("inst.MCLKHz = " + inst.MCLKHz);
         debug("inst.SMCLKHz = " + inst.SMCLKHz);
     }
-    
+
     /* For each of the following onSet calls, calculateClock will run.
      * But there is no need for it to run more than once here because the
      * register values will not change between the calls, and there is no
@@ -220,8 +241,8 @@ function instance$meta$init()
     group.onSet(inst, "enableXT2", calculateClock);
     firstPass = false;
     group.onSet(inst, "XT2CLKHz", calculateClock);
-    
-   
+
+
     /*
      *  ======== calculateDcoRselModBits ========
      */
@@ -353,10 +374,10 @@ function _configDCOCLKHz(inst, targetValue)
     var localRSELbits = 0;
     var localDCObits = 0;
     var localMODbits = 0;
-    
+
     var executedLocalRSELbits = false;
     var executedLocalDCObits = false;
-    
+
     var newDcoFrequency = 0;
     var oldDcoFrequency = 0;
 
@@ -365,14 +386,14 @@ function _configDCOCLKHz(inst, targetValue)
     /* Calculate DCO */
     oldDcoFrequency = newDcoFrequency;
     newDcoFrequency  = _calculateDCOFrequency(inst, localRSELbits, localDCObits, localMODbits);
-    
+
     debug("configuring _configDCOCLKHz() by incrementing localRSELbits");
     while (newDcoFrequency < targetValue) {
         executedLocalRSELbits = true;
 
         /* Increment RSEL value */
         localRSELbits++;
-        
+
         debug("configDCOHz for localRSELbits = " + localRSELbits);
 
         /* Calculate DCO */
@@ -387,7 +408,7 @@ function _configDCOCLKHz(inst, targetValue)
         }
         if (localRSELbits > 16) {
             break;
-        }        
+        }
     }
 
     if (executedLocalRSELbits) {
@@ -399,7 +420,7 @@ function _configDCOCLKHz(inst, targetValue)
     /* Calculate DCO */
     oldDcoFrequency = newDcoFrequency;
     newDcoFrequency = _calculateDCOFrequency(inst, localRSELbits, localDCObits,
-                                             localMODbits);            
+                                             localMODbits);
 
     debug("configuring _configDCOCLKHz() by incrementing localDCObits");
 
@@ -425,7 +446,7 @@ function _configDCOCLKHz(inst, targetValue)
             break;
         }
     }
-    
+
     if (executedLocalDCObits) {
         localDCObits--;
     }
@@ -445,14 +466,14 @@ function _configDCOCLKHz(inst, targetValue)
         /* Increment MOD bits */
         localMODbits++;
         debug("configDCOHz for localMODbits = " + localMODbits);
-        
+
         /* Calculate DCO */
         oldDcoFrequency = newDcoFrequency;
         newDcoFrequency = _calculateDCOFrequency(inst, localRSELbits,
-                                                 localDCObits, localMODbits);  
+                                                 localDCObits, localMODbits);
 
         /* Iterate until DCO > target stop */
-        
+
         /* if == stop */
         if (newDcoFrequency == targetValue) {
             localMODbits++;
@@ -461,7 +482,7 @@ function _configDCOCLKHz(inst, targetValue)
         if (localMODbits > 32) {
             break;
         }
-        
+
     }
     debug("oldDcoFrequency = " + oldDcoFrequency);
     debug("newDcoFrequency = " + newDcoFrequency);
@@ -470,7 +491,7 @@ function _configDCOCLKHz(inst, targetValue)
     var delta2 = newDcoFrequency - targetValue;
     debug("delta1 = " + delta1);
     debug("delta2 = " + delta2);
-    
+
     if (delta1 < delta2) {
         /* If Old value is smaller delta, decrement the MOD bits */
         localMODbits--;
@@ -478,16 +499,16 @@ function _configDCOCLKHz(inst, targetValue)
 
     newDcoFrequency = _calculateDCOFrequency(inst, localRSELbits, localDCObits,
                                              localMODbits);
-    
+
     debug("Final localRSELbits = " + localRSELbits);
     debug("Final localDCObits = " + localDCObits);
     debug("Final localMODbits = " + localMODbits);
     debug("Final DCO Frequency = " + newDcoFrequency);
-    
+
     DCOBitValue = localDCObits;
     MODValue = localMODbits;
     RSELValue = localRSELbits;
-        
+
     /*_setDcoRselModBits(inst, localRSELbits,localDCObits,localMODbits); */
     protectDcoModRsel = 1;
     _setDcoRselModBits(inst,1);
@@ -501,14 +522,14 @@ function _configDCOCLKHz(inst, targetValue)
  */
 function _calculateDCOFrequency(inst, localRSELValue, localDCOBitValue, localMODValue)
 {
-    debug("executing function _calculateDCOFrequency; " + 
+    debug("executing function _calculateDCOFrequency; " +
            " localRSELValue = " + localRSELValue +
            " localDCOBitValue = " + localDCOBitValue +
            " localMODValue = " + localMODValue);
-    
+
     var calcDCO;
     var calcDCOPlusOne;
-                    
+
     switch (localRSELValue) {
         case 0:
             calcDCO = (0.07 + 0.17)/2;
@@ -559,21 +580,21 @@ function _calculateDCOFrequency(inst, localRSELValue, localDCOBitValue, localMOD
             calcDCO = (12.0 + 18.50)/2;
             break;
     }
-    
+
     if (localDCOBitValue < 3) {
         calcDCO = calcDCO / Math.pow(1.08,3 - localDCOBitValue);
     }
     else if (localDCOBitValue > 3) {
         calcDCO = Math.pow(1.08,localDCOBitValue - 3) * calcDCO;
     }
-    
+
     if (localDCOBitValue <= 7) {
         calcDCOPlusOne = 1.08 * calcDCO;
     }
     else {
         calcDCOPlusOne = calcDCO;
     }
-    
+
     /* Calculate MOD value */
     calcDCO = (32 * calcDCO * calcDCOPlusOne)
         / ((localMODValue * calcDCO) + ((32 - localMODValue) * calcDCOPlusOne));
@@ -617,7 +638,7 @@ function _setDcoRselModBits(inst, flag)
             localDCOBitValue = localDCOBitValue + 4;
         }
         debug("localDCOBitValue = " + localDCOBitValue);
-        
+
        /*
         *  ======== calculateRSEL ========
         */
@@ -637,7 +658,7 @@ function _setDcoRselModBits(inst, flag)
 
        /*
         *  ======== calculateMOD ========
-        */   
+        */
         localMODValue = 0;
         if (inst.DCOCTL.MOD0 & BCSplus.MOD0) {
             localMODValue = localMODValue + 1;
@@ -658,7 +679,7 @@ function _setDcoRselModBits(inst, flag)
         DCOBitValue = localDCOBitValue;
         RSELValue = localRSELValue;
     }
-          
+
     else if (flag == 1) {
         debug("modifying DCO bits");
         if (DCOBitValue & 0x4) {
@@ -679,7 +700,7 @@ function _setDcoRselModBits(inst, flag)
         else {
             inst.DCOCTL.DCO0 = BCSplus.DCO0_OFF;
         }
-        
+
         debug("modifying RSEL bits");
         /* Modify RSEL value */
         if (RSELValue & 0x8) {
@@ -705,7 +726,7 @@ function _setDcoRselModBits(inst, flag)
         }
         else {
             inst.BCSCTL1.RSEL0 = BCSplus.RSEL0_OFF;
-        }    
+        }
 
         debug("modifying MOD bits");
         /* Modify MOD value */
@@ -749,8 +770,8 @@ function _setDcoRselModBits(inst, flag)
             debug("modifying MOD0_OFF bit");
             inst.DCOCTL.MOD0 = BCSplus.MOD0_OFF;
         }
-    }    
-                
+    }
+
     debug("RSELValue = " + RSELValue);
     debug("localRSELValue = " + localRSELValue);
     debug("DCOBitValue = " + DCOBitValue);
@@ -775,7 +796,3 @@ function _initPreCalConstant(inst)
         inst.preCalibratedValuesItems.$add("Custom");
     }
 }
-/*
- *  @(#) ti.catalog.msp430.peripherals.clock; 1, 0, 0,2; 1-29-2016 10:00:47; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2016 by Texas Instruments Incorporated.
+ *  Copyright 2017 by Texas Instruments Incorporated.
  *
  */
 
@@ -58,7 +58,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     override readonly config Bool alignDirectiveSupported = true;
 
     override readonly config string rts = "gnu.targets.arm.rtsv8A";
-    override config string platform     = "ti.platforms.cortexA";
+    override config string platform     = "ti.platforms.cortexA:SIMMAXWELL";
 
     override config string GCCTARG = "aarch64-elf";
 
@@ -70,7 +70,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 
     readonly config ITarget2.Command ccBin = {
-        cmd: "bin/$(GCCTARG)-gcc -c -MD -MF $@.dep",
+        cmd: "bin/aarch64-elf-gcc -c -MD -MF $@.dep",
         opts: "-mcpu=cortex-a53+fp+simd -mabi=lp64 -mcmodel=large -mstrict-align -mfix-cortex-a53-835769 -mfix-cortex-a53-843419 -g"
     };
 
@@ -94,7 +94,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 
     readonly config ITarget2.Command asmBin = {
-        cmd: "bin/$(GCCTARG)-gcc -c -x assembler-with-cpp",
+        cmd: "bin/aarch64-elf-gcc -c -x assembler-with-cpp",
         opts: "-mcpu=cortex-a53+fp+simd -mabi=lp64 -mcmodel=large -mstrict-align -mfix-cortex-a53-835769 -mfix-cortex-a53-843419"
     };
 
@@ -104,7 +104,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 
     readonly config ITarget2.Command arBin = {
-        cmd: "bin/$(GCCTARG)-ar ",
+        cmd: "bin/aarch64-elf-ar ",
         opts: ""
     };
 
@@ -170,7 +170,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 1-29-2016 16:37:03; /db/ztree/library/trees/xdctargets/xdctargets-k09/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,1; 7-27-2017 11:46:57; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
 
  */
 

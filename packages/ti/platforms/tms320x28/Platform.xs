@@ -1,17 +1,5 @@
 /*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  Contributors:
- *      Texas Instruments - initial implementation
- *
- * */
-
-/*
- * Copyright (c) 2010-2015, Texas Instruments Incorporated
+ * Copyright (c) 2016-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -308,10 +296,6 @@ function instance$meta$init(name)
         else {
             Boot.configurePll = false;    /* do not set up PLL */
             Boot.pllType = undefined;     /* unknown device */
-
-            /* if get here the PLL type is not assigned, throw warning ... */
-            this.$module.$logWarning("The PLL type is not assigned, so the Boot"
-                + " module will not configure the PLL.", this);
         }
     }
 }
@@ -327,7 +311,3 @@ function _initDefaultMemory(plat, memMap)
     plat.stackMemory = null;
     plat.codeMemory = null;
 }
-/*
- *  @(#) ti.platforms.tms320x28; 1, 0, 0,; 1-29-2016 10:03:36; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

@@ -1,15 +1,3 @@
-/*
- *  Copyright (c) 2016 by Texas Instruments and others.
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  Contributors:
- *      Texas Instruments - initial implementation
- *
- * */
-
 /* ============================================================================ */
 /* Copyright (c) 2014, Texas Instruments Incorporated                           */
 /*  All rights reserved.                                                        */
@@ -1002,7 +990,7 @@ SFR_16BIT(NMBMEAS_HI);                        /* ESP430 Return Value 31 */
 #define mINIT                  (0x0007)       /* Initialize ESP430 Software */
 #define mTEMP                  (0x0009)       /* Request Temp. Measurement from ESP430 Software */
 #define mSWVERSION             (0x000B)       /* Request software version of ESP430 */
-#define mREAD_PARAM            (0x000D)       /* Request to read the parameter with no. ï¿½Parameter No.ï¿
+#define mREAD_PARAM            (0x000D)       /* Request to read the parameter with no. “Parameter No.” */
 #define mREAD_I2               (0x000F)       /* Request to read the I2 Channel (only if not used) */
 #define mREAD_I2_CONT          (0x0011)       /* Request to read the I2 Channel in continues mode (only if not used) */
 #define mCMD_SET_RES_SC        (0x0015)       /* Request to Reset and Set the SD16SC bit at the next zero crossing */
@@ -1172,8 +1160,3 @@ SFR_16BIT(NMBMEAS_HI);                        /* ESP430 Return Value 31 */
 #endif /* extern "C" */
 
 #endif /* #ifndef __msp430xE42x */
-
-/*
- *  @(#) ti.mcu.msp430.include; 1,0,0,2; 1-29-2016 10:03:05; /db/ztree/library/trees/platform/platform-q17/src/
- */
-

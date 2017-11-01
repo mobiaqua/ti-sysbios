@@ -180,6 +180,7 @@ int SK_downcallOS();
  *	unsigned numSC - number of secure contexts to manage (1/2/4 only)
  *
  *  Return value(s)
+ *      int scwp, if successful
  *      SK_EPRIV - error return if not called from supervisor privilege
  *          level
  *      SK_EINUSE - error return if any secure context is allocated

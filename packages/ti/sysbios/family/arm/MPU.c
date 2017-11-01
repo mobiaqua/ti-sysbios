@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/hal/Hwi.h>
 
-#if (defined xdc_target__isaCompatible_v7R)
+#if (defined ti_targets_arm_elf_R5F)
 #include <ti/sysbios/family/arm/v7r/Cache.h>
 #else
 #include <ti/sysbios/hal/Cache.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,8 @@ if (xdc.om.$name == "cfg") {
     deviceTable["ti.catalog.arm.cortexa8"]["AM3505"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"];
     deviceTable["ti.catalog.arm.cortexa8"]["AM3517"] =
+        deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"];
+    deviceTable["ti.catalog.arm.cortexa8"]["DM37XX"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"];
 }
 

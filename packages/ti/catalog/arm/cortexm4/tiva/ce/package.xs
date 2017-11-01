@@ -12,10 +12,10 @@
  */
 function init()
 {
-    /* Nothing to do, unless we are in Config Object Model */                   
-    if (xdc.om.$name != "cfg") {                                                
-        return;                                                                 
-    }                                                                           
+    /* Nothing to do, unless we are in Config Object Model */
+    if (xdc.om.$name != "cfg") {
+        return;
+    }
 
     /* If Program.bld.rtsName is not 'null', this package will depend on
      * xdc.runtime and we want to establish that dependency early so that the
@@ -45,4 +45,3 @@ function getLibs(prog)
 
     return (libs);
 }
-

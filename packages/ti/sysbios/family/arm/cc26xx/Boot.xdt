@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,16 @@
 %%}
 %var Boot = xdc.module("ti.sysbios.family.arm.cc26xx.Boot");
 
-#include <inc/hw_types.h>
+#include <ti/devices/DeviceFamily.h>
+
+#include DeviceFamily_constructPath(inc/hw_types.h)
 
 %if (Boot.customerConfig == true) {
 /* pull default CCFG from driverlib */
-#include "startup_files/ccfg.c"
+#include DeviceFamily_constructPath(startup_files/ccfg.c)
 %}
 
-%if (Boot.trimDevice == true) {
-%   if (Program.build.target.$name.match(/ti/)) {
+%if (Program.build.target.$name.match(/ti/)) {
 extern Void _c_int00();
 
 Void ResetISR ()
@@ -52,14 +53,13 @@ Void ResetISR ()
     _c_int00();
 }
 %   }
-%   else if (Program.build.target.$name.match(/iar/)) {
+%else if (Program.build.target.$name.match(/iar/)) {
 extern Void __iar_program_start();
 
 Void ResetISR ()
 {
     __iar_program_start();
 }
-%   }
 %}
 
 /* workaround bug in driverlib */

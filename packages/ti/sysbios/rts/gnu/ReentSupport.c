@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,8 @@
 #include <reent.h>
 #include <string.h>
 
+extern void ti_sysbios_rts_gnu_ReentSupport_checkIfCorrectLibrary();
+
 /*
  *  ======== ReentSupport_Module_startup ========
  */
@@ -67,6 +69,20 @@ Int ReentSupport_Module_startup (Int phase)
     lock.init_done = 1;
     lock = lock;        /* Suppress unused variable compiler warning */
 
+    /*
+     * Make a call to a special stub function in the Newlib BSP library.
+     * If the application is not linking with the correct BSP library
+     * (i.e. it is not linking with the Newlib BSP library shipped
+     * with SYS/BIOS), the function symbol will not be found and the
+     * link will fail, thereby indicating to the user that the wrong
+     * library was being linked with the application. (see FAQ section of
+     * http://processors.wiki.ti.com/index.php/SYS/BIOS_with_GCC_(CortexA)
+     * wiki page for more info).
+     */
+    if (ReentSupport_enableReentSupport) {
+        ti_sysbios_rts_gnu_ReentSupport_checkIfCorrectLibrary();
+    }
+
     return (Startup_DONE);
 }
 
@@ -75,6 +91,14 @@ Int ReentSupport_Module_startup (Int phase)
  *                       Internal functions
  *************************************************************************
  */
+
+/*
+ *  ======== ReentSupport_initGlobalReent ========
+ */
+Void ReentSupport_initGlobalReent()
+{
+    _REENT_SMALL_CHECK_INIT(_GLOBAL_REENT);
+}
 
 /*
  *  ======== ReentSupport_taskRegHook ========
@@ -147,6 +171,7 @@ Ptr ReentSupport_getReent()
                             0, NULL);
 
         _REENT_INIT_PTR(pCurTaskEnv);
+        _REENT_SMALL_CHECK_INIT(pCurTaskEnv);
 
         Task_setHookContext(task, ReentSupport_module->taskHId, pCurTaskEnv);
     }

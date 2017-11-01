@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ var Memory = null;
 var Startup = null;
 var BIOS = null;
 var primaryHeapNotUsed = true;
+var primaryHeapInitialized = false;
 
 /* Table to round up to power of 2 (grow if need) */
 var powerOf2 = [2, 2, 2,                        /* 0-2 */
@@ -54,7 +55,7 @@ function module$use(mod, params)
 {
     HeapMem = this;
     Memory = xdc.useModule('xdc.runtime.Memory');
-    
+
     Startup = xdc.useModule('xdc.runtime.Startup');
 
     /* initialize HeapMem objects early */
@@ -65,9 +66,9 @@ function module$use(mod, params)
         Startup.firstFxns.$add(HeapMem.initPrimary);
     }
 
-    /* 
+    /*
      *  Set the HeapMem module Gate to an appropriate type.
-     */    
+     */
     if (HeapMem.common$.gate === undefined) {
         var BIOS = xdc.module('ti.sysbios.BIOS');
         if (BIOS.taskEnabled == true) {
@@ -83,13 +84,13 @@ function module$use(mod, params)
             HeapMem.common$.gate = GateHwi.create();
         }
     }
-    
-    this.reqAlign = this.Header.$sizeof(); 
-    
+
+    this.reqAlign = this.Header.$sizeof();
+
     if (Memory.getMaxDefaultTypeAlignMeta() > this.reqAlign) {
         this.reqAlign = Memory.getMaxDefaultTypeAlignMeta();
     }
-    
+
     /* Make sure it is still a power of 2 for the logic to work properly */
     this.reqAlign = powerOf2[this.reqAlign];
 }
@@ -108,29 +109,29 @@ function instance$static$init(obj, params)
         HeapMem.$logFatal("HeapMem does not support statically" +
                           "Constructed heaps.", this);
     }
-    
+
     /* Verify requested alignment is a power of 2 */
     if ((params.align != 0) &&
         ((params.align - 1) & params.align) != 0) {
         HeapMem.$logFatal("Requested alignment must be a power of 2.", this, "align");
     }
-    
+
     /* Verify minimum block alignment is a power of 2 */
     if ((params.minBlockAlign != 0) &&
         ((params.minBlockAlign - 1) & params.minBlockAlign) != 0) {
         HeapMem.$logFatal("Requested minBlockAlign must be a power of 2.", this, "align");
     }
-    
+
     if (params.minBlockAlign < HeapMem.reqAlign) {
         obj.minBlockAlign = HeapMem.reqAlign;
         bufAlign = HeapMem.reqAlign;
     }
     else {
         obj.minBlockAlign = params.minBlockAlign;
-        bufAlign = obj.minBlockAlign;        
+        bufAlign = obj.minBlockAlign;
     }
 
-    /* Make sure the alignment is at least large enough to hold all types. */    
+    /* Make sure the alignment is at least large enough to hold all types. */
     obj.align = params.align;
     if (obj.align < bufAlign) {
         obj.align = bufAlign;
@@ -150,13 +151,13 @@ function instance$static$init(obj, params)
                                this);
         }
     }
-    
+
     /* Make sure the size is at least large enough to hold all types. */
     if (params.size < bufAlign) {
         params.size = bufAlign;
-    }    
+    }
 
-    /* 
+    /*
      *  Make sure the size is a multiple of bufAlign. If not
      *  round down.
      */
@@ -184,10 +185,12 @@ function instance$static$init(obj, params)
  */
 function viewInitBasic(view, obj)
 {
+    var Program = xdc.useModule('xdc.rov.Program');
+
     view.label = Program.getShortName(obj.$label);
 
     view.buf = "0x" + Number(obj.buf.$addr).toString(16);
-    view.minBlockAlign = obj.minBlockAlign; 
+    view.minBlockAlign = obj.minBlockAlign;
     view.sectionName = obj.sectionName;
 }
 
@@ -202,6 +205,8 @@ function viewInitDetailed(view, obj)
     var totalSize = 0;
     var totalFreeSize = 0;
     var largestFreeSize = 0;
+    var isListCorrupt = false;
+    var addrs = {};
 
     // first get the Basic view:
     viewInitBasic(view, obj);
@@ -227,7 +232,7 @@ function viewInitDetailed(view, obj)
      * ersing past the header on an empty list and it ends once the end of a non
      * empty list is reached).
      */
-    while (currElem.next != 0) {
+    while ((currElem.next != 0) && (!isListCorrupt)) {
 
         // Fetch the next free block (next linked list element)
         try {
@@ -247,6 +252,13 @@ function viewInitDetailed(view, obj)
         // check for a new max free size
         if (currElem.size > largestFreeSize) {
             largestFreeSize = currElem.size;
+        }
+
+        if (!addressValidate(Number(currElem.$addr),
+            Number(currElem.next.$addr), addrs) ||
+            (Number(currElem.size) < 0)) {
+            view.$status["buf"] = "Error: Corrupted free list, loop or invalid size detected";
+            isListCorrupt = true;
         }
     }
 
@@ -279,7 +291,7 @@ function viewInitDetailed(view, obj)
 /*
  *  ======== viewInitData ========
  */
-function viewInitData(view, obj) 
+function viewInitData(view, obj)
 {
     view.label = Program.getShortName(obj.$label);
     if (view.label == "") {
@@ -293,7 +305,7 @@ function viewInitData(view, obj)
     view.label += "-freeList";
 
     view.elements = getFreeList(obj);
-    
+
     return(view);
 }
 
@@ -306,12 +318,15 @@ function getFreeList(obj)
     var Program = xdc.useModule('xdc.rov.Program');
 
     // the freeList display will now contain both free and allocated blocks
-    var freeList = new Array();
 
-    var start  = obj.buf.$addr;         // buffer start addr 
-    var end    = start + obj.head.size;  // buffer end addr 
-
-    var header = obj.head;
+    var size;
+    // Create a temporary map of the addresses discovered to use for
+    // detecting loops in the linked list.
+    var nextAddrs     = {};var freeList = new Array();
+    var start         = obj.buf.$addr;         // buffer start addr
+    var end           = start + obj.head.size;  // buffer end addr
+    var header        = obj.head;
+    var isListCorrupt = false;
 
     // get the first free list element
     if (header.next.$addr != 0) {
@@ -351,9 +366,9 @@ function getFreeList(obj)
         // since free list is empty, we're done
         return (freeList);
     }
-    
-    /* For each block on the free list... */
-    while (start != end) {
+
+    /* For each block on the free list unless it is corrupted */
+    while ((start != end) && (!isListCorrupt)) {
 
         // compute the end address of the current free block
         var freeBlkEndAddr = header.$addr + header.size;
@@ -363,14 +378,27 @@ function getFreeList(obj)
             // by an allocated block
 
             /* Add the current free block to the list */
+            size = Number(header.size);
+
             var freeBlock =
                   Program.newViewStruct('ti.sysbios.heaps.HeapMem', 'FreeList');
-            freeBlock.size = "0x" + Number(header.size).toString(16);
+            freeBlock.size = "0x" + size.toString(16);
             freeBlock.Address = "0x" + Number(header.$addr).toString(16);
             freeBlock.next = "0x" + Number(header.next.$addr).toString(16);
-            freeBlock.status = "Free";
+
+            if (addressValidate(Number(header.$addr), Number(header.next.$addr), nextAddrs)
+                && (size > 0)) {
+                freeBlock.status = "Free";
+            }
+            else {
+                freeBlock.status = "Error: Corrupted free list, loop or invalid size detected";
+
+                // Terminate loop
+                isListCorrupt = true;
+            }
+
             freeList[freeList.length] = freeBlock;
-        
+
             if (freeBlkEndAddr != end) { // only add end allocated  block if it exists
                 //compute the size of this allocated block
                 var allocBlkSize = (header.next.$addr == 0) ?
@@ -382,18 +410,31 @@ function getFreeList(obj)
                 allocatedBlock.size = "0x" + Number(allocBlkSize).toString(16);
                 allocatedBlock.Address =
                         "0x" + Number(freeBlkEndAddr).toString(16);
-                allocatedBlock.next = 
+                allocatedBlock.next =
                         "0x" + Number(freeBlkEndAddr.$addr + allocBlkSize).toString(16);
-                allocatedBlock.status = "In Use";
+
+                if (addressValidate(Number(freeBlkEndAddr),
+                    Number(freeBlkEndAddr + allocBlkSize), nextAddrs) &&
+                    (Number(allocBlkSize) > 0)) {
+                    allocatedBlock.status = "In Use";
+                }
+                else {
+                    allocatedBlock.status = "Error: Corrupted free list, loop or invalid size detected";
+
+                    // Terminate loop
+                    isListCorrupt = true;
+                }
+
                 freeList[freeList.length] = allocatedBlock;
- 
+
                 // increment the start pointer to the memory address immediately
                 // after the allocated block
                 start = freeBlkEndAddr + allocBlkSize;
             }
             else {
                 // this free block isn't followed by an allocated block.
-                // increment the start pointer to the memory address immediately                // after the free block
+                // increment the start pointer to the memory address
+                // immediately after the free block
                 start = freeBlkEndAddr;
             }
 
@@ -421,24 +462,48 @@ function getFreeList(obj)
             // first block is an allocated block, followed by the current
             // free block
 
+            size =  Number(header.$addr - start);
             // first add the allocated block (start is the beginning of the
             // allocated block in this case)
             var allocatedBlock =
                   Program.newViewStruct('ti.sysbios.heaps.HeapMem', 'FreeList');
-            allocatedBlock.size =
-                    "0x" + Number(header.$addr - start).toString(16);
+            allocatedBlock.size = "0x" + size.toString(16);
             allocatedBlock.Address = "0x" + Number(start).toString(16);
             allocatedBlock.next = "0x" + Number(header.$addr).toString(16);
-            allocatedBlock.status = "In Use";
+
+            if (addressValidate(Number(start), Number(header.$addr), nextAddrs) &&
+                (size > 0)) {
+                allocatedBlock.status = "In Use";
+            }
+            else {
+                allocatedBlock.status = "Error: Corrupted free list, loop or invalid size detected";
+
+                // Terminate loop
+                isListCorrupt = true;
+            }
+
             freeList[freeList.length] = allocatedBlock;
 
-            /* second add the current free block to the list */
+            /* Second add the current free block to the list */
+            size = Number(header.size);
+
             var freeBlock =
                   Program.newViewStruct('ti.sysbios.heaps.HeapMem', 'FreeList');
-            freeBlock.size = "0x" + Number(header.size).toString(16);
+            freeBlock.size = "0x" + size.toString(16);
             freeBlock.Address = "0x" + Number(header.$addr).toString(16);
             freeBlock.next = "0x" + Number(header.next.$addr).toString(16);
-            freeBlock.status = "Free";
+
+            if (addressValidate(Number(header.$addr), Number(header.next.$addr), nextAddrs) &&
+                (size > 0)) {
+                freeBlock.status = "Free";
+            }
+            else {
+                freeBlock.status = "Error: Corrupted free list, loop or invalid size detected";
+
+                // Terminate loop
+                isListCorrupt = true;
+            }
+
             freeList[freeList.length] = freeBlock;
 
             // increment the start pointer to the memory address immediately
@@ -464,14 +529,25 @@ function getFreeList(obj)
                 if (freeBlkEndAddr < end) {
                     // this was the last free block, but there's an allocated
                     // block after it
+
+                    size = Number(end - freeBlkEndAddr);
+
                     allocatedBlock = Program.newViewStruct(
                             'ti.sysbios.heaps.HeapMem', 'FreeList');
-                    allocatedBlock.size = "0x" +
-                            Number(end - freeBlkEndAddr).toString(16);
+                    allocatedBlock.size = "0x" + size.toString(16);
+
                     allocatedBlock.Address = "0x" +
                             Number(freeBlkEndAddr).toString(16);
                     allocatedBlock.next = "0x" + Number(end).toString(16);
-                    allocatedBlock.status = "In Use";
+
+                    if (addressValidate(Number(freeBlkEndAddr), Number(end), nextAddrs) &&
+                        (size > 0)) {
+                        allocatedBlock.status = "In Use";
+                    }
+                    else {
+                        allocatedBlock.status = "Error: Corrupted free list, loop or invalid size detected";
+                    }
+
                     freeList[freeList.length] = allocatedBlock;
 
                     // terminate loop
@@ -484,4 +560,19 @@ function getFreeList(obj)
     } // end while (start != end)
 
     return (freeList);
+}
+
+/*
+ * This is a helper function which validates that there are no loops in the
+ * list.
+ */
+function addressValidate(baseAddr, nextAddr, knownAddrs) {
+        knownAddrs[baseAddr] = true;
+
+    // Check for loops in know address list, ignoring null pointers
+    if ((nextAddr != 0) && (nextAddr in knownAddrs)) {
+        return (false);
+    }
+    // Add now validated addresses
+    return (true);
 }

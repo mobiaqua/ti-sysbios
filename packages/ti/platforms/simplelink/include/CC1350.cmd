@@ -40,7 +40,7 @@
 --args 0x8
 /* Suppress warnings and errors:                                             */
 /* - 10063: Warning about entry point not being _c_int00                     */
-/* - 16011, 16012: 8-byte alignment errors. Observed when linking in object  */ 
+/* - 16011, 16012: 8-byte alignment errors. Observed when linking in object  */
 /*   files compiled using Keil (ARM compiler)                                */
 --diag_suppress=10063,16011,16012
 
@@ -49,7 +49,7 @@
 #define FLASH_BASE              0x0
 #define FLASH_SIZE              0x20000
 #define RAM_BASE                0x20000000
-#define RAM_SIZE                0x4000
+#define RAM_SIZE                0x5000
 
 /* System memory map */
 
@@ -65,19 +65,19 @@ MEMORY
 
 SECTIONS
 {
-    .text           :   > FLASH
-#ifdef __TI_COMPILER_VERSION
-#if __TI_COMPILER_VERSION >= 15009000
+    .text           :   >> FLASH
+#ifdef __TI_COMPILER_VERSION__
+#if __TI_COMPILER_VERSION__ >= 15009000
     .TI.ramfunc     : {} load=FLASH, run=SRAM, table(BINIT)
 #endif
 #endif
-    .const          :   > FLASH
-    .constdata      :   > FLASH
-    .rodata         :   > FLASH
+    .const          :   >> FLASH
+    .constdata      :   >> FLASH
+    .rodata         :   >> FLASH
     .cinit          :   > FLASH
     .pinit          :   > FLASH
     .init_array     :   > FLASH
-    .emb_text       :   > FLASH
+    .emb_text       :   >> FLASH
     .ccfg           :   > FLASH (HIGH)
 
     .data           :   > SRAM

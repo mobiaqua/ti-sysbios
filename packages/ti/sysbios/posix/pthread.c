@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,11 +53,11 @@
 #define ti_sysbios_posix_Settings_supportsMutexPriority__D TRUE
 #endif
 
-#include <ti/sysbios/posix/pthread.h>
-#include <ti/sysbios/posix/_pthread.h>
-#include <ti/sysbios/posix/_pthread_error.h>
+#include "pthread.h"
+#include "_pthread.h"
+#include "errno.h"
 
-static void _pthread_runStub(UArg arg0, UArg arg1);
+void _pthread_runStub(UArg arg0, UArg arg1);
 
 /*
  *  Default pthread attributes.  These are implementation
@@ -176,7 +176,7 @@ int pthread_attr_setschedparam(pthread_attr_t *attr,
 {
     int     priority = schedparam->sched_priority;
 
-    if ((priority >= Task_numPriorities) || (priority == 0) ||
+    if ((priority >= (int)Task_numPriorities) || (priority == 0) ||
             (priority < -1)) {
         /* Bad priority value */
         return (EINVAL);
@@ -386,6 +386,14 @@ int pthread_detach(pthread_t pthread)
 }
 
 /*
+ *  ======== pthread_equal ========
+ */
+int pthread_equal(pthread_t pt1, pthread_t pt2)
+{
+    return (pt1 == pt2);
+}
+
+/*
  *  ======== pthread_exit ========
  */
 void pthread_exit(void *retval)
@@ -584,7 +592,7 @@ int pthread_setschedparam(pthread_t pthread, int policy,
     int                 maxPri;
 #endif
 
-    if ((priority >= Task_numPriorities) || ((priority == 0)) ||
+    if ((priority >= (int)Task_numPriorities) || ((priority == 0)) ||
             (priority < -1)) {
         /* Bad priority value */
         return (EINVAL);
@@ -638,7 +646,7 @@ int pthread_setschedparam(pthread_t pthread, int policy,
 void _pthread_cleanup_pop(struct _pthread_cleanup_context *context,
         int execute)
 {
-    pthread_Obj    *thread = (pthread_Obj *)pthread_self();
+    pthread_Obj    *thread = (pthread_Obj *)context->thread;
 
     thread->cleanupList = context->next;
 
@@ -655,6 +663,7 @@ void _pthread_cleanup_push(struct _pthread_cleanup_context *context,
 {
     pthread_Obj    *thread = (pthread_Obj *)pthread_self();
 
+    context->thread = (pthread_t)thread;
     context->fxn = fxn;
     context->arg = arg;
     context->next = thread->cleanupList;
@@ -664,7 +673,7 @@ void _pthread_cleanup_push(struct _pthread_cleanup_context *context,
 /*
  *  ======== _pthread_runStub ========
  */
-static void _pthread_runStub(UArg arg0, UArg arg1)
+void _pthread_runStub(UArg arg0, UArg arg1)
 {
     UInt         key;
     Ptr          arg;

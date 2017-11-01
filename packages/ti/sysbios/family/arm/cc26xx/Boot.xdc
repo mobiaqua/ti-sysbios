@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015, Texas Instruments Incorporated
+ * Copyright (c) 2014-2016, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,10 +47,12 @@ package ti.sysbios.family.arm.cc26xx;
 module Boot
 {
     /*!
-     *  Trim device flag; determines if trimDevice() is called at boot,
+     *  Trim device flag; determines if SetupTrimDevice() is called at boot,
      *  default is true.
      *
-     *  Set to false to disable trimming of the device during boot.
+     *  Set to false to disable the Boot module from trimming the device.
+     *  The device *must* be trimmed for proper operation. If the Boot module
+     *  doesn't do this, the application must explicitly call SetupTrimDevice().
      */
     metaonly config Bool trimDevice = true;
 

@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013, Texas Instruments Incorporated
+@  Copyright (c) 2013-2016, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@
 @ To disable the L1 data cache, writeback invalidate the whole data cache first.
 @ then disable the data cache by setting the C bit to 0 in the c1 register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_disableL1d__I
         .func ti_sysbios_family_arm_a8_Cache_disableL1d__I
 
 ti_sysbios_family_arm_a8_Cache_disableL1d__I:
@@ -91,7 +91,7 @@ ti_sysbios_family_arm_a8_Cache_disableL1d__I:
 @ To disable the L1 instruction cache, invalidate the whole instruction cache
 @ first, then disable it by setting the I bit to 0 in the c1 register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_disableL1p__I
         .func ti_sysbios_family_arm_a8_Cache_disableL1p__I
 
 ti_sysbios_family_arm_a8_Cache_disableL1p__I:
@@ -109,7 +109,7 @@ ti_sysbios_family_arm_a8_Cache_disableL1p__I:
 @ To disable the L2 unified cache clear the L2EN bit
 @ in the Auxiliary Control Register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_disableL2__I
         .func ti_sysbios_family_arm_a8_Cache_disableL2__I
 
 ti_sysbios_family_arm_a8_Cache_disableL2__I:
@@ -124,7 +124,7 @@ ti_sysbios_family_arm_a8_Cache_disableL2__I:
 @ ======== Cache_enableL1d ========
 @ To enable the L1 data cache set the C bit to 1 in the c1 register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_enableL1d__I
         .func ti_sysbios_family_arm_a8_Cache_enableL1d__I
 
 ti_sysbios_family_arm_a8_Cache_enableL1d__I:
@@ -139,7 +139,7 @@ ti_sysbios_family_arm_a8_Cache_enableL1d__I:
 @ ======== Cache_enableL1p ========
 @ To enable the L1 instruction cache set the I bit to 1 in the c1 register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_enableL1p__I
         .func ti_sysbios_family_arm_a8_Cache_enableL1p__I
 
 ti_sysbios_family_arm_a8_Cache_enableL1p__I:
@@ -155,7 +155,7 @@ ti_sysbios_family_arm_a8_Cache_enableL1p__I:
 @ To enable the L2 unified cache set the L2EN bit
 @ in the Auxiliary Control Register.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_enableL2__I
         .func ti_sysbios_family_arm_a8_Cache_enableL2__I
 
 ti_sysbios_family_arm_a8_Cache_enableL2__I:
@@ -175,7 +175,7 @@ ti_sysbios_family_arm_a8_Cache_enableL2__I:
 @       r1 - contains byteCnt
 @       r2 - contains wait
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_invL1d__I
         .func ti_sysbios_family_arm_a8_Cache_invL1d__I
 
 ti_sysbios_family_arm_a8_Cache_invL1d__I:
@@ -203,7 +203,7 @@ invDCache_loop:
 @       r1 - contains byteCnt
 @       r2 - contains wait
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_invL1p__I
         .func ti_sysbios_family_arm_a8_Cache_invL1p__I
 
 ti_sysbios_family_arm_a8_Cache_invL1p__I:
@@ -229,7 +229,7 @@ invICache_loop:
 @ Only use this function if you know for sure the data cache contains unwanted
 @ information.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_invL1dAll__E
         .func ti_sysbios_family_arm_a8_Cache_invL1dAll__E
 
 ti_sysbios_family_arm_a8_Cache_invL1dAll__E:
@@ -288,7 +288,7 @@ invfinished:
 @ ======== Cache_invL1pAll ========
 @ Invalidates all entries in the instruction cache
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_invL1pAll__E
         .func ti_sysbios_family_arm_a8_Cache_invL1pAll__E
 
 ti_sysbios_family_arm_a8_Cache_invL1pAll__E:
@@ -309,7 +309,7 @@ ti_sysbios_family_arm_a8_Cache_invL1pAll__E:
 @       r2 - contains bit mask of cache type (unused)
 @       r3 - contains wait
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wb__E
         .func ti_sysbios_family_arm_a8_Cache_wb__E
 
 ti_sysbios_family_arm_a8_Cache_wb__E:
@@ -340,7 +340,7 @@ writeback:
 @       r2 - contains bitmask of cache type (unused)
 @       r3 - contains wait
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wbInv__E
         .func ti_sysbios_family_arm_a8_Cache_wbInv__E
 
 ti_sysbios_family_arm_a8_Cache_wbInv__E:
@@ -363,7 +363,7 @@ writebackInv:
 @ ======== Cache_wait ========
 @ Wait for the 'Drain write buffer' to complete
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wait__E
         .func ti_sysbios_family_arm_a8_Cache_wait__E
 
 ti_sysbios_family_arm_a8_Cache_wait__E:
@@ -376,7 +376,7 @@ ti_sysbios_family_arm_a8_Cache_wait__E:
 @ ======== Cache_wbAll ========
 @ Write back all of L1 data cache
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wbAll__E
         .func ti_sysbios_family_arm_a8_Cache_wbAll__E
 
 ti_sysbios_family_arm_a8_Cache_wbAll__E:
@@ -437,7 +437,7 @@ wbafinished:
 @ ======== Cache_wbInvAll ========
 @ Write back and invalidate entire data cache
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wbInvAll__E
         .func ti_sysbios_family_arm_a8_Cache_wbInvAll__E
 
 ti_sysbios_family_arm_a8_Cache_wbInvAll__E:
@@ -497,7 +497,7 @@ finished:
 @ ======== Cache_getEnabled ========
 @ Determine the mask of enabled caches
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_getEnabled__E
         .func ti_sysbios_family_arm_a8_Cache_getEnabled__E
 
 ti_sysbios_family_arm_a8_Cache_getEnabled__E:
@@ -530,7 +530,7 @@ getEnabledDone:
 @
 @ ======== Cache_getLevelInfo ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_getCacheLevelInfo__I
         .func ti_sysbios_family_arm_a8_Cache_getCacheLevelInfo__I
 
 ti_sysbios_family_arm_a8_Cache_getCacheLevelInfo__I:
@@ -542,7 +542,7 @@ ti_sysbios_family_arm_a8_Cache_getCacheLevelInfo__I:
 @
 @ ======== Cache_getL2AuxControlReg ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_getL2AuxControlReg__I
         .func ti_sysbios_family_arm_a8_Cache_getL2AuxControlReg__I
 
 ti_sysbios_family_arm_a8_Cache_getL2AuxControlReg__I:
@@ -553,7 +553,7 @@ ti_sysbios_family_arm_a8_Cache_getL2AuxControlReg__I:
 @
 @ ======== Cache_setL2AuxControlReg ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_setL2AuxControlReg__I
         .func ti_sysbios_family_arm_a8_Cache_setL2AuxControlReg__I
 
 ti_sysbios_family_arm_a8_Cache_setL2AuxControlReg__I:
@@ -564,7 +564,7 @@ ti_sysbios_family_arm_a8_Cache_setL2AuxControlReg__I:
 @
 @ ======== Cache_getLockdownReg ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_getLockdownReg__I
         .func ti_sysbios_family_arm_a8_Cache_getLockdownReg__I
 
 ti_sysbios_family_arm_a8_Cache_getLockdownReg__I:
@@ -575,7 +575,7 @@ ti_sysbios_family_arm_a8_Cache_getLockdownReg__I:
 @
 @ ======== Cache_setLockdownReg ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_setLockdownReg__I
         .func ti_sysbios_family_arm_a8_Cache_setLockdownReg__I
 
 ti_sysbios_family_arm_a8_Cache_setLockdownReg__I:
@@ -604,7 +604,7 @@ ti_sysbios_family_arm_a8_Cache_setLockdownReg__I:
 @ This function is aligned so that it is entirely contained
 @ within a single L2 cache way.
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_wayLoadLock__I
         .func ti_sysbios_family_arm_a8_Cache_wayLoadLock__I
 
 ti_sysbios_family_arm_a8_Cache_wayLoadLock__I:
@@ -691,7 +691,7 @@ loadLoop:
 @
 @ ======== Cache_disableBP ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_disableBP__E
         .func ti_sysbios_family_arm_a8_Cache_disableBP__E
 
 ti_sysbios_family_arm_a8_Cache_disableBP__E:
@@ -707,7 +707,7 @@ ti_sysbios_family_arm_a8_Cache_disableBP__E:
 @
 @ ======== Cache_enableBP ========
 @
-        .text
+        .section .text.ti_sysbios_family_arm_a8_Cache_enableBP__E
         .func ti_sysbios_family_arm_a8_Cache_enableBP__E
 
 ti_sysbios_family_arm_a8_Cache_enableBP__E:
