@@ -23,12 +23,13 @@ package gnu.targets.arm [1,0,0] {
     interface ITarget, IM;
     module GCArmv5T, GCArmv6, GCArmv7A, GCArmv7AF;
     module M3, M4, M4F;
+    module M33F;
     module A8F, A9F, A15F;
     module A53F;
 }
 
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,1; 7-27-2017 11:46:58; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 11-8-2017 17:20:19; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

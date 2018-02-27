@@ -33,49 +33,46 @@
  *  ======== MultithreadSupport.xs ========
  */
 
-var BIOS = null;
-var Task = null;
-var Startup = null;
-var MultithreadSupport = null;
-
 /*
  *  ======== module$use ========
  */
 function module$use()
 {
-    MultithreadSupport = this;
+    var BIOS = xdc.module("ti.sysbios.BIOS");
+    var Startup = xdc.useModule('xdc.runtime.Startup');
 
-    BIOS = xdc.module("ti.sysbios.BIOS");
-    Startup = xdc.useModule('xdc.runtime.Startup');
+    /*  When building with ROM image of SYS/BIOS, cannot use kernel
+     *  hooks. Use ROM version of getTlsAddr() which takes ownership
+     *  of unused task object field (curCoreId) to store address of
+     *  the TLS block. Otherwise, use hook version of getTlsAddr()
+     *  which uses hook pointer to store the TLS address.
+     */
+    this.$private.ROM = ("ti.sysbios.rom.ROM" in xdc.om ? true : false);
 
-    if (BIOS.taskEnabled == true) {
-        Task = xdc.module("ti.sysbios.knl.Task");
+    if (BIOS.taskEnabled && this.enableMultithreadSupport) {
+        if (Program.build.target.isa.match(/v7M/)) {
+            Startup.lastFxns.$add("&__iar_Initlocks");
+        }
+        if (!this.$private.ROM) {
+            var Task = xdc.module("ti.sysbios.knl.Task");
+            Task.addHookSet({
+                createFxn:   null,
+                deleteFxn:   this.taskDeleteHook,
+                exitFxn:     null,
+                readyFxn:    null,
+                registerFxn: this.taskRegHook,
+                switchFxn:   null
+            });
+        }
     }
 }
 
 /*
  *  ======== module$static$init ========
  */
-function module$static$init(mod, params)
+function module$static$init(state, mod)
 {
-    if ((BIOS.taskEnabled == true)
-        && (MultithreadSupport.enableMultithreadSupport == true)) {
-        Task.addHookSet({
-            registerFxn: MultithreadSupport.taskRegHook,
-            createFxn: null,
-            readyFxn:  null,
-            switchFxn: null,
-            exitFxn: null,
-            deleteFxn: MultithreadSupport.taskDeleteHook
-        });
-    }
-
-    if ((MultithreadSupport.enableMultithreadSupport == true) &&
-        Program.build.target.isa.match(/v7M/)) {
-        Startup.lastFxns.$add("&__iar_Initlocks");
-    }
-
-    mod.taskHId = 0;
+    state.taskHId = -1;
 }
 
 /*
@@ -84,14 +81,7 @@ function module$static$init(mod, params)
 function module$validate()
 {
     if (!Program.build.target.$name.match(/iar/)) {
-        MultithreadSupport.$logError("This module does not support non-IAR"
-            + "targets.", MultithreadSupport);
-    }
-
-    if ((MultithreadSupport.enableMultithreadSupport == true) &&
-        (BIOS.taskEnabled == false)) {
-        MultithreadSupport.$logWarning("Multithread support has been enabled "
-            + "for library calls from Task threads, but BIOS.taskEnabled is "
-            + "false.", MultithreadSupport, "enableMultithreadSupport");
+        this.$logError("This module only supports IAR target: "
+            + Program.build.target.$name + " is not supported.", this);
     }
 }

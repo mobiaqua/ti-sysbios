@@ -232,12 +232,14 @@ Void Timer_Instance_finalize(Timer_Object *obj, Int status)
  * 3. Clear any RTC events
  * 4. Set first compare threshold (per configured period)
  * 5. Enable the compare channel
- * 6. Enable the RTC to start it ticking
- * 7. Hwi_restore()
+ * 6. Configure events for CH0, and other configured channels
+ * 7. Enable the RTC to start it ticking
+ * 8. Hwi_restore()
  *
  */
 Void Timer_start(Timer_Object *obj)
 {
+    UInt32 events = AON_RTC_CH0;
     UInt32 compare;
     UInt key;
 
@@ -266,7 +268,15 @@ Void Timer_start(Timer_Object *obj)
     /* enable compare channel 0 */
     AONEventMcuWakeUpSet(AON_EVENT_MCU_WU0, AON_EVENT_RTC0);
     AONRTCChannelEnable(AON_RTC_CH0);
-    AONRTCCombinedEventConfig(AON_RTC_CH0);
+
+    /* configure CH0 events, plus CH1 and CH2 too if hooks are defined */
+    if (Timer_funcHookCH1) {
+        events |= AON_RTC_CH1;
+    }
+    if (Timer_funcHookCH2) {
+        events |= AON_RTC_CH2;
+    }
+    AONRTCCombinedEventConfig(events);
 
     /* start timer */
     AONRTCEnable();

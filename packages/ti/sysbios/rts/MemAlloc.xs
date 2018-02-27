@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,15 +49,6 @@ function module$use()
        (BIOS.heapSize != 0) &&
        !Program.build.target.$name.match(/A53F/)) {
         xdc.useModule('ti.sysbios.rts.gnu.ReentSupport');
-    }
-    else if (Program.build.target.$name.match(/iar/)
-        && (BIOS.taskEnabled == true)) {
-
-        var lnkOpts = Program.build.target.lnkOpts.prefix;
-        if (lnkOpts.match(/--threaded_lib/)) {
-            var thrSup = xdc.useModule('ti.sysbios.rts.iar.MultithreadSupport');
-            thrSup.enableMultithreadSupport = true;
-        }
     }
     else if (Program.build.target.$name.match(/ti/) &&
              (Program.build.target.isa.match(/66/) ||

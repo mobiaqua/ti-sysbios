@@ -277,7 +277,7 @@ function module$validate()
         else {
             HwiDelegate.$logWarning("When BIOS.swiEnabled is true and "
                + "Hwi.dispatcherSwiSupport is false, Swis MUST NOT be "
-               + "posted from Hwi funcstions!",
+               + "posted from Hwi functions!",
                HwiDelegate, "dispatcherSwiSupport");
         }
     }

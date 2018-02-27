@@ -67,7 +67,7 @@ function module$meta$init()
      * Clock.TickMode_DYNAMIC on newer devices
      */
     Program = xdc.module('xdc.cfg.Program');
-    if (!Program.platformName.match(/MSP432P401/)) {
+    if (!Program.cpu.deviceName.match(/MSP432P401/)) {
         Timer.defaultDynamic = true;
     }
 }

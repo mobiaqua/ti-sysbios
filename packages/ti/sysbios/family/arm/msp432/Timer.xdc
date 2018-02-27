@@ -449,7 +449,7 @@ internal:   /* not for client use */
     struct Instance_State {
         Bool                        staticInst;
         Int                         id;
-        UInt                        controlRegInit;
+        UInt16                      controlRegInit;
         ITimer.RunMode              runMode;
         ITimer.StartMode            startMode;
         UInt                        period;
@@ -459,8 +459,8 @@ internal:   /* not for client use */
         Hwi.FuncPtr                 tickFxn;
         Types.FreqHz                frequency;
         Hwi.Handle                  hwi;
-        UInt                        prevThreshold;
-        UInt                        savedCurrCount;
+        UInt16                      prevThreshold;
+        UInt16                      savedCurrCount;
         UInt32                      rollovers;
         Bool                        synchronous;
         UInt                        inputDivider;

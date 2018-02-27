@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -157,6 +157,8 @@ Void HeapTrack_free(HeapTrack_Object *obj, Ptr buf, SizeT size)
     Assert_isTrue(tracker->scribble == HeapTrack_STARTSCRIBBLE,
                                                       HeapTrack_A_bufOverflow);
 
+    key = Hwi_disable();
+
     /* Remove it from the linked list */
     Queue_remove(&(tracker->queElem));
 
@@ -167,7 +169,6 @@ Void HeapTrack_free(HeapTrack_Object *obj, Ptr buf, SizeT size)
     tracker->scribble = HeapTrack_NOSCRIBBLE;
 
     /* Update size */
-    key = Hwi_disable();
     obj->size -= (size + rem + sizeof(HeapTrack_Tracker));
     obj->sizeWithoutTracker -= (size + rem);
     Hwi_restore(key);

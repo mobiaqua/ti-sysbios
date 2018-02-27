@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,6 +76,63 @@ metaonly module Build
      *  Build.ccArgs.$add("-DMY_MACRO=1");
      */
     metaonly config String ccArgs[];
+
+    /*!
+     *  ======== Component ========
+     *  Define an annex component
+     *
+     *  Annex components may be defined by adding this object type
+     *  to the {@link #annex} array. All components in this array
+     *  will participate in the kernel build flow.
+     *
+     *  @field(repo)    Specify the fully qualified path to the component
+     *                  repository. This will become a `vpath` directive
+     *                  in the generated makefile. For example, if you
+     *                  specify repo as the following
+     *                  @p(code)
+     *                      /path/to/component/repository
+     *                  @p
+     *                  the generated makefile will contain
+     *                  @p(code)
+     *                      vpath %.c /path/to/component/repository
+     *                  @p
+     *
+     *  @field(files)   An array of component source files. These will be
+     *                  added to the kernel build rule as dependencies.
+     *                  The file name must be found on the vpath given above.
+     *                  To avoid file name conflicts, it is recommended to
+     *                  specify package qualified file names. For example:
+     *                  @p(code)
+     *                      "my/package/fileA.c"
+     *                      "my/package/fileB.c"
+     *                  @p
+     */
+    struct Component {
+        String  repo;           /*! full path to component repository */
+        String  incs[];         /*! list of include paths */
+        String  files[];        /*! list of component source files */
+    };
+
+    /*!
+     *  ======== annex ========
+     *  The array of annex components
+     *
+     *  All components defined in this array will participate in the
+     *  kernel build flow. Components are of type {@link #Component}.
+     *
+     *  To add a component to this array, use the following syntax:
+     *
+     *  @p(code)
+     *  Build.annex.$add({
+     *      repo: "/path/to/component/repository",
+     *      files: [
+     *          "my/package/fileA.c",
+     *          "my/package/fileB.c"
+     *      ]
+     *  });
+     *  @p
+     */
+    metaonly config Component annex[];
 
     /*!
      *  ======== getDefaultCustomCCOpts ========

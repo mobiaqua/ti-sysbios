@@ -366,13 +366,6 @@ function module$validate()
              m3Hwi, "common$.namedInstance");
     }
 
-    if (m3Hwi.numSparseInterrupts != 0) {
-        this.$logWarning(
-            "Hwi_delete() and Hwi_destruct() do not function properly " +
-            "when using a sparse dispatch table. See SDOCM00115298 for details.",
-            m3Hwi, "dispatchTableSize");
-    }
-
     if ((Memory.defaultHeapInstance.$module.$name != "ti.sysbios.heaps.HeapMem") && (Program.heap != 0)) {
 	this.$logError(
 	    "Memory.defaultHeapInstance must be of type \"ti.sysbios.heaps.HeapMem\"" +

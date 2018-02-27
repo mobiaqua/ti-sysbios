@@ -28,7 +28,7 @@ function getSects() {
     }
 }
 /*
- *  @(#) ti.targets.rts2800; 1, 0, 0,0; 7-27-2017 12:31:13; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) ti.targets.rts2800; 1, 0, 0,0; 11-8-2017 18:02:25; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

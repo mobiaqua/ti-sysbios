@@ -72,7 +72,7 @@ function module$use()
 
     /* if Boot.configureClocks not written, set default based on device ID */
     if (!Boot.$written("configureClocks")) {
-        if (Program.platformName.match(/MSP432P401/)) {
+        if (Program.cpu.deviceName.match(/MSP432P401/)) {
             Boot.configureClocks = true;
         }
         else {
@@ -81,7 +81,7 @@ function module$use()
     }
     /* else, if was written, check that selection is valid */
     else {
-        if ((!Program.platformName.match(/MSP432P401/)) &&
+        if ((!Program.cpu.deviceName.match(/MSP432P401/)) &&
             (Boot.configureClocks == true)) {
             Boot.$logError(
               "Boot.configureClocks is only supported on MSP432P401x devices",
@@ -110,15 +110,15 @@ function module$use()
 
     var devFamily = "";
 
-    if (Program.platformName.match(/MSP432P401/)) {
+    if (Program.cpu.deviceName.match(/MSP432P401/)) {
         devFamily = "-DDeviceFamily_MSP432P401x";
     }
-    else if (Program.platformName.match(/MSP432P411/)) {
+    else if (Program.cpu.deviceName.match(/MSP432P411/)) {
         devFamily = "-DDeviceFamily_MSP432P4x1xI";
     }
     else {
         Boot.$logWarning("Unknown device: " + Program.cpu.deviceName
-            + ". Assuming MSP432P401P compatible.", Boot);
+            + ". Assuming MSP432P401R compatible.", Boot);
         devFamily = "-DDeviceFamily_MSP432P401x";
     }
 

@@ -11,7 +11,7 @@
 #include "autoinit_2.1.c"
 #endif
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-27-2017 12:30:26; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 11-8-2017 18:01:40; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

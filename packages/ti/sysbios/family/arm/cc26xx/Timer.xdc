@@ -90,8 +90,11 @@ import ti.sysbios.family.arm.m3.Hwi;
  *  the Clock module.  To use Channels 1 (and/or Channel 2), the application
  *  will need to explicitly program the match value for the corresponding
  *  channel, for the desired time for the interrupt.  Also, the application
- *  will need to explicitly enable the additional channel, and include it in the
- *  combined event configuration.
+ *  will need to explicitly enable the additional channel(s).  Note that if a
+ *  hook function is configured for Channel 1 or Channel 2, the corresponding
+ *  events will be configured automatically when Channel 0 is started.  In
+ *  other words, there is no need for the application to explicitly configure
+ *  events for Channel 1 or Channel 2 by calling AONRTCCombinedEventConfig().
  *
  *  The below snippets show an example of using Channel 1, with Driverlib API
  *  calls to configure an RTC event at 4 seconds after boot.
@@ -105,14 +108,12 @@ import ti.sysbios.family.arm.m3.Hwi;
  *  @p
  *
  *  In main(), Channel 1 is first cleared, a compare (match) value of 4 seconds
- *  is set, the channel is enabled, and is included (along with Channel
- *  0) in the combined event configuration:
+ *  is set, the channel is enabled:
  *
  *  @p(code)
  *    AONRTCEventClear(AON_RTC_CH1);
  *    AONRTCCompareValueSet(AON_RTC_CH1, 0x40000);
  *    AONRTCChannelEnable(AON_RTC_CH1);
- *    AONRTCCombinedEventConfig(AON_RTC_CH0 | AON_RTC_CH1);
  *  @p
  *
  *  With the above, myHookCH1() will be called when the RTC reaches a count of

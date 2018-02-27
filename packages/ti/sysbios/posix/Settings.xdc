@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /*
  *  ======== Settings.xdc ========
  */
@@ -36,15 +37,12 @@ package ti.sysbios.posix;
 
 /*!
  *  ======== Settings ========
- *  Select ti.sysbios.posix pthread features.
+ *  Obsolete module for POSIX support
  *
- *  For BIOS pthread documentation, please refer to:
- *  {@link http://processors.wiki.ti.com/index.php/SYS/BIOS_POSIX_Thread_%28pthread%29_Support SYS/BIOS POSIX Thread (pthread) Support}
+ *  Please refer to ti.posix.rtos.Settings for POSIX support.
  */
 
-@Template("./Settings.xdt")
-
-module Settings
+metaonly module Settings
 {
     /*!
      *  ======== supportsMutexPriority ========

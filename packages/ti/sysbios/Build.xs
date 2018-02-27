@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -329,7 +329,6 @@ var biosPackages = [
     "ti.sysbios.io",
     "ti.sysbios.knl",
     "ti.sysbios.misc",
-    "ti.sysbios.posix",
     "ti.sysbios.rts",
     "ti.sysbios.rts.gnu",
     "ti.sysbios.rts.iar",
@@ -372,12 +371,6 @@ function getDefaultCustomCCOpts()
         }
         else {
             customCCOpts += " -O3 ";
-        }
-        if (!Program.build.target.$name.match(/A53F/)) {
-            customCCOpts += " -I" + Program.build.target.targetPkgPath +
-                "/libs/install-native/$(GCCTARG)/include/newlib-nano " +
-                " -I" + Program.build.target.targetPkgPath +
-                "/libs/install-native/$(GCCTARG)/include ";
         }
         customCCOpts = Program.build.target.ccOpts.prefix + " " + customCCOpts;
         customCCOpts += Program.build.target.ccOpts.suffix + " ";
@@ -774,8 +767,24 @@ function getCFiles(target)
         }
     }
 
-    /* remove trailing " " */
-    biosSources = biosSources.substring(0, biosSources.length-1);
+    /* add annex component source files */
+    for (var a = 0; a < Build.annex.length; a++) {
+        var annex = Build.annex[a];
+
+        for (var f = 0; f < annex.files.length; f++) {
+            biosSources += annex.files[f];
+            if ((f + 1) != annex.files.length) {
+                biosSources += " ";
+            }
+        }
+
+        if ((a + 1) != Build.annex.length) {
+            biosSources += " ";
+        }
+    }
+
+    /* remove trailing white-space */
+    biosSources = biosSources.replace(/\s+$/, "");
 
     return (biosSources);
 }

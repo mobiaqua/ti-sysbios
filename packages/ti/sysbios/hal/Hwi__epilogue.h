@@ -426,7 +426,8 @@ static inline Void ti_sysbios_hal_Hwi_restore(UInt key)
 
 #else
 #if ((defined(xdc_target__isaCompatible_v7A9)) || \
-     (defined(xdc_target__isaCompatible_v7A8)))
+     (defined(__GNUC__) && !defined(__ti__) &&    \
+      defined(xdc_target__isaCompatible_v7A)))
 
 /*
  *  ======== Hwi_disable ========

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,19 +29,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /*
  *  ======== package.xdc ========
  */
 
 /*!
  *  ======== ti.sysbios.posix ========
- *  Contains a subset of POSIX pthread and semaphore APIs
+ *  Obsolete package for POSIX support with SYS/BIOS
  *
- *  This package contains a subset of POSIX thread APIs implemented on
- *  top of SYS/BIOS Tasks and Semaphores.  For BIOS pthread documentation,
- *  please refer to:
- *  {@link http://processors.wiki.ti.com/index.php/SYS/BIOS_POSIX_Thread_%28pthread%29_Support SYS/BIOS POSIX Thread (pthread) Support}
-
+ *  Please refer to ti.posix for POSIX support.
  */
 package ti.sysbios.posix [1,0,0,0] {
     module Settings;

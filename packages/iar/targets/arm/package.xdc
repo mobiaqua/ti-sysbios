@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2013 Texas Instruments and others.
+ *  Copyright (c) 2013-2017 Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -15,11 +15,11 @@
  *  IAR-based code generation targets for ARM devices
  */
 package iar.targets.arm [1,0,0] {
-    module M3, M4, M4F;
+    module M3, M4, M4F, M33;
     interface ITarget;
 }
 /*
- *  @(#) iar.targets.arm; 1, 0, 0,1; 7-27-2017 11:47:09; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) iar.targets.arm; 1, 0, 0,0; 11-8-2017 17:20:30; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

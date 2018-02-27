@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,14 +76,11 @@ Void TimestampProvider_startTimer()
 
 }
 
-UInt tsrolls = 0;
-
 /*
  *  ======== TimestampProvider_rolloverFunc ========
  */
 Void TimestampProvider_rolloverFunc(UArg unused)
 {
-tsrolls++;
     MOD->rollovers++;
 }
 

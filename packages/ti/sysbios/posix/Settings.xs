@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,83 +29,57 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /*
  *  ======== Settings.xs ========
  *
  */
-
-
-var BIOS = null;
-var Build = null;
-var Settings = null;
-
-/*
- * ======== getCFiles ========
- * return the array of C language files associated
- * with targetName (ie Program.build.target.$name)
- */
-function getCFiles(targetName)
-{
-    return (["pthread.c",
-             "pthread_barrier.c",
-             "pthread_cond.c",
-             "pthread_key.c",
-             "pthread_mutex.c",
-             "pthread_rwlock.c",
-             "pthread_util.c",
-             "clock.c",
-             "mqueue.c",
-             "sched.c",
-             "semaphore.c",
-             "sleep.c",
-             "timer.c"]);
-}
-
-/*
- *  ======== module$meta$init ========
- */
-function module$meta$init()
-{
-    /* Only process during "cfg" phase */
-    if (xdc.om.$name != "cfg") {
-        return;
-    }
-
-    /* provide getCFiles() for Build.getCFiles() */
-    this.$private.getCFiles = getCFiles;
-}
-
-/*
- *  ======== module$static$init ========
- */
-function module$static$init(mod, params)
-{
-}
 
 /*
  *  ======== module$use ========
  */
 function module$use()
 {
-    Settings = this;
-    BIOS = xdc.useModule('ti.sysbios.BIOS');
+    /*  This module is deprecated; it has been replaced by
+     *  ti.posix.tirtos.Settings. Search the package path
+     *  for the new module.
+     */
+    var pname = xdc.findFile("ti/posix/tirtos/Settings.xdc");
 
-    xdc.useModule('xdc.runtime.Assert');
-    xdc.useModule('xdc.runtime.Memory');
+    if (pname == null) {
+        /*  The module is not on the package path. Log an
+         *  error and terminate the configuration phase.
+         */
+        this.$logError("This module is deprecated, it has been replaced "
+            + "by ti.posix.tirtos.Settings. Please update your config "
+            + "script and add the package ti.posix.tirtos to your package "
+            + "path.", this);
+    }
 
-    xdc.useModule('ti.sysbios.hal.Seconds');
-    xdc.useModule('ti.sysbios.knl.Clock');
-    xdc.useModule('ti.sysbios.knl.Mailbox');
-    xdc.useModule('ti.sysbios.knl.Queue');
-    xdc.useModule('ti.sysbios.knl.Semaphore');
-    xdc.useModule('ti.sysbios.knl.Task');
+    /*  Found the module on the package path. Check if the user
+     *  already added it to the config.
+     */
+    else if ("ti.posix.tirtos.Settings" in xdc.om) {
+        /*  User added the new module but forgot to remove this old one.
+         *  Log a warning to inform the user but don't configure the new
+         *  module. Assume that much has been done in the config script.
+         */
+        this.$logWarning("This module is deprecated, it has been replaced "
+            + "by ti.posix.tirtos.Settings, which has already been added "
+            + "to the configuration. Please remove this module from your "
+            + "config script.", this);
+    }
+    else {
+        /*  New module not in config. Load and configure the new module
+         *  on behalf of this module. Log a warning to inform the user.
+         */
+        var Settings = xdc.useModule('ti.posix.tirtos.Settings');
+        Settings.enableMutexPriority = this.supportsMutexPriority;
+        Settings.debug = this.debug;
 
-    Build = xdc.module('ti.sysbios.Build');
-
-    var defs = " -Dti_sysbios_posix_Settings_debug__D=" +
-            (Settings.debug ? "TRUE" : "FALSE") +
-            " -Dti_sysbios_posix_Settings_supportsMutexPriority__D=" +
-            (Settings.supportsMutexPriority ? "TRUE" : "FALSE");
-
-    Build.ccArgs.$add(defs);
+        this.$logWarning("This module is deprecated, it has been replaced "
+            + "by ti.posix.tirtos.Settings. Please update your config "
+            + "script. Loading and configuring the new module on behalf "
+            + "of this module.", this);
+    }
 }

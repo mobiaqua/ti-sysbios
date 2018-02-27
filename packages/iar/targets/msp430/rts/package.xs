@@ -43,7 +43,7 @@ function getSects() {
     }
 }
 /*
- *  @(#) iar.targets.msp430.rts; 1, 0, 0,0; 7-27-2017 12:29:30; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) iar.targets.msp430.rts; 1, 0, 0,0; 11-8-2017 18:00:50; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

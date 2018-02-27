@@ -708,7 +708,7 @@ module BIOS
      *  Example: A macro hex value of 0x64501 implies that the SYS/BIOS
      *  product version number is 6.45.01
      */
-    const UInt32 version = 0x65200;
+    const UInt32 version = 0x65302;
 
     /*!
      *  ======== addUserStartupFunction ========

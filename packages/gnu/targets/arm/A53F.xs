@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var A53F;
-
 /*
  *  ======== A53F.getISAChain ========
  *  A53F implementation for ITarget.getISAChain()
@@ -60,55 +58,8 @@ function getISAChain (isa)
         return (myChain.slice(0, i + 1));
     }
 }
-
 /*
- *  ======== module$meta$init ========
- */
-function module$meta$init()
-{
-    A53F = this;
-}
-
-/*
- *  ======== A53F.compile ========
- */
-function compile(goal) {
-    if (A53F.targetPkgPath == null) {
-        A53F.targetPkgPath = this.$package.packageBase;
-    }
-
-//    var ccOpts = A15F.ccOpts.prefix + " " + A15F.cc.opts + " " +
-//                 A15F.ccOpts.suffix;
-
-//    if (!ccOpts.match(/--specs=nano\.specs/)) {
-//        goal.opts.copts += " --specs=nano.specs ";
-//    }
-
-//    goal.opts.copts += " -I" + A53F.targetPkgPath +
-//        "/libs/install-native/$(GCCTARG)/include ";
-
-//    goal.opts.cfgcopts += " -I" + A53F.targetPkgPath +
-//        "/libs/install-native/$(GCCTARG)/include ";
-
-    return (this.$super.compile(goal));
-}
-
-/*
- *  ======== A15F.link ========
- */
-function link(goal)
-{
-    if (A53F.targetPkgPath == null) {
-        A53F.targetPkgPath = this.$package.packageBase;
-    }
-
-//    goal.opts += " -L" + A53F.targetPkgPath +
-//        "/libs/install-native/$(GCCTARG)/lib/fpu ";
-
-    return(this.$super.link(goal));
-}
-/*
- *  @(#) gnu.targets.arm; 1, 0, 0,1; 7-27-2017 11:46:57; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 11-8-2017 17:20:17; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

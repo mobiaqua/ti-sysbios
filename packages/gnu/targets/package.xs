@@ -50,7 +50,7 @@ function getLibs()
     return (null);    /* no library required for this package */
 }
 /*
- *  @(#) gnu.targets; 1, 0, 1,1; 7-27-2017 11:46:51; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) gnu.targets; 1, 0, 1,0; 11-8-2017 17:20:11; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

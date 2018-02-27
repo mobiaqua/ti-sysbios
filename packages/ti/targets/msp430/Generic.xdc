@@ -87,7 +87,7 @@ metaonly module Generic inherits xdc.bld.ITarget2 {
     String asmName(String CName);
 }
 /*
- *  @(#) ti.targets.msp430; 1, 0, 0,1; 7-27-2017 11:47:59; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) ti.targets.msp430; 1, 0, 0,0; 11-8-2017 17:21:22; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

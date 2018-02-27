@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -168,9 +168,9 @@ Void Timer_setNextTick(Timer_Object *obj, UInt32 ticks)
 {
     ti_catalog_msp432_peripherals_timers_TimerRegs *timer;
     UInt32 newPeriod = obj->period * ticks;
-    UInt next;
-    UInt previous;
-    UInt now;
+    UInt16 next;
+    UInt16 previous;
+    UInt16 now;
 
     /* get timer base address */
     timer = (ti_catalog_msp432_peripherals_timers_TimerRegs *)
@@ -179,7 +179,7 @@ Void Timer_setNextTick(Timer_Object *obj, UInt32 ticks)
     previous = obj->prevThreshold;
 
     /* next is relative to savedCurrCount */
-    next = obj->savedCurrCount + newPeriod;
+    next = (UInt16)(obj->savedCurrCount + newPeriod);
 
     /* set the compare threshold for next interrupt */
     timer->cc_compare_0 = next;
@@ -242,7 +242,7 @@ Void Timer_setNextTick(Timer_Object *obj, UInt32 ticks)
      */
 
     /* get current timer count */
-    now = Timer_getCount(obj);
+    now = (UInt16)Timer_getCount(obj);
 
     /* if not expecting wrap thru zero ... */
     if (next > previous) {

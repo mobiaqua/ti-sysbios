@@ -390,7 +390,7 @@ extern void __interrupt _c_int00_noinit_noexit_mpu_init()
 }
 
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-27-2017 12:30:27; /db/ztree/library/trees/xdctargets/xdctargets-o04/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 11-8-2017 18:01:41; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
 
  */
 

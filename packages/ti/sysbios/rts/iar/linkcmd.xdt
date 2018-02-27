@@ -34,6 +34,7 @@
 %var mts =  xdc.module("ti.sysbios.rts.iar.MultithreadSupport");
 %if (mts.enableMultithreadSupport == true) {
 %    if (Program.build.target.$name.match(/iar\.targets\.arm/)) {
+--threaded_lib
 --redirect __iar_system_Mtxinit=ti_sysbios_rts_iar_MultithreadSupport_initLock__I
 --redirect __iar_system_Mtxdst=ti_sysbios_rts_iar_MultithreadSupport_destroyLock__I
 --redirect __iar_system_Mtxlock=ti_sysbios_rts_iar_MultithreadSupport_acquireLock__I
@@ -53,6 +54,7 @@
 %    }
 %    else {
 %        /* MSP430 */
+--threaded_lib
 -eti_sysbios_rts_iar_MultithreadSupport_initLock__I=__iar_system_Mtxinit
 -eti_sysbios_rts_iar_MultithreadSupport_destroyLock__I=__iar_system_Mtxdst
 -eti_sysbios_rts_iar_MultithreadSupport_acquireLock__I=__iar_system_Mtxlock

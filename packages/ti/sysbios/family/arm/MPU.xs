@@ -74,6 +74,10 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
         "MSP432P401R": {
             isMemoryMapped  : true,
             numRegions      : 8
+        },
+        "CC26.2.*": {
+            isMemoryMapped  : true,
+            numRegions      : 8
         }
     };
 
@@ -92,6 +96,9 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     /* Tiva devices */
     deviceTable["TM4C129CNCPDT"] = deviceTable["MSP432P401R"];
     deviceTable["TM4.*"]         = deviceTable["MSP432P401R"];
+
+    /* Simplelink devices */
+    deviceTable["CC13.2.*"] = deviceTable["CC26.2.*"];
 }
 
 /*
