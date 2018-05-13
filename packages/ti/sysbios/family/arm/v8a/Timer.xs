@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,11 +172,6 @@ function module$use()
     Hwi = xdc.useModule('ti.sysbios.family.arm.gicv3.Hwi');
     BIOS = xdc.useModule('ti.sysbios.BIOS');
     Build = xdc.module('ti.sysbios.Build');
-
-    if (Program.cpu.deviceName.match(/SIMFLEMING/) ||
-        Program.cpu.deviceName.match(/SIMMAXWELL/)) {
-        Timer.setEnableBit = true;
-    }
 }
 
 /*
@@ -205,8 +200,8 @@ function module$static$init(mod, params)
 
     /* add -D to compile line to optimize exception code */
     Build.ccArgs.$add(
-        "-Dti_sysbios_family_arm_systimer_Timer_setEnableBit__D=" +
-        (Timer.setEnableBit ? "TRUE" : "FALSE"));
+        "-Dti_sysbios_family_arm_v8a_Timer_vlabErrata__D=" +
+        (Timer.vlabErrata ? "TRUE" : "FALSE"));
 }
 
 /*

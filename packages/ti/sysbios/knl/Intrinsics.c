@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
 #include <xdc/runtime/Assert.h>
 
 #include "package/internal/Intrinsics.xdc.h"
+
+extern UInt ti_sysbios_knl_Intrinsics_maxbit__E(UInt bits);
 
 /*
  *  ======== Intrinsics_maxbit ========

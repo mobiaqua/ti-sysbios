@@ -51,12 +51,14 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.M3":
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
+        case "gnu.targets.arm.M33F":
             return (["IntrinsicsSupport_asm_gnu.sv7M"]);
             break;
 
         case "iar.targets.arm.M3":
         case "iar.targets.arm.M4":
         case "iar.targets.arm.M4F":
+        case "iar.targets.arm.M33":
             return (["IntrinsicsSupport_asm_iar.sv7M"]);
             break;
 

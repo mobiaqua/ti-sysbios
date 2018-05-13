@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,10 @@
 /*
  *  ======== Idle_loop ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Idle_loop(UArg arg1, UArg arg2)
 {
+    /* INFINITE_LOOP.LOCAL */
     while (TRUE) {
         Idle_run();
     }
@@ -56,11 +58,13 @@ Void Idle_loop(UArg arg1, UArg arg2)
 /*
  *  ======== Idle_run ========
  */
-Void Idle_run()
+Void Idle_run(Void)
 {
     Int i;
 
+    /* CWARN.CONSTCOND.IF */
     if (BIOS_smpEnabled == TRUE) {
+        /* UNREACH.GEN */
         UInt coreId = Core_getId();
         for (i = 0; i < Idle_funcList.length; i++) {
             if (Idle_coreList.elem[i] == coreId) {

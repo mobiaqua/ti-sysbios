@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,6 +237,11 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
         if (Hwi_module->dispatchTable[intNum] == hwi) {
             break;
         }
+    }
+
+    /* keep Klocwork happy, this should never happen */
+    if (intNum == Hwi_NUM_INTERRUPTS) {
+        return;
     }
 
     /* Kill the interrupt */
@@ -645,6 +650,11 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
         if (Hwi_module->dispatchTable[intNum] == hwi) {
             break;
         }
+    }
+
+    /* keep Klocwork happy, this should never happen */
+    if (intNum == Hwi_NUM_INTERRUPTS) {
+        return;
     }
 
     Hwi_disableInterrupt(intNum);

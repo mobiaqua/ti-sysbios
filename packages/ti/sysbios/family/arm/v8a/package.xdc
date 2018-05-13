@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,10 @@ requires ti.sysbios.interfaces;
  *
  */
 package ti.sysbios.family.arm.v8a [1,0,0,0] {
+    module Cache;
     module Core;
     module Mmu;
+    module Pmu;
     module TaskSupport;
     module Timer;
     module TimestampProvider;

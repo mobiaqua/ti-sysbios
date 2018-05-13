@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,20 +46,14 @@
 #define ti_sysbios_knl_Task__internalaccess     /* modify fxn */
 #include <ti/sysbios/knl/Task.h>
 
-/*  For custom builds, this will always be defined, but it will
- *  not be defined when building just the library.  Make sure
- *  this goes ahead of _pthread.h.
- */
-#ifndef ti_posix_tirtos_Settings_enableMutexPriority__D
-#define ti_posix_tirtos_Settings_enableMutexPriority__D TRUE
-#endif
-
 #include <pthread.h>
 #include <errno.h>
 
 #include "_pthread.h"
 
 void _pthread_runStub(UArg arg0, UArg arg1);
+
+static void _pthread_delete(pthread_Obj *thread);
 
 /*
  *  Default pthread attributes.  These are implementation
@@ -74,6 +68,15 @@ static pthread_attr_t defaultPthreadAttrs = {
     0,       /*  guardsize */
     PTHREAD_CREATE_JOINABLE /* detachstate */
 };
+
+/*
+ *  List of threads that have exited.  Instead of requiring the app to
+ *  configure Task.deleteTerminatedTasks = true, we handle the cleanup
+ *  here.  This allows users to call Task_delete() on their own tasks.
+ *  Only detached threads will go on this list.  For joinable threads,
+ *  pthread_join() will delete the thread object.
+ */
+static pthread_Obj *terminatedList = NULL;
 
 /*
  *************************************************************************
@@ -253,14 +256,7 @@ int pthread_cancel(pthread_t pthread)
         _pthread_removeThreadKeys(pthread);
 
         if (thread->detached) {
-            /* Free memory */
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-            Queue_destruct(&(thread->mutexList));
-#endif
-            Semaphore_destruct(&(thread->joinSem));
-            Task_delete(&(thread->task));
-
-            Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
+            _pthread_delete(thread);
         }
         else {
             /* pthread_join() will clean up. */
@@ -319,7 +315,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr,
     thread->priority = pAttr->priority;
     thread->cleanupList = NULL;
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     thread->blockedMutex = NULL;
     Queue_elemClear((Queue_Elem *)thread);
     Queue_construct(&(thread->mutexList), NULL);
@@ -337,12 +333,7 @@ int pthread_create(pthread_t *newthread, const pthread_attr_t *attr,
             &taskParams, &eb);
 
     if (thread->task == NULL) {
-        Semaphore_destruct(&(thread->joinSem));
-
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-        Queue_destruct(&(thread->mutexList));
-#endif
-        Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
+        _pthread_delete(thread);
 
         return (ENOMEM);
     }
@@ -407,6 +398,7 @@ int pthread_equal(pthread_t pt1, pthread_t pt2)
 void pthread_exit(void *retval)
 {
     pthread_Obj      *thread = (pthread_Obj *)pthread_self();
+    UInt              key;
 
     /*
      *  This function terminates the calling thread and returns
@@ -436,26 +428,20 @@ void pthread_exit(void *retval)
     if (!thread->detached) {
         Semaphore_post(Semaphore_handle(&(thread->joinSem)));
 
-        /* Set this task's priority to -1 to stop it from running. */
-        Task_setPri(thread->task, -1);
+        /* pthread_join() will delete the thread */
     }
     else {
-        /* Free memory */
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-        Queue_destruct(&(thread->mutexList));
-#endif
-        Semaphore_destruct(&(thread->joinSem));
+        /* Put the thread on the terminated list */
+        key = Task_disable();
 
-        Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
+        thread->qElem.next = (Queue_Elem *)terminatedList;
+        terminatedList = thread;
 
-        /*
-         *  Don't call Task_delete on the calling thread.  Task_exit()
-         *  will put the task on the terminated queue, and if
-         *  Task_deleteTerminatedTasks is TRUE, the task will be cleaned
-         *  up automatically.
-         */
-        Task_exit();
+        Task_restore(key);
     }
+
+    /* Set this task's priority to -1 to stop it from running. */
+    Task_setPri(thread->task, -1);
 }
 
 /*
@@ -524,14 +510,8 @@ int pthread_join(pthread_t pthread, void **thread_return)
         *thread_return = thread->ret;
     }
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    Queue_destruct(&(thread->mutexList));
-#endif
-    Semaphore_destruct(&(thread->joinSem));
+    _pthread_delete(thread);
 
-    Task_delete(&(thread->task));
-
-    Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
     return (0);
 }
 
@@ -595,7 +575,7 @@ int pthread_setschedparam(pthread_t pthread, int policy,
     UInt                oldPri;
     int                 priority = param->sched_priority;
     UInt                key;
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     int                 maxPri;
 #endif
 
@@ -609,7 +589,7 @@ int pthread_setschedparam(pthread_t pthread, int policy,
     oldPri = Task_getPri(task);
     thread->priority = priority;
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     /*
      *  If the thread is holding a PTHREAD_PRIO_PROTECT or
      *  PTHREAD_PRIO_INHERIT mutex and running at its ceiling, we don't
@@ -645,6 +625,30 @@ int pthread_setschedparam(pthread_t pthread, int policy,
  *              internal functions
  *************************************************************************
  */
+/*
+ *  ======== _pthread_cleanupFxn ========
+ *  Idle function for cleaning up terminated tasks.
+ */
+void _pthread_cleanupFxn(void)
+{
+    pthread_Obj        *thread;
+    UInt                key;
+
+    key = Task_disable();
+
+    /* Delete the first pthread object on the terminated list */
+    thread = terminatedList;
+    if (thread != NULL) {
+        terminatedList = (pthread_Obj *)(thread->qElem.next);
+    }
+
+    Task_restore(key);
+
+    if (thread != NULL) {
+        /* Freeing memory must be done outside of scheduler disabled block */
+        _pthread_delete(thread);
+    }
+}
 
 /*
  *  ======== _pthread_cleanup_pop ========
@@ -677,6 +681,23 @@ void _pthread_cleanup_push(struct _pthread_cleanup_context *context,
 }
 
 /*
+ *  ======== _pthread_delete ========
+ */
+static void _pthread_delete(pthread_Obj *thread)
+{
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    Queue_destruct(&(thread->mutexList));
+#endif
+    Semaphore_destruct(&(thread->joinSem));
+
+    if (thread->task) {
+        Task_delete(&(thread->task));
+    }
+
+    Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
+}
+
+/*
  *  ======== _pthread_runStub ========
  */
 void _pthread_runStub(UArg arg0, UArg arg1)
@@ -702,26 +723,24 @@ void _pthread_runStub(UArg arg0, UArg arg1)
         Semaphore_post(Semaphore_handle(&(thread->joinSem)));
 
         /*
-         * Set this task's priority to -1 to prevent it from being put
-         * on the terminated queue (and deleted if Task.deleteTerminatedTasks
-         * is true). pthread_join() will delete the Task object.
+         *  Don't put the thread on the terminated list since pthread_join()
+         *  can be called after the thread terminates.
          */
-        Task_setPri(thread->task, -1);
-        Task_restore(key);
     }
     else {
-        Task_restore(key);
 
-        /* Free memory */
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-        Queue_destruct(&(thread->mutexList));
-#endif
-        Semaphore_destruct(&(thread->joinSem));
-
-        Memory_free(Task_Object_heap(), thread, sizeof(pthread_Obj));
-
-        /* The system will have to clean up the Task object */
+        /* Add the thread to the list of terminated threads */
+        thread->qElem.next = (Queue_Elem *)terminatedList;
+        terminatedList = thread;
     }
 
-    /* Task_exit() is called when returning from this function */
+    Task_restore(key);
+
+    /*
+     *  Set this task's priority to -1 to prevent it from being put
+     *  on the terminated queue (and deleted if Task.deleteTerminatedTasks
+     *  is true). _pthread_cleanupFxn() will delete the pthread object in
+     *  the idle loop.
+     */
+    Task_setPri(thread->task, -1);
 }

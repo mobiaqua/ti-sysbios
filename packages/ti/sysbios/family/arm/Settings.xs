@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@ var deviceTable = {
             coreDelegate : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             mmuModule : "ti.sysbios.family.arm.arm9.Mmu",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.Arm9", "ti.targets.arm.Arm9t",
@@ -72,6 +73,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.M3", "ti.targets.arm.M3_big_endian",
@@ -89,10 +91,11 @@ var deviceTable = {
             timestampDelegateSmp : null,
             taskSupportDelegate : "ti.sysbios.family.arm.v8a.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
-            cacheDelegate : null,
+            cacheDelegate : "ti.sysbios.family.arm.v8a.Cache",
             cacheDelegateSmp : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             coreDelegateSmp : null,
             mmuModule : "ti.sysbios.family.arm.v8a.Mmu",
@@ -115,6 +118,7 @@ var deviceTable = {
             cacheDelegateSmp : "ti.sysbios.family.arm.a15.smp.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.a15.Core",
             coreDelegateSmp : "ti.sysbios.family.arm.a15.smp.Core",
             mmuModule : "ti.sysbios.family.arm.a15.Mmu",
@@ -135,6 +139,7 @@ var deviceTable = {
             cacheDelegateSmp : "ti.sysbios.family.arm.a15.smp.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.a15.Core",
             coreDelegateSmp : "ti.sysbios.family.arm.a15.smp.Core",
             mmuModule : "ti.sysbios.family.arm.a15.Mmu",
@@ -155,6 +160,7 @@ var deviceTable = {
             cacheDelegateSmp : "ti.sysbios.family.arm.a15.smp.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.a15.Core",
             coreDelegateSmp : "ti.sysbios.family.arm.a15.smp.Core",
             mmuModule : "ti.sysbios.family.arm.a15.Mmu",
@@ -175,6 +181,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.a9.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             mmuModule : "ti.sysbios.family.arm.a8.Mmu",
             bootModule : null,
@@ -192,6 +199,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.a9.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             mmuModule : "ti.sysbios.family.arm.a8.Mmu",
             bootModule : null,
@@ -212,6 +220,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.a8.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             mmuModule : "ti.sysbios.family.arm.a8.Mmu",
             clockTickPeriod : 1000,
@@ -229,6 +238,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.a8.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             mmuModule : "ti.sysbios.family.arm.a8.Mmu",
             clockTickPeriod : 1000,
@@ -248,6 +258,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.hal.unicache.Cache",
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.ducati.Core",
             mmuModule : "ti.sysbios.hal.ammu.AMMU",
             clockTickPeriod : 1000,
@@ -267,6 +278,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.M3", "ti.targets.arm.elf.M3",
@@ -283,6 +295,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : null,
             bootModule : null,
             clockTickPeriod : 1000,
@@ -299,10 +312,28 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : "ti.sysbios.family.arm.cc26xx.Power",
             secondsDelegate : "ti.sysbios.family.arm.cc26xx.Seconds",
+            syscallDelegate : null,
             coreDelegate : null,
             bootModule : "ti.sysbios.family.arm.cc26xx.Boot",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.M3", "iar.targets.arm.M3" ]
+        },
+        "SIMMAXWELL": {
+            hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
+            timerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
+            mmuModule : null,
+            cacheDelegate : null,
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : "ti.sysbios.family.arm.v7m.SysCall",
+            coreDelegate : null,
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.M3" ]
         },
     },
     "ti.catalog.arm.cortexm4": {
@@ -317,6 +348,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : "ti.sysbios.family.arm.lm4.Seconds",
+            syscallDelegate : null,
             coreDelegate : null,
             bootModule : "ti.catalog.arm.cortexm4.tiva.ce.Boot",
             clockTickPeriod : 1000,
@@ -337,6 +369,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.hal.unicache.Cache",
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : null,
+            syscallDelegate : null,
             mmuModule : "ti.sysbios.hal.ammu.AMMU",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.M3", "ti.targets.arm.M3_big_endian",
@@ -356,6 +389,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.hal.unicache.Cache",
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : null,
+            syscallDelegate : null,
             mmuModule : "ti.sysbios.hal.ammu.AMMU",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.M4", "gnu.targets.arm.elf.M4" ]
@@ -371,6 +405,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : "ti.sysbios.family.arm.cc32xx.Seconds",
+            syscallDelegate : null,
             coreDelegate : null,
             bootModule : null,
             clockTickPeriod : 1000,
@@ -387,6 +422,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : "ti.sysbios.family.arm.msp432.Seconds",
+            syscallDelegate : "ti.sysbios.family.arm.v7m.SysCall",
             coreDelegate : null,
             bootModule : "ti.sysbios.family.arm.msp432.init.Boot",
             clockTickPeriod : 1000,
@@ -403,12 +439,32 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : "ti.sysbios.family.arm.m3.Power",
             secondsDelegate : "ti.sysbios.family.arm.lm4.Seconds",
+            syscallDelegate : null,
             coreDelegate : null,
             bootModule : "ti.sysbios.family.arm.msp432e4.init.Boot",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.M4F",
                         "gnu.targets.arm.M4F",
                         "iar.targets.arm.M4F" ]
+        },
+    },
+    "ti.catalog.arm.cortexm33": {
+        "FVP_MPS2": {
+            hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
+            timerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
+            mmuModule : null,
+            cacheDelegate : null,
+            powerDelegate : "ti.sysbios.family.arm.m3.Power",
+            secondsDelegate : null,
+            syscallDelegate : null,
+            coreDelegate : null,
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "gnu.targets.arm.M33F", "iar.targets.arm.M33" ]
         },
     },
     "ti.catalog.arm.cortexr5": {
@@ -424,6 +480,7 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.tms570.Core",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.R5F" ]
@@ -437,10 +494,11 @@ var deviceTable = {
             taskSupportDelegate : "ti.sysbios.family.arm.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
             bootModule : null,
-            mmuModule : null, /*"ti.sysbios.family.arm.MPU",*/
-            cacheDelegate : null, /*"ti.sysbios.family.arm.v7r.Cache",*/
+            mmuModule : "ti.sysbios.family.arm.MPU",
+            cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.R5F" ]
@@ -459,6 +517,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.tms570.Core",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.R4F", "ti.targets.arm.elf.R4Ft" ]
@@ -475,6 +534,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.tms570.Core",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.R4F", "ti.targets.arm.elf.R4Ft" ]
@@ -491,6 +551,7 @@ var deviceTable = {
             cacheDelegate : null,
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.tms570.Core",
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.R4F", "ti.targets.arm.elf.R4Ft" ]
@@ -576,13 +637,15 @@ deviceTable["ti.catalog.arm.cortexm4"]["CC26.*"]    = deviceTable["ti.catalog.ar
 /* Cortex-R5 devices */
 deviceTable["ti.catalog.arm.cortexr5"]["RM57D8.*"] = deviceTable["ti.catalog.arm.cortexr5"]["RM57D8XX"];
 deviceTable["ti.catalog.arm.cortexr5"]["RM57L8.*"] = deviceTable["ti.catalog.arm.cortexr5"]["RM57D8XX"];
-deviceTable["ti.catalog.arm.cortexr4"]["AWR16XX"] = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
-deviceTable["ti.catalog.arm.cortexr4"]["IWR14XX"] = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
-deviceTable["ti.catalog.arm.cortexr4"]["IWR16XX"] = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
+deviceTable["ti.catalog.arm.cortexr4"]["AWR1.*"]   = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
+deviceTable["ti.catalog.arm.cortexr4"]["IWR1.*"]   = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
 
 /* MSP432 devices */
 deviceTable["ti.catalog.arm.cortexm4"]["MSP432E.*"] = deviceTable["ti.catalog.arm.cortexm4"]["MSP432E401Y"];
 deviceTable["ti.catalog.arm.cortexm4"]["MSP432P.*"] = deviceTable["ti.catalog.arm.cortexm4"]["MSP432P401R"];
+
+/* Cortex-M33 devices */
+deviceTable["ti.catalog.arm.cortexm33"]["MTL1_VSOC"] = deviceTable["ti.catalog.arm.cortexm33"]["FVP_MPS2"];
 
 var armSettings = xdc.loadCapsule("armSettings.xs");
 
@@ -812,6 +875,15 @@ function getDefaultSecondsDelegate()
 {
     var deviceName = deviceSupportCheck();
     return (deviceTable[catalogName][deviceName].secondsDelegate);
+}
+
+/*
+ *  ======== getDefaultSysCallDelegate ========
+ */
+function getDefaultSysCallDelegate()
+{
+    var deviceName = deviceSupportCheck();
+    return (deviceTable[catalogName][deviceName].syscallDelegate);
 }
 
 /*

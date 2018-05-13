@@ -35,7 +35,7 @@ function getRawVersion()
     return (result);
 }
 /*
- *  @(#) iar.targets.msp430; 1, 0, 0,0; 11-8-2017 17:20:38; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) iar.targets.msp430; 1, 0, 0,0; 4-19-2018 16:53:57; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

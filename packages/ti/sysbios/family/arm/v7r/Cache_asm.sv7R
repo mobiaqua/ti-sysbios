@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2015, Texas Instruments Incorporated
+;  Copyright (c) 2015-2018, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -51,8 +51,6 @@
         .global ti_sysbios_family_arm_v7r_Cache_wait__E
         .global ti_sysbios_family_arm_v7r_Cache_getEnabled__E
         .global ti_sysbios_family_arm_v7r_Cache_getCacheLevelInfo__I
-        .global ti_sysbios_family_arm_v7r_Cache_disableBP__E
-        .global ti_sysbios_family_arm_v7r_Cache_enableBP__E
 
         .state32
         .align  4
@@ -553,42 +551,6 @@ getEnabledDone:
 ti_sysbios_family_arm_v7r_Cache_getCacheLevelInfo__I
         mcr     p15, #2, r0, c0, c0, #0 ; write to Cache Size Selection Reg
         mrc     p15, #1, r0, c0, c0, #0 ; read Cache Size Id Reg
-        bx      lr
-        .endasmfunc
-
-;
-; ======== Cache_disableBP ========
-;
-        .sect ".text:ti_sysbios_family_arm_v7r_Cache_disableBP__E"
-        .clink
-        .armfunc ti_sysbios_family_arm_v7r_Cache_disableBP__E
-
-ti_sysbios_family_arm_v7r_Cache_disableBP__E
-        .asmfunc
-        mrc     p15, #0, r0, c1, c0, #0 ; read register CR
-        nop
-        bic     r0, r0, #0x0800         ; clear BP bit in CR
-        mcr     p15, #0, r0, c1, c0, #0 ; BP disabled
-        nop
-        mrc     p15, #0, r0, c1, c0, #0 ; return CR
-        bx      lr
-        .endasmfunc
-
-;
-; ======== Cache_enableBP ========
-;
-        .sect ".text:ti_sysbios_family_arm_v7r_Cache_enableBP__E"
-        .clink
-        .armfunc ti_sysbios_family_arm_v7r_Cache_enableBP__E
-
-ti_sysbios_family_arm_v7r_Cache_enableBP__E
-        .asmfunc
-        mrc     p15, #0, r0, c1, c0, #0 ; read register CR
-        nop
-        orr     r0, r0, #0x0800         ; set BP bit in CR
-        mcr     p15, #0, r0, c1, c0, #0 ; BP enabled
-        nop
-        mrc     p15, #0, r0, c1, c0, #0 ; return CR
         bx      lr
         .endasmfunc
 

@@ -58,12 +58,14 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.M3":
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
+        case "gnu.targets.arm.M33F":
             return (["Hwi_asm_gnu.sv7M", "Hwi_asm_switch_gnu.sv7M"]);
             break;
 
         case "iar.targets.arm.M3":
         case "iar.targets.arm.M4":
         case "iar.targets.arm.M4F":
+        case "iar.targets.arm.M33":
             return (["Hwi_asm_iar.sv7M", "Hwi_asm_switch_iar.sv7M"]);
             break;
 
@@ -185,7 +187,25 @@ if (xdc.om.$name == "cfg") {
             numPriorities : 8,
             resetVectorAddress : 0x01000800,
             vectorTableAddress : 0x20000000,
-        }
+        },
+        "FVP_MPS2": {
+            numInterrupts : 16 + 55,            /* supports 71 interrupts */
+            numPriorities : 8,
+            resetVectorAddress : 0x10000000,
+            vectorTableAddress : 0x30000000,
+        },
+        "SIMMAXWELL": {
+            numInterrupts : 16 + 64,            /* supports 80 interrupts */
+            numPriorities : 8,
+            resetVectorAddress : 0x00040000,
+            vectorTableAddress : 0x00040000,
+        },
+        "MTL1_VSOC": {
+            numInterrupts : 16 + 55,            /* supports 71 interrupts */
+            numPriorities : 8,
+            resetVectorAddress : 0x2C000000,
+            vectorTableAddress : 0x2C000000,
+        },
     }
 
     deviceTable["TMS470R10"]    = deviceTable["CortexM3"];
@@ -271,6 +291,7 @@ function module$meta$init()
         Program.platformName.match(/ti\.platforms\.cc26xx/) ||
         Program.platformName.match(/ti\.platforms\.msp432/) ||
         Program.platformName.match(/ti\.platforms\.simplelink/) ||
+        Program.platformName.match(/ti\.platforms\.cortexM/) ||
         Program.cpu.deviceName.match(/CC26/) ||
         Program.cpu.deviceName.match(/CC13/) ||
         Program.cpu.deviceName.match(/CC25/) ||

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,9 +82,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     };
 
     /* Cortex-R devices */
-    deviceTable["AWR14XX"]       = deviceTable["AWR16XX"];
-    deviceTable["IWR14XX"]       = deviceTable["AWR16XX"];
-    deviceTable["IWR16XX"]       = deviceTable["AWR16XX"];
+    deviceTable["AWR1.*"]        = deviceTable["AWR16XX"];
+    deviceTable["IWR1.*"]        = deviceTable["AWR16XX"];
     deviceTable["RM48L.*"]       = deviceTable["AWR16XX"];
     deviceTable["RM57D8.*"]      = deviceTable["RM57D8XX"];
     deviceTable["RM57L8XX"]      = deviceTable["RM57D8XX"];
@@ -99,6 +98,10 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
 
     /* Simplelink devices */
     deviceTable["CC13.2.*"] = deviceTable["CC26.2.*"];
+
+    /* Keystone3 devices */
+    deviceTable["SIMFLEMING"] = deviceTable["RM57D8XX"];
+    deviceTable["SIMMAXWELL"] = deviceTable["RM57D8XX"];
 }
 
 /*

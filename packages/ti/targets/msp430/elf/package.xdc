@@ -22,7 +22,7 @@ package ti.targets.msp430.elf [1,0,0] {
 
 
 /*
- *  @(#) ti.targets.msp430.elf; 1, 0, 0,0; 11-8-2017 17:21:28; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.msp430.elf; 1, 0, 0,0; 4-19-2018 16:55:02; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

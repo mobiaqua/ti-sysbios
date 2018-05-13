@@ -27,7 +27,7 @@ package ti.targets.arp32.rts [1,0,0] {
 }
 
 /*
- *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 11-8-2017 18:01:24; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 4-20-2018 17:27:07; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

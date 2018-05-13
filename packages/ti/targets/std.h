@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2016 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2017 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -93,10 +93,18 @@
     #define xdc__BITS16__
     #define xdc__BITS32__
     #define xdc__BITS64__
-//    #define xdc__INT40__
+/*    #define xdc__INT40__ */
     #define xdc__INT64__
 
     #define __FAR__
+
+#elif defined(__ARM_ARCH_8M_MAIN__)
+    #define xdc__LONGLONG__
+    #define xdc__BITS8__
+    #define xdc__BITS16__
+    #define xdc__BITS32__
+    #define xdc__BITS64__
+    #define xdc__INT64__
 
 #else
     #error <ti/targets/std.h> is not supported for this target
@@ -203,7 +211,7 @@ static inline xdc_Fxn xdc_uargToFxn(xdc_UArg a) { return ((xdc_Fxn)(int)a); }
 
 #endif /* ti_targets_STD_ */
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 11-8-2017 17:20:52; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,0; 4-19-2018 16:54:12; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

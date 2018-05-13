@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,11 +98,6 @@ function setUlConfig()
     /* start clean */
     Boot.ulConfig = 0;
 
-    /* enable PLL Output */
-    if (Boot.pllOutEnable) {
-        Boot.ulConfig = 0x00001000;
-    }
-
     Boot.ulConfig |= Boot.oscSrc;
 
     if (Boot.enhancedClockMode) {
@@ -194,7 +189,6 @@ function viewInitModule(view, obj)
     view.xtal                   = getEnumString(modCfg.xtal);
     view.oscSrc                 = getEnumString(modCfg.oscSrc);
     view.pllBypass              = modCfg.pllBypass;
-    view.pllOutEnable           = modCfg.pllOutEnable;
     view.ioscDisable            = modCfg.ioscDisable;
     view.moscDisable            = modCfg.moscDisable;
 }

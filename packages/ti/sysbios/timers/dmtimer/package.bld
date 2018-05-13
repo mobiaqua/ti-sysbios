@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,9 +85,6 @@ var trgFilter = {
 /* generate ti M3 target libs */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
-/* generate smp makefiles */
-BiosBuild.buildLibs(objList, undefined, trgFilter, ["profile=smp"]);
-
 var objList = [
     "Timer",
     "Timer_asm",
@@ -103,9 +100,6 @@ var trgFilter = {
 
 /* generate ti M4F target libs */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
-
-/* generate smp makefiles */
-BiosBuild.buildLibs(objList, undefined, trgFilter, ["profile=smp"]);
 
 var objList = [
     "Timer",
@@ -124,9 +118,6 @@ var trgFilter = {
 /* generate gnu M3/M4F target libs */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
-/* generate smp makefiles */
-BiosBuild.buildLibs(objList, undefined, trgFilter, ["profile=smp"]);
-
 var objList = [
     "Timer",
     "Timer_asm_gnu"
@@ -143,9 +134,6 @@ var trgFilter = {
 
 /* generate gnu v7Ax target libs */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
-
-/* generate smp makefiles */
-BiosBuild.buildLibs(objList, undefined, trgFilter, ["profile=smp"]);
 
 Pkg.otherFiles = [
     "doc-files",

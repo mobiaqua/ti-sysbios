@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,9 @@ function getCFiles(targetName)
 {
     if (BIOS.smpEnabled) {
         return (["Task_smp.c"]);
+    }
+    else if (BIOS.mpeEnabled) {
+        return (["Task.c", "Task_svc.c"]);
     }
     else {
         return (["Task.c"]);
@@ -189,6 +192,7 @@ function module$static$init(mod, params)
     mod.vitalTasks = 0;
     mod.workFlag = 0;
     mod.curTask = null;
+    mod.curTaskPrivileged = true;
     mod.curQ = null;
 
     Queue.construct(mod.inactiveQ);
@@ -416,6 +420,12 @@ function instance$static$init(obj, fxn, params)
     obj.mask = 1 << params.priority;
     obj.context = null;
     obj.readyQ = null;  /* readyQ filled in by Task_postInit() */
+
+    obj.privileged = params.privileged;
+    obj.domain = params.domain;
+
+    obj.checkValue = 0;
+    obj.tls = null;
 
     /* add constructed tasks to constructedTasks array */
     if (this.$category == "Struct") {

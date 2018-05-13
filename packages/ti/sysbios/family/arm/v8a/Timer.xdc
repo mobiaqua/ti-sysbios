@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -291,6 +291,14 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      */
     Handle getHandle(UInt id);
 
+    /*
+     *  ======== vlabErrata ========
+     *  Set enable bit in CNTCR if this config param is true
+     *
+     *  Enable bit only needs to be set on Keystone3 simulator.
+     */
+    config Bool vlabErrata = false;
+
 instance:
 
     /*! Hwi Params for Hwi Object. Default is null.*/
@@ -395,18 +403,7 @@ instance:
      */
     UInt64 getCount64();
 
-
 internal:   /* not for client use */
-
-    /*
-     *  ======== setEnableBit ========
-     *  Set enable bit in CNTCR
-     *
-     *  Enable bit only needs to be set on Keystone3 simulator.
-     *  This config param is therefore "true" only if Keystone3
-     *  platform is selected.
-     */
-    config Bool setEnableBit = false;
 
     /*!
      *  ======== startupNeeded ========

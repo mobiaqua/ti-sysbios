@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,9 @@
  *  ======== Settings.xs ========
  */
 
+var Idle = null;
+var Task = null;
+
 /*
  *  ======== module$meta$init ========
  */
@@ -63,7 +66,24 @@ function module$use()
     xdc.useModule('ti.sysbios.knl.Mailbox');
     xdc.useModule('ti.sysbios.knl.Queue');
     xdc.useModule('ti.sysbios.knl.Semaphore');
-    xdc.useModule('ti.sysbios.knl.Task');
+    Task = xdc.useModule('ti.sysbios.knl.Task');
+
+    /* create a gate instance for use by mqueue module */
+    var Gate = xdc.useModule('ti.sysbios.gates.GateMutex');
+    Program.global.tiposix_mqGate = Gate.create();
+
+    /*
+     *  BIOS posix uses the Idle task to clean up detached pthreads that
+     *  have exited.  Check that the Idle task is enabled.
+     */
+    if (Task.enableIdleTask == false) {
+        throw new xdc.global.Error("Task.enableIdleTask must be set to true");
+    }
+
+    Idle = xdc.useModule("ti.sysbios.knl.Idle");
+
+    /* Add Idle function that will clean up terminated pthreads */
+    Idle.addFunc("&_pthread_cleanupFxn");
 
     /* identify which toolchain is loaded */
     var match = Program.build.target.$name.match(/^(\w+)\.targets/);
@@ -77,12 +97,16 @@ function module$use()
     }
 
     /* add compiler defines to the kernel build */
-    var defs = "-Dti_posix_tirtos_Settings_debug__D="
-            + (this.debug ? "TRUE" : "FALSE")
-            + " -Dti_posix_tirtos_Settings_enableMutexPriority__D="
-            + (this.enableMutexPriority ? "TRUE" : "FALSE");
+    Build.ccArgs.$add("-Dti_posix_tirtos_Settings_debug__D="
+            + (this.debug ? "TRUE" : "FALSE"));
 
-    Build.ccArgs.$add(defs);
+    if (this.enableMutexPriority) {
+        Build.ccArgs.$add("-Dti_posix_tirtos_Settings_enableMutexPriority__D");
+    }
+
+    if (toolchain == "gcc") {
+        Build.ccArgs.$add("-std=c99");
+    }
 
     /* add source files to the kernel build */
     Build.annex.$add({

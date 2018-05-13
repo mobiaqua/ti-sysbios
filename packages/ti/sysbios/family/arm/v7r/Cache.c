@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,16 +75,7 @@ Void Cache_startup()
 
     /* disable the caches if anything is currently enabled */
     if (enabled) {
-        Cache_invL1pAll();
         Cache_disable(Cache_Type_ALL);
-    }
-
-    /* enable Branch Prediction */
-    if (Cache_branchPredictionEnabled == TRUE) {
-        Cache_enableBP();
-    }
-    else {
-        Cache_disableBP();
     }
 
     if (Cache_enableCache) {

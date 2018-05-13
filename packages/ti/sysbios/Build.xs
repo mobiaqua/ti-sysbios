@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@ var customArmOpts = " -q -ms --opt_for_speed=2 ";
 var customGnuArmM3Opts = " ";
 var customGnuArmM4Opts = " ";
 var customGnuArmM4FOpts = " ";
+var customGnuArmM33FOpts = " ";
 var customGnuArmA9Opts = " ";
 var customGnuArmA8Opts = " ";
 var customGnuArmA15Opts = " ";
@@ -81,6 +82,7 @@ var ccOptsList = {
     "gnu.targets.arm.M3"                        : customGnuArmM3Opts,
     "gnu.targets.arm.M4"                        : customGnuArmM4Opts,
     "gnu.targets.arm.M4F"                       : customGnuArmM4FOpts,
+    "gnu.targets.arm.M33F"                      : customGnuArmM33FOpts,
     "gnu.targets.arm.A8F"                       : customGnuArmA8Opts,
     "gnu.targets.arm.A9F"                       : customGnuArmA9Opts,
     "gnu.targets.arm.A15F"                      : customGnuArmA15Opts,
@@ -88,6 +90,7 @@ var ccOptsList = {
     "iar.targets.arm.M3"                        : customIarArmOpts,
     "iar.targets.arm.M4"                        : customIarArmOpts,
     "iar.targets.arm.M4F"                       : customIarArmOpts,
+    "iar.targets.arm.M33"                       : customIarArmOpts,
 };
 
 /*
@@ -300,6 +303,9 @@ var biosPackages = [
     "ti.sysbios.family.arm.tms570",
     "ti.sysbios.family.arm.v7a",
     "ti.sysbios.family.arm.v7a.smp",
+    "ti.sysbios.family.arm.v7m",
+    "ti.sysbios.family.arm.v7m.keystone3",
+    "ti.sysbios.family.arm.v8",
     "ti.sysbios.family.arm.v8a",
     "ti.sysbios.family.c28",
     "ti.sysbios.family.c28.f28m35x",
@@ -319,6 +325,7 @@ var biosPackages = [
     "ti.sysbios.family.c7x",
     "ti.sysbios.family.msp430",
     "ti.sysbios.family.arp32",
+    "ti.sysbios.family.shared.fvp_mps2",
     "ti.sysbios.family.shared.keystone3",
     "ti.sysbios.family.shared.vayu",
     "ti.sysbios.gates",
@@ -390,7 +397,7 @@ function getDefaultCustomCCOpts()
     }
     else {
         /* ti targets do program level compile */
-        customCCOpts += " --program_level_compile -o3 -g --optimize_with_debug ";
+        customCCOpts += " --program_level_compile -o3 -g ";
         var tiDevice = Program.cpu.deviceName.toUpperCase();
         /* optimize for size with cc13xx and cc26xx devices */
         if (tiDevice.match(/CC26/) || tiDevice.match(/CC13/)) {
@@ -411,7 +418,6 @@ function getDefaultCustomCCOpts()
         }
         else {
             customCCOpts = customCCOpts.replace(" -o3","");
-            customCCOpts = customCCOpts.replace(" --optimize_with_debug","");
             if (Program.build.target.$name.match(/arm/)) {
                 customCCOpts = customCCOpts.replace(" --opt_for_speed=2","");
             }
@@ -458,13 +464,14 @@ function getDefs()
     defs += " -Dti_sysbios_BIOS_smpEnabled__D="
             + (BIOS.smpEnabled ? "TRUE" : "FALSE");
 
+    defs += " -Dti_sysbios_BIOS_mpeEnabled__D="
+            + (BIOS.mpeEnabled ? "TRUE" : "FALSE");
+
     if (BIOS.smpEnabled == false) {
         defs += " -Dti_sysbios_Build_useHwiMacros";
     }
 
     if ((BIOS.buildingAppLib == true) && (Build.buildROM == false)) {
-        defs += " -Dti_sysbios_Build_useIndirectReferences=FALSE";
-
         defs += " -Dti_sysbios_knl_Swi_numPriorities__D=" + Swi.numPriorities;
         defs += " -Dti_sysbios_knl_Task_deleteTerminatedTasks__D=" + (Task.deleteTerminatedTasks ? "TRUE" : "FALSE");
         defs += " -Dti_sysbios_knl_Task_numPriorities__D=" + Task.numPriorities;
@@ -1005,33 +1012,7 @@ function getCcArgs()
  */
 function getLibs(pkg)
 {
-    var BIOS = xdc.module("ti.sysbios.BIOS");
-
-    switch (BIOS.libType) {
-        case BIOS.LibType_Custom:
-        case BIOS.LibType_Instrumented:
-        case BIOS.LibType_NonInstrumented:
-        case BIOS.LibType_Debug:
-            return null;
-            break;
-    }
-
-    var lib = "";
-    var name = pkg.$name + ".a" + prog.build.target.suffix;
-
-    if (BIOS.smpEnabled == true) {
-        lib = "lib/smpbios/debug/" + name;
-    }
-    else {
-        lib = "lib/sysbios/debug/" + name;
-    }
-
-    if (java.io.File(pkg.packageBase + lib).exists()) {
-        return lib;
-    }
-
-    /* could not find any library, throw exception */
-    throw Error("Library not found: " + name);
+    return null;
 }
 
 
@@ -1077,78 +1058,35 @@ function buildLibs(objList, relList, filter, xdcArgs, incs)
             continue;
         }
 
-        var profiles = getProfiles(xdcArgs);
+        var profile = "debug";
+        var libPath = "lib/debug/";
 
-        /* If no profiles were assigned, use only the default one. */
-        if (profiles.length == 0) {
-            profiles[0] = "debug";
-        }
+        /*
+         * These defines are referenced in a few assembly files. They must be
+         * defined when building the sanity libraries or the assembly files will
+         * not build. These are defined via the .cfg file for real application
+         * builds.
+         */
+        var asmopts = "";
+        var ccopts = "";
+        asmopts += " -Dti_sysbios_BIOS_smpEnabled__D=FALSE";
+        asmopts += " -Dti_sysbios_BIOS_mpeEnabled__D=FALSE";
+        asmopts += " -Dti_sysbios_hal_Core_numCores__D=1";
+        asmopts += " -Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
+        asmopts += " -Dti_sysbios_family_arm_a8_intcps_Hwi_enableAsidTagging__D=FALSE";
 
-        for (var j = 0; j < profiles.length; j++) {
-            var ccopts = "";
-            var asmopts = "";
+        var lib = Pkg.addLibrary(libPath + Pkg.name,
+                            targ, {
+                            profile: profile,
+                            copts: ccopts,
+                            aopts: asmopts,
+                            releases: relList,
+                            incs: incs,
+                            });
+        lib.addObjects(objList);
 
-            ccopts += " -Dti_sysbios_Build_useIndirectReferences=FALSE"
-            asmopts += " -Dti_sysbios_Build_useIndirectReferences=FALSE"
-
-            if (profiles[j] == "smp") {
-                var libPath = "lib/smpbios/debug/";
-                ccopts += " -Dti_sysbios_BIOS_smpEnabled__D=TRUE";
-                asmopts += " -Dti_sysbios_BIOS_smpEnabled__D=TRUE";
-            }
-            else {
-                var libPath = "lib/sysbios/debug/";
-                /* build all package libs using Hwi macros */
-                ccopts += " -Dti_sysbios_Build_useHwiMacros";
-                ccopts += " -Dti_sysbios_BIOS_smpEnabled__D=FALSE";
-                asmopts += " -Dti_sysbios_BIOS_smpEnabled__D=FALSE";
-
-                if ((targ.$name == "ti.targets.arm.elf.A8") ||
-                    (targ.$name == "ti.targets.arm.elf.A8F") ||
-                    (targ.$name == "ti.targets.arm.elf.A8Fnv") ||
-                    (targ.$name == "gnu.targets.arm.A8F")) {
-                    ccopts +=
-                        " -Dti_sysbios_family_arm_a8_intcps_Hwi_enableAsidTagging__D=FALSE";
-                    asmopts +=
-                        " -Dti_sysbios_family_arm_a8_intcps_Hwi_enableAsidTagging__D=FALSE";
-                }
-
-                if (targ.$name == "gnu.targets.arm.A15F") {
-                    ccopts +=
-                        " -Dti_sysbios_family_arm_gic_Hwi_enableAsidTagging__D=FALSE";
-                    asmopts +=
-                        " -Dti_sysbios_family_arm_gic_Hwi_enableAsidTagging__D=FALSE";
-                }
-
-                if ((targ.$name == "ti.targets.arm.elf.R4F") ||
-                    (targ.$name == "ti.targets.arm.elf.R4Ft") ||
-                    (targ.$name == "ti.targets.arm.elf.R5F")) {
-                    ccopts += " -Dti_sysbios_hal_Core_numCores__D=1 " +
-                        "-Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
-                    asmopts += " -Dti_sysbios_hal_Core_numCores__D=1 " +
-                        "-Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
-                }
-                /* insert rts includes before "." in command line */
-                if (targ.$name.match("iar.targets.arm")) {
-                    ccopts += " -I" + targ.rootDir+"/inc/c";
-                }
-            }
-            /* confirm that this target supports this profile */
-            if (targ.profiles[profiles[j]] !== undefined) {
-                var profile = profiles[j];
-                var lib = Pkg.addLibrary(libPath + Pkg.name,
-                                targ, {
-                                profile: profile,
-                                copts: ccopts,
-                                aopts: asmopts,
-                                releases: relList,
-                                incs: incs,
-                                });
-                lib.addObjects(objList);
-                /* suppress debug libs from exports */
-                Pkg.attrs.relScript = "ti/sysbios/libFilter.xs";
-            }
-        }
+        /* suppress debug libs from exports */
+        Pkg.attrs.relScript = "ti/sysbios/libFilter.xs";
     }
 }
 

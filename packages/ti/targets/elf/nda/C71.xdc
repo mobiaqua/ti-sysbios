@@ -155,7 +155,7 @@ metaonly module C71 inherits ti.targets.elf.ITarget {
     override readonly config Int bitsPerChar = 8;
 }
 /*
- *  @(#) ti.targets.elf.nda; 1, 0, 0,0; 11-8-2017 17:21:16; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.elf.nda; 1, 0, 0,0; 4-19-2018 16:54:50; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

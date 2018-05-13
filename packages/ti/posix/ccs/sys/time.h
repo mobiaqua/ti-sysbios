@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@
 with a Texas Instruments compiler. You appear to be using a different compiler.
 #endif
 
+#if !defined(__TMS470__) || (__TI_COMPILER_VERSION__ < 18001000)
 #include <stdint.h>
 #include <stddef.h>
 
@@ -62,6 +63,10 @@ struct timeval {
 
 #ifdef __cplusplus
 }
+#endif
+
+#else
+#include <../include/sys/_timeval.h>
 #endif
 
 #endif /* ti_posix_ccs_sys_time__include */

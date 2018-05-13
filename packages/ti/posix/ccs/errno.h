@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ with a Texas Instruments compiler. You appear to be using a different compiler.
  */
 #if defined(__TMS470__)
 
+#if __TI_COMPILER_VERSION__ < 18001000
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,6 +66,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+#endif /* TI ARM version < 18.1.0.LTS */
 
 /* include toolchain's header file */
 #include <../include/errno.h>
@@ -72,6 +74,7 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if __TI_COMPILER_VERSION__ < 18001000
 
 /*  When thread-safe errno is enabled (as above) the TI Compiler
  *  does not define any error codes. Define the error codes here.
@@ -144,6 +147,7 @@ extern "C" {
 #endif
 
 #endif
+#endif /* TI ARM version < 18.1.0.LTS */
 
 /* These are in errno.h but commented out. Values match GNU ARM compiler. */
 

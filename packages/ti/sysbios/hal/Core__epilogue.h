@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef ti_sysbios_hal_Core__epilogue__include
+#define ti_sysbios_hal_Core__epilogue__include
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,7 +77,9 @@ extern "C" {
 #define ti_sysbios_hal_Core_unlock() ti_sysbios_hal_Core_CoreProxy_unlock()
 #endif /* ti_sysbios_hal_Core_delegate_unlock */
 
-#if defined(xdc_target__isaCompatible_v7M) || defined(xdc_target__isaCompatible_v7M4)
+#if defined(xdc_target__isaCompatible_v7M)  || \
+    defined(xdc_target__isaCompatible_v7M4) || \
+    defined(xdc_target__isaCompatible_v8M)
 
 #include "ti/sysbios/family/arm/m3/Hwi.h"
 
@@ -295,3 +300,5 @@ extern Void ti_sysbios_hal_Hwi_restore__E(UInt key);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ti_sysbios_hal_Core__epilogue__include */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -152,6 +152,11 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     // -------- Module Constants --------
 
     /*!
+     *  Number of interrupts implemented in GIC
+     */
+    const UInt NUM_INTERRUPTS = 992;
+
+    /*!
      *  ======== enableSecureMode ========
      *  Security Mode
      *
@@ -166,16 +171,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  devices.
      */
     config Bool enableSecureMode = false;
-
-    /*!
-     *  Number of interrupts implemented in GIC
-     *
-     *  On OMAP543x GIC implements 192 interrupts.
-     *
-     *  See the OMAP543x_ES1 Technical Reference Manual pg 5280 for more
-     *  details.
-     */
-    config UInt NUM_INTERRUPTS;
 
     /*!
      *  Number of Priority bits implemented.

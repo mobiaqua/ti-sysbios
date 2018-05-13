@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ var targetOptions = {
             "GENERIC": {
                 cfgPrefix: "default/",
                 linkerCommandFile: "",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 productGroup: "",
                 devices: {
@@ -109,7 +109,7 @@ var targetOptions = {
                 deviceVariant: "CortexA8",
                 cfgPrefix: "default/",
                 linkerCommandFile: "",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 devices: {
                     "GENERIC": {
@@ -120,7 +120,7 @@ var targetOptions = {
             "R4F": {
                 cfgPrefix: "default/",
                 target: "ti.targets.arm.elf.R4F",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 devices: {
                     "AWR14XX": {
@@ -156,7 +156,7 @@ var targetOptions = {
             "R5F": {
                 cfgPrefix: "default/",
                 target: "ti.targets.arm.elf.R5F",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 devices: {
                     "RM57L8XX": {
@@ -199,7 +199,8 @@ var targetOptions = {
                     " -mv7M3 --code_state=16 --abi=eabi -me -g" +
                     " --display_error_number --diag_warning=255" +
                     " --diag_wrap=off --gen_func_subsections=on" +
-                    " --float_support=vfplib",
+                    " --float_support=vfplib" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -228,7 +229,8 @@ var targetOptions = {
                     " -mv7M4 --code_state=16 --abi=eabi -me -g" +
                     " --display_error_number --diag_warning=255" +
                     " --diag_wrap=off --gen_func_subsections=on" +
-                    " --float_support=vfplib",
+                    " --float_support=vfplib" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -256,7 +258,8 @@ var targetOptions = {
                     " -mv7M4 --code_state=16 --abi=eabi -me -g" +
                     " --display_error_number --diag_warning=255" +
                     " --diag_wrap=off --gen_func_subsections=on" +
-                    " --float_support=FPv4SPD16",
+                    " --float_support=FPv4SPD16" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -281,7 +284,8 @@ var targetOptions = {
                     " -mv7M4 --code_state=16 --abi=eabi -me -g" +
                     " --display_error_number --diag_warning=255" +
                     " --diag_wrap=off --gen_func_subsections=on" +
-                    " --float_support=FPv4SPD16",
+                    " --float_support=FPv4SPD16" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -305,7 +309,8 @@ var targetOptions = {
                 compilerBuildOptions:
                     " -ml --float_support=fpu32 --gen_func_subsections=on" +
                     " --display_error_number --diag_warning=255" +
-                    " --diag_wrap=off",
+                    " --diag_wrap=off" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -334,7 +339,7 @@ var targetOptions = {
             "C28_Large": {
                 cfgPrefix: "c28/",
                 target: "ti.targets.C28_large",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 productGroup: "C2000",
                 devices: {
@@ -358,7 +363,7 @@ var targetOptions = {
             "GENERIC": {
                 cfgPrefix: "default/",
                 linkerCommandFile: "",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 productGroup: "C6000",
                 devices: {
@@ -390,7 +395,7 @@ var targetOptions = {
                 deviceId: "EVE|ARP32",
                 cfgPrefix: "default/",
                 linkerCommandFile: "",
-                compilerBuildOptions: "",
+                compilerBuildOptions: " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions: "",
                 productGroup: "",
                 devices: {
@@ -409,7 +414,8 @@ var targetOptions = {
                 compilerBuildOptions:
                     " -vmspx --abi=eabi --data_model=restricted -g" +
                     " --display_error_number --diag_warning=255" +
-                    " --diag_wrap=off",
+                    " --diag_wrap=off" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
                 linkerBuildOptions:
                     " --warn_sections --display_error_number --diag_wrap=off" +
                     " --rom_model",
@@ -432,9 +438,10 @@ var targetOptions = {
                 cfgPrefix: "default/",
                 target: "gnu.targets.arm.A8F",
                 linkerCommandFile: "",
-                compilerBuildOptions: "-mfloat-abi=hard"
+                compilerBuildOptions: "-std=c99 -mfloat-abi=hard"
                 + " -I${xdc_find:gnu/targets/arm/libs/install-native/"
-                + "arm-none-eabi/include/newlib-nano:${ProjName}}",
+                + "arm-none-eabi/include/newlib-nano:${ProjName}}"
+                + " -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions: "-nostartfiles -static --gc-sections -lgcc"
                 + " -lc -lm -lnosys -L${xdc_find:gnu/targets/"
                 + "arm/libs/install-native/arm-none-eabi/lib/hard:${ProjName}}"
@@ -458,9 +465,10 @@ var targetOptions = {
                 cfgPrefix: "default/",
                 target: "gnu.targets.arm.A9F",
                 linkerCommandFile: "",
-                compilerBuildOptions: "-mfloat-abi=hard"
+                compilerBuildOptions: "-std=c99 -mfloat-abi=hard"
                 + " -I${xdc_find:gnu/targets/arm/libs/install-native/"
-                + "arm-none-eabi/include/newlib-nano:${ProjName}}",
+                + "arm-none-eabi/include/newlib-nano:${ProjName}}"
+                + " -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions: "-nostartfiles -static --gc-sections -lgcc"
                 + " -lc -lm -lnosys -L${xdc_find:gnu/targets/arm/"
                 + "libs/install-native/arm-none-eabi/lib/hard:${ProjName}}"
@@ -484,9 +492,10 @@ var targetOptions = {
                 cfgPrefix: "default/",
                 target: "gnu.targets.arm.A15F",
                 linkerCommandFile: "",
-                compilerBuildOptions: "-mfloat-abi=hard"
+                compilerBuildOptions: "-std=c99 -mfloat-abi=hard"
                 + " -I${xdc_find:gnu/targets/arm/libs/install-native/"
-                + "arm-none-eabi/include/newlib-nano:${ProjName}}",
+                + "arm-none-eabi/include/newlib-nano:${ProjName}}"
+                + " -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions: "-nostartfiles -static --gc-sections -lgcc"
                 + " -lc -lm -lnosys -L${xdc_find:gnu/targets/arm/"
                 + "libs/install-native/arm-none-eabi/lib/hard:${ProjName}}"
@@ -510,11 +519,11 @@ var targetOptions = {
                 cfgPrefix: "cortexm/",
                 target: "gnu.targets.arm.M3",
                 compilerBuildOptions:
-                    " -mcpu=cortex-m3 -march=armv7-m -mthumb" +
+                    " -std=c99 -mcpu=cortex-m3 -march=armv7-m -mthumb" +
                     " -mfloat-abi=soft -ffunction-sections -fdata-sections" +
                     " -g -gstrict-dwarf -Wall -I${xdc_find:gnu/targets/arm/" +
                     "libs/install-native/arm-none-eabi/include/newlib-nano:" +
-                    "${ProjName}}",
+                    "${ProjName}} -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions:
                     " -march=armv7-m -mthumb -nostartfiles -static" +
                     " -Wl,--gc-sections -L${xdc_find:gnu/targets/arm/libs" +
@@ -562,11 +571,11 @@ var targetOptions = {
                 cfgPrefix: "cortexm/",
                 target: "gnu.targets.arm.M4",
                 compilerBuildOptions:
-                    " -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
+                    " -std=c99 -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
                     " -mfloat-abi=soft -ffunction-sections -fdata-sections" +
                     " -g -gstrict-dwarf -Wall -I${xdc_find:gnu/targets/arm/" +
                     "libs/install-native/arm-none-eabi/include/newlib-nano:" +
-                    "${ProjName}}",
+                    "${ProjName}} -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions:
                     " -march=armv7e-m -mthumb -nostartfiles -static" +
                     " -Wl,--gc-sections -L${xdc_find:gnu/targets/arm/libs" +
@@ -600,11 +609,12 @@ var targetOptions = {
                 cfgPrefix: "cortexm/",
                 target: "gnu.targets.arm.M4F",
                 compilerBuildOptions:
-                    " -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
+                    " -std=c99 -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
                     " -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffunction-sections" +
                     " -fdata-sections -g -gstrict-dwarf -Wall" +
                     " -I${xdc_find:gnu/targets/arm/libs/install-native/" +
-                    "arm-none-eabi/include/newlib-nano:${ProjName}}",
+                    "arm-none-eabi/include/newlib-nano:${ProjName}}" +
+                    " -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions:
                     " -march=armv7e-m -mthumb -mfloat-abi=hard" +
                     " -mfpu=fpv4-sp-d16 -nostartfiles -static" +
@@ -642,11 +652,12 @@ var targetOptions = {
                 cfgPrefix: "cortexm/",
                 target: "gnu.targets.arm.M4F",
                 compilerBuildOptions:
-                    " -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
+                    " -std=c99 -mcpu=cortex-m4 -march=armv7e-m -mthumb" +
                     " -mfloat-abi=hard -mfpu=fpv4-sp-d16 -ffunction-sections" +
                     " -fdata-sections -g -gstrict-dwarf -Wall" +
                     " -I${xdc_find:gnu/targets/arm/libs/install-native/" +
-                    "arm-none-eabi/include/newlib-nano:${ProjName}}",
+                    "arm-none-eabi/include/newlib-nano:${ProjName}}" +
+                    " -I${xdc_find:ti/posix/gcc:${ProjName}} ",
                 linkerBuildOptions:
                     " -march=armv7e-m -mthumb -mfloat-abi=hard" +
                     " -mfpu=fpv4-sp-d16 -nostartfiles -static" +

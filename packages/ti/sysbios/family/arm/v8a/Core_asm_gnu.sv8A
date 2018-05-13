@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,9 @@ _c_int00:
     mrs     x0, currentel
     cmp     x0, #0xC
     bne     2f
+
+    ldr     x0, =ti_sysbios_family_arm_v8a_Core_disableCaches__I
+    blr     x0
 
     /*
      * ----------------------
@@ -90,7 +93,14 @@ _c_int00:
     mov     x0, #0x0830
     movk    x0, #0x30c5, lsl #16
     msr     sctlr_el2, x0       /* Initialize sctlr_el2 to reset values */
+    mrs     x0, actlr_el3
+    orr     x0, x0, #0x2
+    msr     actlr_el3, x0       /* Enable CPUECTLR_EL1 access from EL2 */
     /* TODO setup vbar */
+    ldr     x0, =GTC_CNTCR_ADDR
+    ldr     w1, [x0]
+    orr     w1, w1, #0x1
+    str     w1, [x0]            /* Enable system counter */
     isb
     bl      switch_to_el2
 
@@ -115,9 +125,12 @@ _c_int00:
                                    instruction, Set/Way Invalidation Override */
     movk    x0, #0xA000, lsl #16
     msr     hcr_el2, x0
-    mov     x0, #0x0800
+    mov     x0, #0x0838
     movk    x0, #0x30d0, lsl #16
     msr     sctlr_el1, x0
+    mrs     x0, actlr_el2
+    orr     x0, x0, #2
+    msr     actlr_el2, x0
     isb
     mov     x0, #0xF
     msr     icc_sre_el2, x0     /* Enable GIC system register interface
@@ -164,6 +177,73 @@ ti_sysbios_family_arm_v8a_Core_getGicxAddr__I:
     lsl     x3, x3, x4          /* x3 = clusterIdx * numCoresPerCluster */
     add     x2, x2, x3
     madd    x0, x1, x2, x0
+    ret
+    .endfunc
+
+/*
+ * ======== Core_disableCaches ========
+ */
+        .section .text.ti_sysbios_family_arm_v8a_Core_disableCaches__I
+        .func ti_sysbios_family_arm_v8a_Core_disableCaches__I
+
+ti_sysbios_family_arm_v8a_Core_disableCaches__I:
+    mrs     x0, clidr_el1
+    and     w3, w0, #0x07000000     /* Get 2 x Level of Coherence */
+    lsr     w3, w3, #23
+    cbz     w3, 5f
+    mov     w10, #0                 /* w10 = 2 x cache level */
+    mov     w8, #1                  /* w8 = Constant 0b1 */
+1:
+    add     w2, w10, w10, lsr #1    /* Caclulate 3x cache level */
+    lsr     w1, w0, w2              /* Extract cache type for this level */
+    and     w1, w1, #0x7
+    cmp     w1, #2
+    blt     4f                      /* No data or unified cache */
+    msr     csselr_el1, x10         /* Select this cache level */
+    isb                             /* Synchronize change of csselr */
+    mrs     x1, ccsidr_el1          /* Read ccsidr */
+    and     w2, w1, #7              /* w2 = log2(linelen)-4 */
+    add     w2, w2, #4              /* w2 = log2(linelen) */
+    ubfx    w4, w1, #3, #10         /* w4 = max way number, right aligned */
+    clz     w5, w4                  /* w5 = 32-log2(ways), bit position of
+                                       way in dc operand */
+    lsl     w9, w4, w5              /* w9 = max way number, aligned to
+                                       position in DC operand */
+    lsl     w16, w8, w5             /* w16 = amount to decrement way number
+                                       per iteration */
+2:
+    ubfx    w7, w1, #13, #15        /* w7 = max set number, right aligned */
+    lsl     w7, w7, w2              /* w7 = max set number, aligned to
+                                       position in DC operand */
+    lsl     w17, w8, w2             /* w17 = amount to decrement set number
+                                           per iteration */
+3:
+    orr     w11, w10, w9            /* w11 = combine way num & cache ...*/
+    orr     w11, w11, w7            /* ... num and set num for DC operand */
+    dc      cisw, x11               /* Do data cache clean and invalidate
+                                       by set and way */
+    subs    w7, w7, w17             /* Decrement set number */
+    bge     3b
+    subs    x9, x9, x16             /* Decrement way number */
+    bge     2b
+4:
+    add     w10, w10, #2            /* Increment 2 x cache level */
+    cmp     w3, w10
+    dsb     sy                      /* Ensure completion of previous cache
+                                       maintenance operation */
+    bgt     1b
+5:
+    mrs     x0, sctlr_el3            /* read SCTLR_EL3 */
+    bic     x0, x0, #0x0004          /* clear C bit */
+    msr     sctlr_el3, x0            /* DCache disabled */
+
+    mrs     x0, sctlr_el3            /* read SCTLR_EL3 */
+    bic     x0, x0, #0x1000          /* clear I bit */
+    msr     sctlr_el3, x0            /* ICache disabled */
+    ic      iallu                    /* invalidate all ICache */
+    dsb     sy
+    isb
+
     ret
     .endfunc
 

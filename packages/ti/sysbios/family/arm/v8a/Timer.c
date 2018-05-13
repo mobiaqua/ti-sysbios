@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,7 +172,7 @@ Int Timer_Module_startup(Int status)
             }
         }
 
-        if (Timer_setEnableBit) {
+        if (Timer_vlabErrata) {
             /* Set enable bit in CNTCR */
             REG32(0x2A430000) |= 0x1;
         }

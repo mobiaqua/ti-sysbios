@@ -101,6 +101,9 @@ Void EventCombiner_disableEvent(UInt eventId)
     UInt bitpos;
     volatile UInt *evtMask = (volatile UInt *)EVTMASKREG;
 
+    Assert_isTrue(eventId < EventCombiner_NUM_EVENTS,
+        EventCombiner_A_invalidEventId);
+
     index = eventId >> 5;
     bitpos = eventId % 32;
 
@@ -133,6 +136,9 @@ Void EventCombiner_enableEvent(UInt eventId)
     UInt index;
     UInt bitpos;
     volatile UInt *evtMask = (volatile UInt *)EVTMASKREG;
+
+    Assert_isTrue(eventId < EventCombiner_NUM_EVENTS,
+        EventCombiner_A_invalidEventId);
 
     index = eventId >> 5;
     bitpos = eventId % 32;

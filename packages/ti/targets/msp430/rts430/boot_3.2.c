@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 by Texas Instruments Incorporated.
+ *  Copyright 2018 by Texas Instruments Incorporated.
  *
  */
 
@@ -223,7 +223,7 @@ extern void __interrupt _c_int00_noinit_noexit()
 
 
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 11-8-2017 18:01:41; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 4-20-2018 17:27:23; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,21 @@ extern "C" {
  *  ======== Hwi_restore ========
  */
 #define ti_sysbios_family_arm_v7r_keystone3_Hwi_restore(key) _restore_interrupts(key)
+
+/*
+ *  ======== Hwi_disableFIQ ========
+ */
+#define ti_sysbios_family_arm_v7r_keystone3_Hwi_disableFIQ() _disable_FIQ()
+
+/*
+ *  ======== Hwi_enableFIQ ========
+ */
+#define ti_sysbios_family_arm_v7r_keystone3_Hwi_enableFIQ() _enable_FIQ()
+
+/*
+ *  ======== Hwi_restoreFIQ ========
+ */
+#define ti_sysbios_family_arm_v7r_keystone3_Hwi_restoreFIQ(key) _restore_interrupts(key)
 
 #endif
 

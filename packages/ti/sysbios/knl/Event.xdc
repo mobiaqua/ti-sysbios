@@ -31,25 +31,6 @@
  */
 /*
  *  ======== Event.xdc ========
- *
- *1                     aren't synced to Semaphore state
- *! 04-Mar-2008 agd     Stripped down to support binary only and
- *!                     single task.
- *! 23-Jan-2008 agd     01/22/08 review changes
- *! 13-Dec-2007 agd     Added Event_Id_NONE
- *! 10-Dec-2007 connell updated call context table
- *! 23-May-2007 agd     Addressed SDSCM00017698
- *! 11-May-2007 agd     Addressed SDSCM00016595
- *! 16-Apr-2007 cmcc    Added calling context table
- *! 01-Feb-2007 rt      Added Log.Events
- *! 16-Jan-2007 agd     Moved to ipc package
- *! 12-Dec-2006 agd     integrate 12/5/06 code review comments
- *! 27-Sep-2006 agd     reworked pre-defined event masks
- *! 21-Apr-2006 agd     reworked to support counting Events
- *! 02-Mar-2006 agd     redefined default event mask constants
- *! 14-Feb-2006 agd     reworked to conform to
- *!                     current design requirements
- *! 31-Jan-2006 nitya/agd created
  */
 
 package ti.sysbios.knl;
@@ -97,10 +78,6 @@ import ti.sysbios.knl.Task;
  *  arrive in a message queue or an ISR thread to signal that an event has
  *  occurred.
  *
- *  Events are binary. Events become available (posted) on each Event_post()
- *  of the eventId and become non-available (consumed) on each qualifying
- *  Event_pend() mask.
- *
  *  Unlike Semaphores, only a single task can pend on an Event object.
  *
  *  {@link #pend} is used to wait for events. The andMask & orMask
@@ -118,10 +95,26 @@ import ti.sysbios.knl.Task;
  *  The orMask defines a set of events that will cause {@link #pend} to
  *  return if ANY of them occur.
  *
+ *  Events are binary. Events become available (posted) on each Event_post()
+ *  of the eventId and become non-available (consumed) on each qualifying
+ *  Event_pend() mask. 
+ *
  *  All active events present in the orMask are consumed (ie removed from
  *  the event object) upon return from {@link #pend}. Only when all events
  *  present in the andMask are active are they consumed on return from
  *  {@link #pend}.
+ *
+ *  @a(Caveat)
+ *  @p(html)
+ *  <BLOCKQUOTE>
+ *  When Events are implicitly posted while used in conjunction with
+ *  Semaphore or Mailbox objects, then following the call to Event_pend()
+ *  which consumes the matching Event_IDs pended on, the Event object will be
+ *  updated by the intervening Semaphore_pend() or Mailbox_pend/post()
+ *  call so that it reflects the current state of availability of the
+ *  corresponding Semaphore or Mailbox object.
+ *  </BLOCKQUOTE>
+ *  @p
  *
  *  {@link #pend} returns immediately if the andMask OR orMask conditions
  *  are true upon entry.
@@ -479,7 +472,7 @@ internal:
     /* Event pendQ Element */
     struct PendElem {
         Task.PendElem           tpElem;
-        PendState               pendState;
+        volatile PendState      pendState;
         UInt                    matchingEvents;
         UInt                    andMask;
         UInt                    orMask;

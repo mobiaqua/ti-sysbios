@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,16 +43,6 @@
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Semaphore.h>
 #include <ti/sysbios/knl/Task.h>
-
-
-/*
- *  For custom builds, this will always be defined, but it will
- *  not be defined when building just the library.  Make sure
- *  this goes ahead of _pthread.h.
- */
-#ifndef ti_posix_tirtos_Settings_enableMutexPriority__D
-#define ti_posix_tirtos_Settings_enableMutexPriority__D TRUE
-#endif
 
 #include <pthread.h>
 #include <time.h>
@@ -178,7 +168,7 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
  */
 int timer_delete(timer_t timerid)
 {
-    TimerObj    *timer = (TimerObj *)xdc_uargToPtr(timerid);
+    TimerObj    *timer = (TimerObj *)timerid;
 
     Clock_destruct(&(timer->clock));
 
@@ -202,7 +192,7 @@ int timer_delete(timer_t timerid)
  */
 int timer_gettime(timer_t timerid, struct itimerspec *its)
 {
-    TimerObj    *timer = (TimerObj *)xdc_uargToPtr(timerid);
+    TimerObj    *timer = (TimerObj *)timerid;
     UInt32       timeout;
     long         timeoutUs;
     long         periodUs;
@@ -234,7 +224,7 @@ int timer_gettime(timer_t timerid, struct itimerspec *its)
 int timer_settime(timer_t timerid, int flags,
         const struct itimerspec *value, struct itimerspec *ovalue)
 {
-    TimerObj       *timer = (TimerObj *)xdc_uargToPtr(timerid);
+    TimerObj       *timer = (TimerObj *)timerid;
     struct timespec reltime;
     struct timespec curtime;
     long            timeoutUs;
@@ -326,7 +316,7 @@ int timer_settime(timer_t timerid, int flags,
  */
 static Void timerFxn(UArg arg)
 {
-    TimerObj *timer = (TimerObj *)xdc_uargToPtr(arg);
+    TimerObj *timer = (TimerObj *)arg;
 
     if (timer->thread) {
         Semaphore_post(timer->sem);

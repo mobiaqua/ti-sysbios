@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 
 #include "package/internal/ReentSupport.xdc.h"
 
+#include <stdio.h>
 #include <reent.h>
 #include <string.h>
 
@@ -128,6 +129,19 @@ Void ReentSupport_taskDeleteHook(Task_Handle task)
 
     if (pStoredContext != NULL) {
         _reclaim_reent(pStoredContext);
+
+        /*
+         * Newlib nano does not close the file descriptors allocated for
+         * stdin/stdout/stderr in _cleanup_r() called from _reclaim_reent().
+         * This can cause a memory leak as the stdin/stdout/stderr file
+         * objects are not marked as free when the Task is deleted. Therefore,
+         * the now unused file objects cannot be reused, causing Newlib to
+         * allocate more memory for new file objects.
+         */
+        _fclose_r(pStoredContext, pStoredContext->_stdin);
+        _fclose_r(pStoredContext, pStoredContext->_stdout);
+        _fclose_r(pStoredContext, pStoredContext->_stderr);
+
         Memory_free(Task_Object_heap(), pStoredContext, sizeof(struct _reent));
     }
 }

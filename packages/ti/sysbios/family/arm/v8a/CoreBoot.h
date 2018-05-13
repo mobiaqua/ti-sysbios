@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,9 @@
  */
 #ifndef __TI_SYSBIOS_FAMILY_ARM_V8A_COREBOOT_H__
 #define __TI_SYSBIOS_FAMILY_ARM_V8A_COREBOOT_H__
+
+#define GTC_R10_CFG1    0x00A90000
+#define GTC_CNTCR_ADDR  (GTC_R10_CFG1 + 0x0)
 
 #define GIC_BASE_ADDR   ti_sysbios_family_arm_gicv3_Hwi_gicdBaseAddress__D
 #define GICR_BASE_ADDR  ti_sysbios_family_arm_gicv3_Hwi_gicrBaseAddress__D

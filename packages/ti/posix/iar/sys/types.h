@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,15 @@ typedef unsigned long timer_t;
 typedef long suseconds_t;
 typedef unsigned short uid_t;
 
+/*  IAR compiler defines time_t in time[32,64].h (should be in sys/types.h).
+ *  Pull in time.h (which includes time[32,64].h) to get time_t definition.
+ */
+#if defined(__430_CORE__) || defined(__430X_CORE__)
+#include <../inc/dlib/c/time.h>
+#else
+#include <../inc/c/time.h>
+#endif
+
 
 /*
  *************************************************************************
@@ -109,12 +118,16 @@ typedef union {
     struct freertos_Barrier freertos;
 } pthread_barrier_t;
 
-typedef struct {
+typedef union {
     struct sysbios_Cond sysbios;
     struct freertos_Cond freertos;
 } pthread_cond_t;
 
-typedef void *pthread_mutex_t;
+typedef union {
+    struct sysbios_Mutex sysbios;
+    struct freertos_Mutex freertos;
+} pthread_mutex_t;
+
 typedef uint32_t pthread_once_t;
 
 typedef union {

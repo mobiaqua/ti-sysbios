@@ -94,13 +94,6 @@
         </tr>
         <tr>
           <td><control type="checkbox" 
-                       label="Enable PLL output" 
-                       value="value:this.pllOutEnable"
-                       tooltip="value:this.pllOutEnable.$summary"
-                       enabled="value:this.configureClock"/></td>
-        </tr>
-        <tr>
-          <td><control type="checkbox" 
                        label="Disable internal oscillator" 
                        value="value:this.ioscDisable"
                        tooltip="value:this.ioscDisable.$summary"

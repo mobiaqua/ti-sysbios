@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -605,6 +605,33 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  @param(intNum)  interrupt number
      */
     Object *getHandle(UInt intNum);
+
+    /*!
+     *  ======== enableFIQ ========
+     *  Enable FIQ interrupts.
+     *
+     *  @b(returns)     previous FIQ interrupt enable/disable state
+     */
+    @Macro
+    UInt enableFIQ();
+
+    /*!
+     *  ======== disableFIQ ========
+     *  Disable FIQ interrupts.
+     *
+     *  @b(returns)     previous FIQ interrupt enable/disable state
+     */
+    @Macro
+    UInt disableFIQ();
+
+    /*!
+     *  ======== restoreFIQ ========
+     *  Restore FIQ interrupts.
+     *
+     *  @param(key)     enable/disable state to restore
+     */
+    @Macro
+    Void restoreFIQ(UInt key);
 
     /*!
      *  ======== enableIRQ ========

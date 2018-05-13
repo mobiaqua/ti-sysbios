@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,18 +47,24 @@ const UInt IntrinsicsSupport_maxbitTable[16] =
  */
 UInt IntrinsicsSupport_maxbit(UInt bits)
 {
-    if (bits & 0xf000) {
-        return (IntrinsicsSupport_maxbitTable[bits >> 12] + 12);
+    UInt mask;
+
+    mask = bits & 0xf000;
+    if (mask) {
+        return (IntrinsicsSupport_maxbitTable[mask >> 12] + 12);
     }
-    if (bits & 0x0f00) {
-        return (IntrinsicsSupport_maxbitTable[bits >> 8] + 8);
+
+    mask = bits & 0x0f00;
+    if (mask) {
+        return (IntrinsicsSupport_maxbitTable[mask >> 8] + 8);
     }
-    if (bits & 0x00f0) {
-        return (IntrinsicsSupport_maxbitTable[bits >> 4] + 4);
+
+    mask = bits & 0x00f0;
+    if (mask) {
+        return (IntrinsicsSupport_maxbitTable[mask >> 4] + 4);
     }
-    else {
-        return (IntrinsicsSupport_maxbitTable[bits]);
-    }
+
+    return (IntrinsicsSupport_maxbitTable[bits]);
 }
 
 

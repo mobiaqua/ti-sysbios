@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,6 @@ if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "SIMFLEMING": {
             binaryPointReg     : 3,
-            numInterrupts      : 992,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
             gicrBaseAddress    : 0x01900000,
@@ -88,7 +87,6 @@ if (xdc.om.$name == "cfg") {
         },
         "SIMMAXWELL": {
             binaryPointReg     : 3,
-            numInterrupts      : 992,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
             gicrBaseAddress    : 0x01880000,
@@ -201,7 +199,6 @@ function module$meta$init()
     var device = deviceSupportCheck();
 
     Hwi.BPR = deviceTable[device].binaryPointReg;
-    Hwi.NUM_INTERRUPTS = deviceTable[device].numInterrupts;
     Hwi.NUM_PRIORITY_BITS = deviceTable[device].numPriorityBits;
     Hwi.NUM_GICD_ENABLE_REGS = Hwi.NUM_INTERRUPTS / 32;
     Hwi.gicdBaseAddress = deviceTable[device].gicdBaseAddress;

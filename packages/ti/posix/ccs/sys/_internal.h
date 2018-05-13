@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,6 @@ struct sysbios_Semaphore {
     struct Opaque_Struct__ *__f5;
 };
 
-
 struct freertos_Semaphore {
     void *__f0;
 };
@@ -99,6 +98,21 @@ struct freertos_Barrier {
     int pendCount;
     struct Opaque_Struct__ *waitList;
     struct Opaque_Struct__ *last;
+};
+
+struct sysbios_Mutex {
+    struct Opaque_Struct__ *owner;
+    int lockCnt;
+    int type;
+    struct sysbios_Semaphore sem;
+    struct Opaque_Struct__ *mpo;
+};
+
+struct freertos_Mutex {
+    int protocol;
+    void *owner;
+    int type;
+    void *sem; /* struct freertos_Semaphore */
 };
 
 struct sysbios_RWLock {

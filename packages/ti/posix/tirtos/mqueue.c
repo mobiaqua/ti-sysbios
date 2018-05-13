@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,12 +40,14 @@
 #include <xdc/runtime/IHeap.h>
 #include <xdc/runtime/Memory.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
 #include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/gates/GateMutex.h>
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Mailbox.h>
 #include <ti/sysbios/knl/Task.h>
@@ -55,6 +57,28 @@
 #include <errno.h>
 
 #include "pthread_util.h"
+
+/*  Gate protection is not needed in boot thread (i.e. from main()).
+ *  Check current thread type and only use the gate when running in
+ *  task context. These macros improves the code presentation.
+ */
+#define GATE_ENTER(gate, key, use_gate) \
+    if (use_gate) {                     \
+        key = GateMutex_enter(gate);    \
+    }
+
+#define GATE_LEAVE(gate, key, use_gate) \
+    if (use_gate) {                     \
+        GateMutex_leave(gate, key);     \
+    }
+
+#define GATE_INIT(use_gate) \
+    use_gate = (BIOS_getThreadType() == BIOS_ThreadType_Task);
+
+
+/* this instance was created in Settings.xs */
+extern const ti_sysbios_gates_GateMutex_Handle tiposix_mqGate;
+
 
 /*
  *  ======== MQueueObj ========
@@ -85,19 +109,38 @@ static MQueueObj *findInList(const char *name);
 static MQueueObj *mqList = NULL;
 
 /*
+ *  Default message queue attrs to be used if NULL attributes are
+ *  passed to mq_open() on O_CREAT.  In general, applications should not
+ *  rely on the default attributes, as they are implementation defined,
+ *  and using them may result in non-portable code.
+ *  The default value of 8 bytes for mq_msgsize in defaultAttrs was chosen
+ *  to allow for a size and a pointer.  The mq_maxmsg default of 4 is a
+ *  multiple of 4, and memory allocated for the default message size and
+ *  number of messages would be 32 bytes.
+ */
+static mq_attr defaultAttrs = {
+    0,      /* mq_flags */
+    4,      /* mq_maxmsg - number of messages */
+    8,      /* mq_msgsize - size of message */
+    0       /* mq_curmsgs */
+};
+
+/*
  *  ======== mq_close ========
  */
 int mq_close(mqd_t mqdes)
 {
     MQueueDesc *mqd = (MQueueDesc *)mqdes;
     MQueueObj  *msgQueue = mqd->msgQueue;
-    UInt key;
+    IArg key;
+    bool use_gate;
 
+    GATE_INIT(use_gate)
     Memory_free(Task_Object_heap(), mqd, sizeof(MQueueDesc));
 
-    key = Task_disable();
+    GATE_ENTER(tiposix_mqGate, key, use_gate)
     msgQueue->refCount--;
-    Task_restore(key);
+    GATE_LEAVE(tiposix_mqGate, key, use_gate)
 
     return (0);
 }
@@ -129,15 +172,22 @@ mqd_t mq_open(const char *name, int oflags, ...)
     MQueueObj          *msgQueue;
     MQueueDesc         *msgQueueDesc = NULL;
     Error_Block         eb;
-    UInt                key;
+    IArg                key;
     IHeap_Handle        heap = Task_Object_heap();
     size_t              nameLen;
+    bool use_gate;
+
+    GATE_INIT(use_gate)
 
     va_start(va, oflags);
 
     if (oflags & O_CREAT) {
         mode = va_arg(va, mode_t);
         attrs = va_arg(va, struct mq_attr *);
+
+        if (attrs == NULL) {
+            attrs = &defaultAttrs;
+        }
     }
 
     va_end(va);
@@ -148,7 +198,7 @@ mqd_t mq_open(const char *name, int oflags, ...)
     }
     nameLen = strlen(name);
 
-    if ((oflags & O_CREAT) && (attrs != NULL) && ((attrs->mq_maxmsg <= 0)
+    if ((oflags & O_CREAT) && ((attrs->mq_maxmsg <= 0)
             || (attrs->mq_msgsize <= 0))) {
         errno = EINVAL;
         return ((mqd_t)(-1));
@@ -156,29 +206,31 @@ mqd_t mq_open(const char *name, int oflags, ...)
 
     Error_init(&eb);
 
-    key = Task_disable();
+    GATE_ENTER(tiposix_mqGate, key, use_gate)
+
     msgQueue = findInList(name);
-    Task_restore(key);
 
     if ((msgQueue != NULL) && (oflags & O_CREAT) && (oflags & O_EXCL)) {
-        /* Error: Message queue has alreadey been opened and O_EXCL is set */
+        /* Error: Message queue has already been opened and O_EXCL is set */
         errno = EEXIST;
-        return ((mqd_t)(-1));
+        goto error_leave;
     }
 
     if (!(oflags & O_CREAT) && (msgQueue == NULL)) {
         errno = ENOENT;
-        return ((mqd_t)(-1));
+        goto error_leave;
     }
 
+    /* allocate the MQueueDesc */
     msgQueueDesc = (MQueueDesc *)Memory_alloc(heap, sizeof(MQueueDesc), 0, &eb);
+
     if (msgQueueDesc == NULL) {
         errno = ENOMEM;
-        return ((mqd_t)(-1));
+        goto error_leave;
     }
 
     if (msgQueue == NULL) {
-        /* Allocate the MQueueObj */
+        /* allocate the MQueueObj */
         msgQueue = (MQueueObj *)Memory_alloc(heap, sizeof(MQueueObj), 0, &eb);
 
         if (msgQueue == NULL) {
@@ -186,7 +238,8 @@ mqd_t mq_open(const char *name, int oflags, ...)
         }
 
         msgQueue->refCount = 1;
-        msgQueue->attrs = *attrs;
+        msgQueue->attrs.mq_msgsize = attrs->mq_msgsize;
+        msgQueue->attrs.mq_maxmsg = attrs->mq_maxmsg;
 
         msgQueue->name = (char *)Memory_alloc(heap, nameLen + 1, 0, &eb);
 
@@ -203,12 +256,8 @@ mqd_t mq_open(const char *name, int oflags, ...)
             goto error_handler;
         }
 
-        /*
-         *  Add the message queue to the list now
-         */
+        /* add the message queue to the list now */
         msgQueue->prev = NULL;
-
-        key = Task_disable();
 
         if (mqList != NULL) {
             mqList->prev = msgQueue;
@@ -218,11 +267,10 @@ mqd_t mq_open(const char *name, int oflags, ...)
         mqList = msgQueue;
     }
     else {
-        key = Task_disable();
         msgQueue->refCount++;
     }
 
-    Task_restore(key);
+    GATE_LEAVE(tiposix_mqGate, key, use_gate)
 
     msgQueueDesc->msgQueue = msgQueue;
     msgQueueDesc->flags = ((oflags & O_NONBLOCK) ? O_NONBLOCK : 0);
@@ -232,8 +280,7 @@ mqd_t mq_open(const char *name, int oflags, ...)
     return ((mqd_t)msgQueueDesc);
 
 error_handler:
-    /*
-     *  We only get here if we attempted to allocate msgQueue (i.e., it
+    /*  We only get here if we attempted to allocate msgQueue (i.e., it
      *  was not already in the list), so we're ok to free it.
      */
     if (msgQueue != NULL) {
@@ -242,12 +289,13 @@ error_handler:
         }
         Memory_free(heap, msgQueue, sizeof(MQueueObj));
     }
-
     if (msgQueueDesc != NULL) {
         Memory_free(heap, msgQueueDesc, sizeof(MQueueDesc));
     }
-
     errno = ENOMEM;
+
+error_leave:
+    GATE_LEAVE(tiposix_mqGate, key, use_gate)
     return ((mqd_t)(-1));
 }
 
@@ -323,42 +371,30 @@ int mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
 /*
  *  ======== mq_setattr ========
  */
-int mq_setattr(mqd_t mqdes, const struct mq_attr *mqstat,
-        struct mq_attr *omqstat)
+int mq_setattr(mqd_t mqdes, const struct mq_attr *newattr,
+        struct mq_attr *oldattr)
 {
     MQueueDesc *mqd = (MQueueDesc *)mqdes;
     MQueueObj  *msgQueue = mqd->msgQueue;
-    UInt        key;
 
     /* mq_flags should be 0 or O_NONBLOCK */
-    if ((mqstat->mq_flags != 0) && (mqstat->mq_flags != O_NONBLOCK)) {
+    if ((newattr->mq_flags != 0) && (newattr->mq_flags != O_NONBLOCK)) {
         errno = EINVAL;
         return (-1);
     }
 
-    /*
-     *  The message queue attributes corresponding to the following
-     *  members defined in the mq_attr structure shall be set to the
-     *  specified values upon successful completion of mq_setattr():
-     *  mq_flags
-     *        The value of this member is the bitwise-logical OR of
-     *        zero or more of O_NONBLOCK and any implementation-defined flags.
-     *
-     *  The values of the mq_maxmsg, mq_msgsize, and mq_curmsgs members of
-     *  the mq_attr structure shall be ignored by mq_setattr().
-    */
-    key = Task_disable();
-
-    if (omqstat != NULL) {
+    /* save old attribute values before updating message queue description */
+    if (oldattr != NULL) {
         msgQueue->attrs.mq_curmsgs = Mailbox_getNumPendingMsgs(
                 msgQueue->mailbox);
-        *omqstat = msgQueue->attrs;
-        omqstat->mq_flags = mqd->flags;
+        *oldattr = msgQueue->attrs;
+        oldattr->mq_flags = mqd->flags; /* overwrite with mqueue desc flag */
     }
 
-    mqd->flags = mqstat->mq_flags;
-
-    Task_restore(key);
+    /*  Only mq_flags is used to set the message queue description, the
+     *  remaining members of mq_attr structure are ignored.
+     */
+    mqd->flags = newattr->mq_flags;
 
     return (0);
 }
@@ -467,19 +503,21 @@ int mq_unlink(const char *name)
 {
     MQueueObj  *msgQueue;
     MQueueObj  *nextMQ, *prevMQ;
-    UInt        key;
+    IArg        key;
+    bool        use_gate;
 
-    key = Task_disable();
+    GATE_INIT(use_gate)
+    GATE_ENTER(tiposix_mqGate, key, use_gate)
 
     msgQueue = findInList(name);
 
     if (msgQueue == NULL) {
         errno = ENOENT;
-        goto done_restore;
+        goto done_leave;
     }
 
     if (msgQueue->refCount == 0) {
-        /* If the message queue is in the list, remove it. */
+        /* remove message queue from list */
         if (mqList == msgQueue) {
             mqList = msgQueue->next;
         }
@@ -487,17 +525,17 @@ int mq_unlink(const char *name)
             prevMQ = msgQueue->prev;
             nextMQ = msgQueue->next;
 
-            if (prevMQ) {
+            if (prevMQ != NULL) {
                 prevMQ->next = nextMQ;
             }
-            if (nextMQ) {
+            if (nextMQ != NULL) {
                 nextMQ->prev = prevMQ;
             }
         }
 
         msgQueue->next = msgQueue->prev = NULL;
 
-        Task_restore(key);
+        GATE_LEAVE(tiposix_mqGate, key, use_gate)
 
         if (msgQueue->mailbox != NULL) {
             Mailbox_delete(&msgQueue->mailbox);
@@ -512,10 +550,13 @@ int mq_unlink(const char *name)
 
         return (0);
     }
+    else {
+        /* temporary fix until TIRTOS-1323 is fixed */
+        errno = EBUSY;
+    }
 
-done_restore:
-    Task_restore(key);
-
+done_leave:
+    GATE_LEAVE(tiposix_mqGate, key, use_gate)
     return (-1);
 }
 
@@ -527,6 +568,10 @@ done_restore:
 
 /*
  *  ======== findInList ========
+ *  Look for the given name in the list of message queues
+ *
+ *  This function must be called inside a gate which protects
+ *  the message queue list.
  */
 static MQueueObj *findInList(const char *name)
 {

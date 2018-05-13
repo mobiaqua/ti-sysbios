@@ -1,10 +1,10 @@
 /*
- *  Copyright 2017 by Texas Instruments Incorporated.
+ *  Copyright 2018 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -296,9 +296,21 @@ function initVers()
     target.$seal("BINVERS");
 
     target.$private.vers = true;
+
+    /*
+     * Special case for a customer that wants to use gcc-arm-none-eabi-4_7_2012q4.
+     * We need to get the target's custom library off the compile and link lines.
+     * We also remove the 'nano.specs' file so the these old complier users get the
+     * traditional newlib library (as they were using previously).
+     */
+    if (target.name == "A15F" && target.GCCVERS.match(/^4.7/)) {
+        target.includeOpts = target.includeOpts.replace(/\S+install-native\S+/g, "");
+        target.lnkOpts.suffix = target.lnkOpts.suffix.replace(/\S+install-native\S+/g, "");
+        target.lnkOpts.suffix = target.lnkOpts.suffix.replace(/--specs=nano.specs/, "");
+    }
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 11-8-2017 17:20:18; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-19-2018 16:53:39; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

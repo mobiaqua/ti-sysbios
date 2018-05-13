@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ package ti.sysbios;
 import xdc.rov.ViewInfo;
 
 import xdc.runtime.Error;
+import xdc.runtime.IHeap;
 import xdc.runtime.Types;
 
 /*! ======== BIOS ========
@@ -271,10 +272,10 @@ module BIOS
     };
 
     /*! Used in APIs that take a timeout to specify wait forever */
-    const UInt WAIT_FOREVER = ~(0);
+    const UInt WAIT_FOREVER = ~(0U);
 
     /*! Used in APIs that take a timeout to specify no waiting */
-    const UInt NO_WAIT = 0;
+    const UInt NO_WAIT = 0U;
 
     /*! User startup function type definition. */
     typedef Void (*StartupFuncPtr)(Void);
@@ -427,6 +428,18 @@ module BIOS
     config Bool smpEnabled = false;
 
     /*!
+     *  ======== mpeEnabled ========
+     *  Enables Memory Protection Extensions (MPE)
+     *
+     *  SYS/BIOS memory protection extensions add the capability to
+     *  create privileged and unprivileged tasks as well as define
+     *  access privileges for the unprivileged tasks.
+     *
+     *  This functionality is available on only select devices.
+     */
+    config Bool mpeEnabled = false;
+
+    /*!
      *  ======== cpuFreq ========
      *  CPU frequency in Hz
      *
@@ -562,6 +575,36 @@ module BIOS
     metaonly config Bool logsEnabled = true;
 
     /*!
+     *  ======== defaultKernelHeapInstance ========
+     *  Default Kernel heap instance
+     *
+     *  If SYS/BIOS Memory Protection Extensions
+     *  {@link #mpeEnabled BIOS.mpeEnabled} are enabled, a dedicated kernel
+     *  heap is created. This heap is used for allocating kernel objects
+     *  when create() calls are made. The kernel heap resides in privileged
+     *  memory and is protected against unauthorized access from User Tasks.
+     */
+    config IHeap.Handle defaultKernelHeapInstance = null;
+
+    /*!
+     *  ======== kernelHeapSize ========
+     *  Kernel heap size, units are in MAUs
+     *
+     *  If SYS/BIOS Memory Protection Extensions
+     *  {@link #mpeEnabled BIOS.mpeEnabled} are enabled, a dedicated kernel
+     *  heap is created. This heap is used for allocating kernel objects
+     *  when create() calls are made. The kernel heap resides in privileged
+     *  memory and is protected against unauthorized access from User Tasks.
+     */
+    config SizeT kernelHeapSize = 0x1000;
+
+    /*!
+     *  ======== kernelHeapSection ========
+     *  Kernel heap section name
+     */
+    config String kernelHeapSection = ".kernel_heap";
+
+    /*!
      *  ======== heapSize ========
      *  Size of system heap, units are in MAUs
      *
@@ -578,6 +621,14 @@ module BIOS
      *  and will therefore be used as the default system heap.  This heap
      *  will also be used by the SYS/BIOS version of the standard C library
      *  functions malloc(), calloc() and free().
+     *
+     *  @a(Note)
+     *  If SYS/BIOS Memory Protection Extensions
+     *  {@link #mpeEnabled BIOS.mpeEnabled} are enabled, a dedicated kernel heap
+     *  is allocated (see
+     *  {@link #defaultKernelHeapInstance BIOS.defaultKernelHeapInstance}). The
+     *  System heap is placed in a public section (accessible from
+     *  privileged and user Tasks) called ".public_heap" by default.
      */
     config SizeT heapSize = 0x1000;
 
@@ -594,6 +645,14 @@ module BIOS
      *
      *  If heapSection is `null` (or `undefined`) the system heap is placed
      *  in the target's default data section.
+     *
+     *  @a(Note)
+     *  If SYS/BIOS Memory Protection Extensions
+     *  {@link #mpeEnabled BIOS.mpeEnabled} are enabled, a dedicated kernel heap
+     *  is allocated (see
+     *  {@link #defaultKernelHeapInstance BIOS.defaultKernelHeapInstance}). The
+     *  System heap is placed in a public section (accessible from
+     *  privileged and user Tasks) called ".public_heap" by default.
      */
     config String heapSection = null;
 
@@ -708,7 +767,7 @@ module BIOS
      *  Example: A macro hex value of 0x64501 implies that the SYS/BIOS
      *  product version number is 6.45.01
      */
-    const UInt32 version = 0x65302;
+    const UInt32 version = 0x67001;
 
     /*!
      *  ======== addUserStartupFunction ========

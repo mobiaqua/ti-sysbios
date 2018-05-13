@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ import xdc.runtime.Error;
 import xdc.runtime.Assert;
 
 import ti.sysbios.knl.Task;
+import ti.sysbios.knl.Semaphore;
 
 /*!
  *  ======== MultithreadSupport ========
@@ -234,6 +235,9 @@ internal:   /* not for client use */
     /* -------- Internal Module Types -------- */
 
     struct Module_State {
-        Int taskHId;             /* Task Hook Context Id for this module */
+        Int taskHId;    /* Task Hook Context Id for this module */
+        Ptr deletedTaskTLSPtr;
+        Task.Handle curTaskHandle;
+        Semaphore.Handle lock;
     };
 }

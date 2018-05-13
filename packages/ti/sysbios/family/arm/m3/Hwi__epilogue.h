@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_family_arm_m3_Hwi__epilogue__include
+#define ti_sysbios_family_arm_m3_Hwi__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,6 +62,9 @@ extern "C" {
 
 #if defined(__ti__)
 
+/* declare compiler intrinsic function since compiler doesn't have prototype */
+extern unsigned int _set_interrupt_priority(unsigned int);
+
 /*
  *  ======== Hwi_disable ========
  */
@@ -72,7 +78,7 @@ extern "C" {
 /*
  *  ======== Hwi_restore ========
  */
-#define ti_sysbios_family_arm_m3_Hwi_restore(key) _set_interrupt_priority(key) 
+#define ti_sysbios_family_arm_m3_Hwi_restore(key) (Void)_set_interrupt_priority(key) 
 
 #else /* defined(__ti__) */
 
@@ -167,3 +173,5 @@ static inline Void ti_sysbios_family_arm_m3_Hwi_restore(UInt key)
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ti_sysbios_family_arm_m3_Hwi__epilogue__include */

@@ -49,7 +49,7 @@ if (xdc.om.$name == "cfg") {
             resetVectorHandlerAddress   : 0x00550000,
             vectorTable0Address         : 0x00550180,
             vectorTable1Address         : 0x00550180,
-            numInterrupts               : 128
+            numInterrupts               : 512
         }
     }
 

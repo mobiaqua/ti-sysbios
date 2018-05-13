@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,12 +54,14 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.M3":
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
+        case "gnu.targets.arm.M33F":
             return (["Clobber_asm_gnu.sv7M"]);
             break;
     
         case "iar.targets.arm.M3":
         case "iar.targets.arm.M4":
         case "iar.targets.arm.M4F":
+        case "iar.targets.arm.M33":
             return (["Clobber_asm_iar.sv7M"]);
             break; 
 

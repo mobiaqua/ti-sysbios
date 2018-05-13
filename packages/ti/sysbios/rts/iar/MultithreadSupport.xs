@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
  *  ======== MultithreadSupport.xs ========
  */
 
+var Semaphore = null;
+
 /*
  *  ======== module$use ========
  */
@@ -40,6 +42,7 @@ function module$use()
 {
     var BIOS = xdc.module("ti.sysbios.BIOS");
     var Startup = xdc.useModule('xdc.runtime.Startup');
+    Semaphore = xdc.useModule('ti.sysbios.knl.Semaphore');
 
     /*  When building with ROM image of SYS/BIOS, cannot use kernel
      *  hooks. Use ROM version of getTlsAddr() which takes ownership
@@ -73,6 +76,16 @@ function module$use()
 function module$static$init(state, mod)
 {
     state.taskHId = -1;
+    state.deletedTaskTLSPtr = null;
+    state.curTaskHandle = null;
+
+    /*
+     * Create a binary semaphore. Used to protect
+     * MultithreadSupport_module->taskDeleteHandle
+     */
+    var semParams = new Semaphore.Params();
+    semParams.mode = Semaphore.Mode_BINARY;
+    state.lock = Semaphore.create(1, semParams);
 }
 
 /*

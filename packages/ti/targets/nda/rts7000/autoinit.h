@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 by Texas Instruments Incorporated.
+ *  Copyright 2018 by Texas Instruments Incorporated.
  *
  */
 
@@ -234,7 +234,7 @@ static __inline void run_pinit(void)
 
 #endif
 /*
- *  @(#) ti.targets.nda.rts7000; 1, 0, 0,0; 11-8-2017 18:01:51; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.nda.rts7000; 1, 0, 0,0; 4-20-2018 17:27:32; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

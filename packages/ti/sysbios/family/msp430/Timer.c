@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -816,7 +816,7 @@ UInt32 Timer_getCurrentTick(Timer_Object *obj, Bool saveFlag)
  */
 Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
 {
-    UInt divider;
+    UInt divider = 1;
 
     switch(obj->controlRegInit & ID_MASK) {
         case Timer_ID_1:
@@ -833,6 +833,7 @@ Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
 
         case Timer_ID_8:
             divider = 8;
+            break;
     }
 
     divider *= (obj->inputDividerExp + 1);

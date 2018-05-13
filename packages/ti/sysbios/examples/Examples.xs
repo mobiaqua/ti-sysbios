@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -314,7 +314,7 @@ function generateExampleTemplates(examples, targetOptions,
         }
         if (debug) {
             ex.configuroOptions =
-            "--compileOptions &quot;-g --optimize_with_debug&quot;";
+            "--compileOptions &quot;-g&quot;";
         }
     }
 }

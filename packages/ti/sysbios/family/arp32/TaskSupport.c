@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,21 +115,9 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
         *sptr = 0xbe;
     }
 
-    if (Task_objectCheckFlag) {
-        /*
-         * The top 32-bits of the stack are reclaimed by
-         * TaskSupport_getCheckValueAddr() as storage for the Task object's
-         * check value when Task object data integrity checking is enabled.
-         */
-        sp = TaskSupport_buildTaskStack(
-                (Ptr)((SizeT)tsk->stack + tsk->stackSize-16),
-                tsk->fxn, exit, enter, tsk->arg0, tsk->arg1);
-    }
-    else {
-        sp = TaskSupport_buildTaskStack(
-            (Ptr)((SizeT)tsk->stack + tsk->stackSize-8),
-            tsk->fxn, exit, enter, tsk->arg0, tsk->arg1);
-    }
+    sp = TaskSupport_buildTaskStack(
+        (Ptr)((SizeT)tsk->stack + tsk->stackSize-8),
+         tsk->fxn, exit, enter, tsk->arg0, tsk->arg1);
 
     return (sp);
 }
@@ -181,14 +169,4 @@ SizeT TaskSupport_getDefaultStackSize()
 UInt TaskSupport_getStackAlignment()
 {
     return (TaskSupport_stackAlignment);
-}
-
-/*
- *  ======== getCheckValueAddr ========
- */
-Ptr TaskSupport_getCheckValueAddr(Ptr curTask)
-{
-    Task_Object *tsk = (Task_Object *)(curTask);
-
-    return ((Ptr)((SizeT)tsk->stack + tsk->stackSize - 4));
 }

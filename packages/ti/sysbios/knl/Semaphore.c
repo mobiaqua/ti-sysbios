@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 #define ti_sysbios_knl_Task__internalaccess
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Clock.h>
+#include <ti/sysbios/hal/MemProtect.h>
 
 #include "package/internal/Semaphore.xdc.h"
 
@@ -67,10 +68,20 @@ Void Semaphore_Instance_init(Semaphore_Object *sem, Int count,
     Queue_Handle pendQ;
     UInt hwiKey;
 
+    /* CWARN.CONSTCOND.IF */
+    if (BIOS_mpeEnabled) {
+        /* Check if Semaphore object in kernel memory space */
+        /* UNREACH.GEN */
+        if (MemProtect_isDataInKernelSpace((Ptr)sem,
+            sizeof(Semaphore_Object)) == FALSE) {
+            Error_raise(NULL, Semaphore_E_objectNotInKernelSpace, 0, 0);
+        }
+    }
+
     pendQ = Semaphore_Instance_State_pendQ(sem);
 
     sem->mode = params->mode;
-    sem->count = count;
+    sem->count = (UInt16)count;
 
     /* Make sure that supportsEvents is TRUE if params->event is not null */
     Assert_isTrue((Semaphore_supportsEvents == TRUE) ||
@@ -80,7 +91,7 @@ Void Semaphore_Instance_init(Semaphore_Object *sem, Int count,
 
     Queue_construct(Queue_struct(pendQ), NULL);
 
-    if (Semaphore_supportsEvents && (params->event != NULL)) {
+    if ((Semaphore_supportsEvents != FALSE) && (params->event != NULL)) {
 
         sem->event = params->event;
         sem->eventId = params->eventId;
@@ -116,7 +127,7 @@ Void Semaphore_Instance_finalize(Semaphore_Object *sem)
     pendQ = Semaphore_Instance_State_pendQ(sem);
     Queue_destruct(Queue_struct(pendQ));
 
-    if (Semaphore_supportsEvents && (sem->event != NULL)) {
+    if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
         Semaphore_eventSync(sem->event, sem->eventId, 0);
     }
 }
@@ -137,7 +148,7 @@ Void Semaphore_pendTimeout(UArg arg)
     if (elem->pendState == Semaphore_PendState_CLOCK_WAIT) {
 
         /* remove task's qElem from semaphore queue */
-        Queue_remove((Queue_Elem *)elem);
+        Queue_remove(&(elem->tpElem.qElem));
 
         elem->pendState = Semaphore_PendState_TIMEOUT;
 
@@ -146,7 +157,7 @@ Void Semaphore_pendTimeout(UArg arg)
          *  No need for Task_disable/restore sandwich since this
          *  is called within Swi (or Hwi) thread
          */
-        Task_unblockI(elem->tpElem.task, hwiKey);
+        Task_unblockI(elem->tpElem.taskHandle, hwiKey);
     }
 
     Hwi_restore(hwiKey);
@@ -162,6 +173,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
     Queue_Handle pendQ;
     Clock_Struct clockStruct;
 
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Semaphore_LM_pend, (IArg)sem, (UArg)sem->count, (IArg)((Int)timeout));
 
     /*
@@ -174,15 +186,16 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
      */
 
     /* add Clock event if timeout is not FOREVER nor NO_WAIT */
-    if (BIOS_clockEnabled
+    if ((BIOS_clockEnabled != 0U)
+            /* MISRA.ETYPE.INAPPR.OPERAND.UNOP.2012 */
             && (timeout != BIOS_WAIT_FOREVER)
             && (timeout != BIOS_NO_WAIT)) {
         Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Semaphore_pendTimeout, timeout, (UArg)&elem);
-        elem.tpElem.clock = Clock_handle(&clockStruct);
+        elem.tpElem.clockHandle = Clock_handle(&clockStruct);
         elem.pendState = Semaphore_PendState_CLOCK_WAIT;
     }
     else {
-        elem.tpElem.clock = NULL;
+        elem.tpElem.clockHandle = NULL;
         elem.pendState = Semaphore_PendState_WAIT_FOREVER;
     }
 
@@ -191,7 +204,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
     hwiKey = Hwi_disable();
 
     /* check semaphore count */
-    if (sem->count == 0) {
+    if (sem->count == 0U) {
 
         if (timeout == BIOS_NO_WAIT) {
             Hwi_restore(hwiKey);
@@ -205,51 +218,52 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
          * Verify that THIS core hasn't already disabled the scheduler
          * so that the Task_restore() call below will indeed block
          */
-        Assert_isTrue((Task_enabled()),
+        Assert_isTrue((Task_enabled() != FALSE),
                         Semaphore_A_pendTaskDisabled);
 
         /* lock task scheduler */
         tskKey = Task_disable();
 
         /* get task handle and block tsk */
-        elem.tpElem.task = Task_self();
+        elem.tpElem.taskHandle = Task_self();
 
         /* leave a pointer for Task_delete() */
-        elem.tpElem.task->pendElem = (Task_PendElem *)&(elem);
+        elem.tpElem.taskHandle->pendElem = &(elem.tpElem);
 
-        Task_blockI(elem.tpElem.task);
+        Task_blockI(elem.tpElem.taskHandle);
 
-        if ((Semaphore_supportsPriority) &&
-           (((UInt)sem->mode & 0x2) != 0)) {    /* if PRIORITY bit is set */
+        if ((Semaphore_supportsPriority != FALSE) &&
+           (((UInt)sem->mode & 0x2U) != 0U)) {    /* if PRIORITY bit is set */
             Semaphore_PendElem *tmpElem;
             Task_Handle tmpTask;
             Int selfPri;
 
             tmpElem = Queue_head(pendQ);
-            selfPri = Task_getPri(elem.tpElem.task);
+            selfPri = Task_getPri(elem.tpElem.taskHandle);
 
             while (tmpElem != (Semaphore_PendElem *)pendQ) {
-                tmpTask = tmpElem->tpElem.task;
+                tmpTask = tmpElem->tpElem.taskHandle;
                 /* use '>' here so tasks wait FIFO for same priority */
                 if (selfPri > Task_getPri(tmpTask)) {
                     break;
                 }
                 else {
-                    tmpElem = Queue_next((Queue_Elem *)tmpElem);
+                    tmpElem = Queue_next(&(tmpElem->tpElem.qElem));
                 }
             }
 
-            Queue_insert((Queue_Elem *)tmpElem, (Queue_Elem *)&elem);
+            Queue_insert(&(tmpElem->tpElem.qElem),
+                    (Queue_Elem *)&(elem.tpElem.qElem));
         }
         else {
             /* put task at the end of the pendQ */
-            Queue_enqueue(pendQ, (Queue_Elem *)&elem);
+            Queue_enqueue(pendQ, &(elem.tpElem.qElem));
         }
 
         /* start Clock if appropriate */
-        if (BIOS_clockEnabled &&
+        if ((BIOS_clockEnabled != FALSE) &&
                 (elem.pendState == Semaphore_PendState_CLOCK_WAIT)) {
-            Clock_startI(elem.tpElem.clock);
+            Clock_startI(elem.tpElem.clockHandle);
         }
 
         Hwi_restore(hwiKey);
@@ -261,18 +275,18 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
 
         hwiKey = Hwi_disable();
 
-        if (Semaphore_supportsEvents && (sem->event != NULL)) {
+        if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
             /* synchronize Event state */
             Semaphore_eventSync(sem->event, sem->eventId, sem->count);
         }
 
         /* remove Clock object from Clock Q */
-        if (BIOS_clockEnabled && (elem.tpElem.clock != NULL)) {
-            Clock_removeI(elem.tpElem.clock);
-            elem.tpElem.clock = NULL;
+        if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != NULL)) {
+            Clock_removeI(elem.tpElem.clockHandle);
+            elem.tpElem.clockHandle = NULL;
         }
         
-        elem.tpElem.task->pendElem = NULL;
+        elem.tpElem.taskHandle->pendElem = NULL;
 
         Hwi_restore(hwiKey);
 
@@ -288,17 +302,17 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
                 (BIOS_getThreadType() == BIOS_ThreadType_Main)),
                 Semaphore_A_badContext);
 
-        --sem->count;
+        sem->count = sem->count - 1U;
 
-        if (Semaphore_supportsEvents && (sem->event != NULL)) {
+        if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
             /* synchronize Event state */
             Semaphore_eventSync(sem->event, sem->eventId, sem->count);
         }
 
         /* remove Clock object from Clock Q */
-        if (BIOS_clockEnabled && (elem.tpElem.clock != NULL)) {
-            Clock_removeI(elem.tpElem.clock);
-            elem.tpElem.clock = NULL;
+        if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != NULL)) {
+            Clock_removeI(elem.tpElem.clockHandle);
+            elem.tpElem.clockHandle = NULL;
         }
 
         Hwi_restore(hwiKey);
@@ -317,32 +331,37 @@ Void Semaphore_post(Semaphore_Object *sem)
     Queue_Handle pendQ;
 
     /* Event_post will do a Log_write, should we do one here too? */
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write2(Semaphore_LM_post, (UArg)sem, (UArg)sem->count);
 
     pendQ = Semaphore_Instance_State_pendQ(sem);
 
+    /* lock task scheduler */
+    tskKey = Task_disable();
+
     hwiKey = Hwi_disable();
 
     if (Queue_empty(pendQ)) {
-        if (((UInt)sem->mode & 0x1) != 0) {   /* if BINARY bit is set */
+        if (((UInt)sem->mode & 0x1U) != 0U) {   /* if BINARY bit is set */
             sem->count = 1;
         }
         else {
-            sem->count++;
-            Assert_isTrue((sem->count != 0), Semaphore_A_overflow);
+            sem->count = sem->count + 1U;
+            Assert_isTrue((sem->count != 0U), Semaphore_A_overflow);
         }
 
         Hwi_restore(hwiKey);
 
-        if (Semaphore_supportsEvents && (sem->event != NULL)) {
+        if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
             Semaphore_eventPost(sem->event, sem->eventId);
         }
+        /* unlock/restore task scheduler */
+        Task_restore(tskKey);
+
         return;
     }
 
-    /* lock task scheduler */
-    tskKey = Task_disable();
-
+    
     /* dequeue tsk from semaphore queue */
     elem = (Semaphore_PendElem *)Queue_dequeue(pendQ);
 
@@ -350,12 +369,12 @@ Void Semaphore_post(Semaphore_Object *sem)
     elem->pendState = Semaphore_PendState_POSTED;
 
     /* disable Clock object */
-    if (BIOS_clockEnabled && (elem->tpElem.clock != NULL)) {
-        Clock_stop(elem->tpElem.clock);
+    if ((BIOS_clockEnabled != FALSE) && (elem->tpElem.clockHandle != NULL)) {
+        Clock_stop(elem->tpElem.clockHandle);
     }
 
     /* put task back into readyQ */
-    Task_unblockI(elem->tpElem.task, hwiKey);
+    Task_unblockI(elem->tpElem.taskHandle, hwiKey);
 
     Hwi_restore(hwiKey);
 
@@ -367,7 +386,7 @@ Void Semaphore_post(Semaphore_Object *sem)
  */
 Int Semaphore_getCount(Semaphore_Object *sem)
 {
-    return (sem->count);
+    return ((Int)sem->count);
 }
 
 /*
@@ -379,9 +398,9 @@ void Semaphore_reset(Semaphore_Object *sem, Int count)
 
     hwiKey = Hwi_disable();
 
-    sem->count = count;
+    sem->count = (UInt16)count;
 
-    if (Semaphore_supportsEvents && (sem->event != NULL)) {
+    if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
         /* synchronize Event state */
         Semaphore_eventSync(sem->event, sem->eventId, sem->count);
     }

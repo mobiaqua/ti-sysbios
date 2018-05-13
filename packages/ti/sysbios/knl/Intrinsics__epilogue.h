@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_knl_Intrinsics__epilogue__include
+#define ti_sysbios_knl_Intrinsics__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -63,19 +66,22 @@ extern "C" {
     && defined(__32bis__) \
     && !defined(xdc_target__isaCompatible_v7M)
 
+extern int _norm(int);
 /*
  *  ======== Intrinsics_maxbit ========
  */
-#define ti_sysbios_knl_Intrinsics_maxbit(bits) (31 - _norm(bits))
+#define ti_sysbios_knl_Intrinsics_maxbit(bits) ((UInt)(Int)(31 - _norm((Int)(bits))))
 
 #else
-#if defined(xdc_target__isaCompatible_v7M)
+#if defined(xdc_target__isaCompatible_v7M) || \
+    defined(xdc_target__isaCompatible_v8M)
 
 /*
  *  ======== Intrinsics_maxbit ========
  */
 #if defined(__ti__)
-#define ti_sysbios_knl_Intrinsics_maxbit(bits) (31 - _norm(bits))
+extern int _norm(int val);
+#define ti_sysbios_knl_Intrinsics_maxbit(bits) ((UInt)(Int)(31 - _norm((Int)(bits))))
 #else
 static inline UInt ti_sysbios_knl_Intrinsics_maxbit(UInt bits)
 {
@@ -173,4 +179,6 @@ static inline UInt ti_sysbios_knl_Intrinsics_maxbit(UInt bits)
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,17 +49,17 @@
 #ifdef ti_sysbios_knl_Clock_TICK_SOURCE
 #define CLOCK_TICK_SOURCE ti_sysbios_knl_Clock_TICK_SOURCE
 #else
-#define CLOCK_TICK_SOURCE Clock_tickSource
+#define CLOCK_TICK_SOURCE (Clock_tickSource)
 #endif
 
 #ifdef ti_sysbios_knl_Clock_TICK_MODE
 #define CLOCK_TICK_MODE ti_sysbios_knl_Clock_TICK_MODE
 #else
-#define CLOCK_TICK_MODE Clock_tickMode
+#define CLOCK_TICK_MODE (Clock_tickMode)
 #endif
 
 #ifndef ti_sysbios_knl_Clock_stopCheckNext__D
-#define ti_sysbios_knl_Clock_stopCheckNext__D FALSE
+#define ti_sysbios_knl_Clock_stopCheckNext__D (FALSE)
 #endif
 
 /* MODULE LEVEL FUNCTIONS */
@@ -67,37 +67,43 @@
 /*
  *  ======== Clock_Module_startup ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Int Clock_Module_startup(Int phase)
 {
+    Int rv;
+
     /*
      * Clock uses Swi and Timer. Swi APIs safe before
      * BIOS_start() except for hooks. Needs to wait for Timer.
      */
-    if (!Clock_TimerProxy_Module_startupDone()) {
-        return Startup_NOTDONE;
+    if (Clock_TimerProxy_Module_startupDone() == FALSE) {
+        rv = Startup_NOTDONE;
+    }
+    else {
+        if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
+            /* get the max ticks that can be skipped by the timer */
+            Clock_module->maxSkippable = 
+                    Clock_TimerProxy_getMaxTicks(Clock_module->timer);
+        }
+
+        rv = Startup_DONE;
     }
 
-    if (CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
-        /* get the max ticks that can be skipped by the timer */
-        Clock_module->maxSkippable = 
-                Clock_TimerProxy_getMaxTicks(Clock_module->timer);
-    }
-
-    return Startup_DONE;
+    return (rv);
 }
 
 /*
  *  ======== Clock_getCompletedTicks  ========
  */
-UInt32 Clock_getCompletedTicks()
+UInt32 Clock_getCompletedTicks(Void)
 {
-    return (Clock_module->ticks);
+    return (((ti_sysbios_knl_Clock_Module_State *)Clock_module)->ticks);
 }
 
 /*
  *  ======== Clock_getTickPeriod  ========
  */
-UInt32 Clock_getTickPeriod()
+UInt32 Clock_getTickPeriod(Void)
 {
     return (Clock_TimerProxy_getPeriod(Clock_module->timer));
 }
@@ -105,9 +111,11 @@ UInt32 Clock_getTickPeriod()
 /*
  *  ======== Clock_getTicks ========
  */
-UInt32 Clock_getTicks()
+UInt32 Clock_getTicks(Void)
 {
-    if (CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC) {
+    UInt32 rv;
+
+    if ((Clock_TickMode)CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC) {
         UInt32 ticks;
         UInt hwiKey;
 
@@ -118,11 +126,13 @@ UInt32 Clock_getTicks()
 
         Hwi_restore(hwiKey);
 
-        return (ticks);
+        rv = ticks;
     }
     else {
-        return (Clock_module->ticks);
+        rv = Clock_module->ticks;
     }
+
+    return (rv);
 }
 
 /*
@@ -136,11 +146,11 @@ Void Clock_setTicks(UInt32 ticks)
 /*
  *  ======== Clock_ticksUntilInterrupt  ========
  */
-UInt32 Clock_getTicksUntilInterrupt()
+UInt32 Clock_getTicksUntilInterrupt(Void)
 {
     UInt32 ticks;
 
-    if (CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
+    if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
 
         UInt32 current;
         UInt key;
@@ -154,17 +164,17 @@ UInt32 Clock_getTicksUntilInterrupt()
 
         /* clamp value to zero if nextScheduledTick is less than current */
         if (ticks > Clock_module->maxSkippable) {
-            ticks = 0;
+            ticks = (UInt32)0;
         }
 
         Hwi_restore(key);
 
     }
-    else if (CLOCK_TICK_SOURCE == Clock_TickSource_NULL) {
-        ticks = 0xFFFFFFFF;
+    else if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_NULL) {
+        ticks = 0xFFFFFFFFU;
     }
     else {
-        ticks = 0;
+        ticks = (UInt32)0;
     }
 
     return (ticks);
@@ -173,7 +183,7 @@ UInt32 Clock_getTicksUntilInterrupt()
 /*
  *  ======== Clock_getTicksUntilTimeout  ========
  */
-UInt32 Clock_getTicksUntilTimeout()
+UInt32 Clock_getTicksUntilTimeout(Void)
 {
     return (Clock_walkQueuePeriodic());
 }
@@ -181,7 +191,7 @@ UInt32 Clock_getTicksUntilTimeout()
 /*
  *  ======== Clock_getTimerHandle  ========
  */
-Clock_TimerProxy_Handle Clock_getTimerHandle()
+Clock_TimerProxy_Handle Clock_getTimerHandle(Void)
 {
     return (Clock_module->timer);
 }
@@ -196,17 +206,17 @@ Void Clock_scheduleNextTick(UInt32 deltaTicks, UInt32 absTick)
     Clock_TimerProxy_setNextTick(Clock_module->timer, deltaTicks);
 
     /* remember this */
-    Clock_module->numTickSkip = deltaTicks;
+    Clock_module->numTickSkip = (UInt)deltaTicks;
     Clock_module->nextScheduledTick = absTick;
 }
 
 /*
  *  ======== Clock_tickStop  ========
  */
-Void Clock_tickStop()
+Void Clock_tickStop(Void)
 {
-    if (CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
-        if (CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC) {
+    if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
+        if ((Clock_TickMode)CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC) {
             Clock_TimerProxy_stop(Clock_module->timer);
         }
     }
@@ -215,25 +225,29 @@ Void Clock_tickStop()
 /*
  *  ======== Clock_tickReconfig  ========
  */
-Bool Clock_tickReconfig()
+Bool Clock_tickReconfig(Void)
 {
-    if ((CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) &&
-        (CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC)) {
-        return (Clock_TimerProxy_setPeriodMicroSecs(Clock_module->timer,
-                    Clock_tickPeriod));
+    Bool rv;
+
+    if (((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) &&
+        ((Clock_TickMode)CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC)) {
+        rv = Clock_TimerProxy_setPeriodMicroSecs(Clock_module->timer,
+                 Clock_tickPeriod);
     }
     else {
-       return (FALSE);
+       rv = (Bool)FALSE;
     }
+
+    return (rv);
 }
 
 /*
  *  ======== Clock_tickStart  ========
  */
-Void Clock_tickStart()
+Void Clock_tickStart(Void)
 {
-    if (CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
-        if (CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC) {
+    if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
+        if ((Clock_TickMode)CLOCK_TICK_MODE != Clock_TickMode_DYNAMIC) {
             Clock_TimerProxy_start(Clock_module->timer);
         }
     }
@@ -244,22 +258,25 @@ Void Clock_tickStart()
  *  Walk the Clock Queue for TickMode_PERIODIC to determine the number of
  *  ticks until the next active timeout
  */
-UInt32 Clock_walkQueuePeriodic()
+UInt32 Clock_walkQueuePeriodic(Void)
 {
-    UInt32 distance = ~0;
+    UInt32 distance = ~(0U);
     Queue_Handle clockQ;
     Queue_Elem  *elem;
+    Queue_Elem  *clockQElem;
     Clock_Object *obj;
     UInt32 thisTick;
     UInt32 delta;
 
     clockQ = Clock_Module_State_clockQ();
-    elem = Queue_head(clockQ);
+    elem = (Queue_Elem *)Queue_head(clockQ);
+    clockQElem = Queue_prev(elem);
     thisTick = Clock_module->ticks;
 
     /* traverse clock queue */
-    while (elem != (Queue_Elem *)(clockQ)) {
+    while (elem != clockQElem) {
 
+        /* MISRA.CAST.OBJ_PTR_TO_OBJ_PTR.2012 */
         obj = (Clock_Object *)elem;
         elem = Queue_next(elem);
 
@@ -282,26 +299,31 @@ UInt32 Clock_walkQueuePeriodic()
  *  ======== Clock_workFunc ========
  *  Service Clock Queue for TickMode_PERIODIC
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Clock_workFunc(UArg arg0, UArg arg1)
 {
     Queue_Elem  *elem;
     UInt hwiKey, count;
-    UInt32 time, compare;
+    UInt32 ticks, compare;
     Clock_Object *obj;
     Queue_Handle clockQ;
+    Queue_Elem  *clockQElem;
 
     hwiKey = Hwi_disable();
-    time = Clock_module->ticks;
+
+    ticks = Clock_module->ticks;
     count = Clock_module->swiCount;
     Clock_module->swiCount = 0;
+
     Hwi_restore(hwiKey);
 
     /* Log when count > 1, meaning Clock_swi is delayed */
-    if (count > 1) {
+    if (count > 1U) {
+        /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
         Log_write1(Clock_LW_delayed, (UArg)count);
     }
 
-    compare = time - count;
+    compare = ticks - count;
 
     /*
      * Here count can be zero. When Clock_tick() runs it increments
@@ -314,21 +336,23 @@ Void Clock_workFunc(UArg arg0, UArg arg1)
 
     while (count) {
 
-        compare = compare + 1;
-        count = count - 1;
+        compare = compare + 1U;
+        count = count - 1U;
 
         /* Traverse clock queue */
 
         clockQ = Clock_Module_State_clockQ();
         elem = Queue_head(clockQ);
+        clockQElem = Queue_prev(elem);
 
-        while (elem != (Queue_Elem *)(clockQ)) {
+        while (elem != clockQElem) {
+            /* MISRA.CAST.OBJ_PTR_TO_OBJ_PTR.2012 */
             obj = (Clock_Object *)elem;
             elem = Queue_next(elem);
             /* if event has timed out */
             if ((obj->active == TRUE) && (obj->currTimeout == compare)) {
 
-                if (obj->period == 0) { /* oneshot? */
+                if (obj->period == 0U) { /* oneshot? */
                     /* mark object idle */
                     obj->active = FALSE;
                 }
@@ -337,6 +361,7 @@ Void Clock_workFunc(UArg arg0, UArg arg1)
                     obj->currTimeout += obj->period;
                 }
 
+                /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 MISRA.CAST.FUNC_PTR.2012 */
                 Log_write2(Clock_LM_begin, (UArg)obj, (UArg)obj->fxn);
 
                 /* call handler */
@@ -353,18 +378,21 @@ Void Clock_workFunc(UArg arg0, UArg arg1)
  */
 UInt32 Clock_walkQueueDynamic(Bool service, UInt32 thisTick)
 {
-    UInt32 distance = ~0;
+    UInt32 distance = ~(0U);
     Queue_Handle clockQ;
     Queue_Elem  *elem;
+    Queue_Elem  *clockQElem;
     Clock_Object *obj;
     UInt32 delta;
 
     /* Traverse clock queue */
     clockQ = Clock_Module_State_clockQ();
     elem = Queue_head(clockQ);
+    clockQElem = Queue_prev(elem);
 
-    while (elem != (Queue_Elem *)(clockQ)) {
+    while (elem != clockQElem) {
 
+        /* MISRA.CAST.OBJ_PTR_TO_OBJ_PTR.2012 */
         obj = (Clock_Object *)elem;
         elem = Queue_next(elem);
 
@@ -377,7 +405,7 @@ UInt32 Clock_walkQueueDynamic(Bool service, UInt32 thisTick)
                 /* if this object is timing out update its state */
                 if (obj->currTimeout == thisTick) {
 
-                    if (obj->period == 0) { /* oneshot? */
+                    if (obj->period == 0U) { /* oneshot? */
                         /* mark object idle */
                         obj->active = FALSE;
                     }
@@ -386,6 +414,7 @@ UInt32 Clock_walkQueueDynamic(Bool service, UInt32 thisTick)
                         obj->currTimeout += obj->period;
                     }
 
+                    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 MISRA.CAST.FUNC_PTR.2012 */
                     Log_write2(Clock_LM_begin, (UArg)obj, (UArg)obj->fxn);
 
                     /* call handler */
@@ -414,12 +443,13 @@ UInt32 Clock_walkQueueDynamic(Bool service, UInt32 thisTick)
  *  ======== Clock_workFuncDynamic ========
  *  Service Clock Queue for TickMode_DYNAMIC
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
 {
     UInt32 distance;
     UInt32 serviceTick, serviceDelta;
     UInt32 ticksToService;
-    UInt skippable;
+    UInt32 skippable;
     UInt32 nowTick, nowDelta, nextTick;
     UInt hwiKey;
 
@@ -447,6 +477,7 @@ Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
     if (serviceDelta > nowDelta) {
         Clock_module->inWorkFunc = FALSE;
         Hwi_restore(hwiKey);
+        /* MISRA.RETURN.NOT_LAST */
         return;
     }
 
@@ -466,11 +497,12 @@ Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
 
     /* if Clock_start() during processing of Q, re-walk to update distance */
     if (Clock_module->startDuringWorkFunc == TRUE) {
+        /* UNREACH.GEN */
         distance = Clock_walkQueueDynamic(FALSE, serviceTick);
     }
 
     /* if no active timeouts then skip the maximum supported by the timer */
-    if (distance == ~0) {
+    if (distance == ~(0U)) {
         skippable = Clock_module->maxSkippable;
         nextTick = serviceTick + skippable;
     }
@@ -498,7 +530,7 @@ Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
  *  interrupt handler called by user interrupt when
  *  CLOCK_TICK_SOURCE = USER or NULL
  */
-Void Clock_tick()
+Void Clock_tick(Void)
 {
     Clock_doTickFunc(0);
 }
@@ -519,9 +551,10 @@ Void Clock_Instance_init(Clock_Object *obj, Clock_FuncPtr func, UInt timeout,
                    (BIOS_getThreadType() != BIOS_ThreadType_Swi)),
                         Clock_A_badThreadType);
 
-    Assert_isTrue(!(params->startFlag && (timeout == 0)), (Assert_Id)NULL);
+    Assert_isTrue(!((params->startFlag != FALSE) && (timeout == 0U)),
+            (Assert_Id)NULL);
 
-    obj->timeout = timeout;
+    obj->timeout = (UInt32)timeout;
     obj->period = params->period;
     obj->fxn = func;
     obj->arg = params->arg;
@@ -550,7 +583,9 @@ Void Clock_Instance_finalize(Clock_Object *obj)
                         Clock_A_badThreadType);
 
     key = Hwi_disable();
+
     Queue_remove(&obj->elem);
+
     Hwi_restore(key);
 }
 
@@ -589,14 +624,14 @@ Void Clock_removeI(Clock_Object *obj)
  */
 Void Clock_startI(Clock_Object *obj)
 {
-    if (CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC) {
+    if ((Clock_TickMode)CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC) {
         UInt32 nowTick, nowDelta;
         UInt32 scheduledTick, scheduledDelta;
         UInt32 remainingTicks;
         Bool objectServiced = FALSE;
 
         /* now see if need this new timeout before next scheduled tick ... */
-	/* wait till after first tick */
+        /* wait till after first tick */
         if ((Clock_module->ticking == TRUE) &&
              /* if Clock is NOT currently processing its Q */
              (Clock_module->inWorkFunc == FALSE)) {
@@ -609,7 +644,7 @@ Void Clock_startI(Clock_Object *obj)
 
             nowDelta = nowTick - Clock_module->ticks;
             scheduledDelta = Clock_module->nextScheduledTick - 
-		    Clock_module->ticks;
+                Clock_module->ticks;
 
             if (nowDelta <= scheduledDelta) {
                         
@@ -662,10 +697,12 @@ Void Clock_start(Clock_Object *obj)
 {
     UInt key;
 
-    Assert_isTrue(obj->timeout, (Assert_Id) NULL);
+    Assert_isTrue(obj->timeout != 0U, (Assert_Id)NULL);
 
     key = Hwi_disable();
+
     Clock_startI(obj);
+
     Hwi_restore(key);
 }
 
@@ -691,8 +728,10 @@ Void Clock_setFunc(Clock_Object *obj, Clock_FuncPtr fxn, UArg arg)
     UInt key;
 
     key = Hwi_disable();
+
     obj->fxn = fxn;
     obj->arg = arg;
+
     Hwi_restore(key);
 }
 
@@ -743,8 +782,9 @@ UInt32 Clock_getTimeout(Clock_Object *obj)
 /*
  *  ======== Clock_logTick ========
  */
-Void Clock_logTick()
+Void Clock_logTick(Void)
 {
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write1(Clock_LM_tick, (UArg)Clock_module->ticks);
 }
 
@@ -759,6 +799,7 @@ Bool Clock_isActive(Clock_Object *obj)
 /*
  *  ======== Clock_triggerFunc ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Clock_triggerFunc(UArg arg)
 {
 }

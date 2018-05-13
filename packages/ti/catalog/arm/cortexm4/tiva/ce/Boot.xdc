@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,6 @@ module Boot
         String  xtal;
         String  oscSrc;
         Bool    pllBypass;
-        Bool    pllOutEnable;
         Bool    ioscDisable;
         Bool    moscDisable;
     }
@@ -323,9 +322,6 @@ module Boot
 
     /*! PLL Bypass flag */
     metaonly config Bool pllBypass = false;
-
-    /*! PLL Output Enable flag */
-    metaonly config Bool pllOutEnable = false;
 
     /*! Internal Oscillator Disable flag */
     metaonly config Bool ioscDisable = false;

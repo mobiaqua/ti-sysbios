@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_knl_Task__epilogue__include
+#define ti_sysbios_knl_Task__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,6 +43,49 @@ extern "C" {
 
 #define ti_sysbios_knl_Task_selfMacro() (ti_sysbios_knl_Task_self())
 
+#if defined(ti_sysbios_Build_useSvcWrappers)
+
+#undef ti_sysbios_knl_Task_construct
+#define ti_sysbios_knl_Task_construct ti_sysbios_knl_Task_construct_SVC
+extern xdc_Void ti_sysbios_knl_Task_construct_SVC(
+    ti_sysbios_knl_Task_Struct *obj, ti_sysbios_knl_Task_FuncPtr fxn,
+    const ti_sysbios_knl_Task_Params *prms, xdc_runtime_Error_Block *eb);
+
+#undef ti_sysbios_knl_Task_destruct
+#define ti_sysbios_knl_Task_destruct ti_sysbios_knl_Task_destruct_SVC
+extern xdc_Void ti_sysbios_knl_Task_destruct_SVC(
+    ti_sysbios_knl_Task_Struct *obj);
+
+#undef ti_sysbios_knl_Task_disable
+#define ti_sysbios_knl_Task_disable ti_sysbios_knl_Task_disable_SVC
+extern xdc_UInt ti_sysbios_knl_Task_disable_SVC(void);
+
+#undef ti_sysbios_knl_Task_enable
+#define ti_sysbios_knl_Task_enable ti_sysbios_knl_Task_enable_SVC
+extern xdc_Void ti_sysbios_knl_Task_enable_SVC(void);
+
+#undef ti_sysbios_knl_Task_getPrivileged
+#define ti_sysbios_knl_Task_getPrivileged ti_sysbios_knl_Task_getPrivileged_SVC
+extern xdc_Bool ti_sysbios_knl_Task_getPrivileged_SVC(
+    ti_sysbios_knl_Task_Handle handle);
+
+#undef ti_sysbios_knl_Task_Params_init
+#define ti_sysbios_knl_Task_Params_init ti_sysbios_knl_Task_Params_init_SVC
+extern xdc_Void ti_sysbios_knl_Task_Params_init_SVC(
+    ti_sysbios_knl_Task_Params *prms);
+
+#undef ti_sysbios_knl_Task_restore
+#define ti_sysbios_knl_Task_restore ti_sysbios_knl_Task_restore_SVC
+extern xdc_Void ti_sysbios_knl_Task_restore_SVC(xdc_UInt key);
+
+#undef ti_sysbios_knl_Task_yield
+#define ti_sysbios_knl_Task_yield ti_sysbios_knl_Task_yield_SVC
+extern xdc_Void ti_sysbios_knl_Task_yield_SVC(void);
+
+#endif
+
 #ifdef __cplusplus
 }
+#endif
+
 #endif

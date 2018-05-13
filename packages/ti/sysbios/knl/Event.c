@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,11 +58,12 @@
 /*
  *  ======== Event_Instance_init ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Event_Instance_init(Event_Object *event, const Event_Params *params)
 {
     Queue_Handle pendQ;
 
-    event->postedEvents = 0;
+    event->postedEvents = 0U;
 
     pendQ = Event_Instance_State_pendQ(event);
     Queue_construct(Queue_struct(pendQ), NULL);
@@ -85,7 +86,7 @@ Void Event_pendTimeout(UArg arg)
     if (elem->pendState == Event_PendState_CLOCK_WAIT) {
 
         /* remove eventElem from event_Elem queue */
-        Queue_remove((Queue_Elem *)elem);
+        Queue_remove(&(elem->tpElem.qElem));
 
         elem->pendState = Event_PendState_TIMEOUT;
 
@@ -94,7 +95,7 @@ Void Event_pendTimeout(UArg arg)
          *  No need for Task_disable/restore sandwich since this
          *  is called within Swi (or Hwi) thread
          */
-        Task_unblockI(elem->tpElem.task, hwiKey);
+        Task_unblockI(elem->tpElem.taskHandle, hwiKey);
     }
 
     Hwi_restore(hwiKey);
@@ -117,7 +118,7 @@ UInt Event_checkEvents (Event_Object *event, UInt andMask, UInt orMask)
         matchingEvents |= andMask;
     }
 
-    if (matchingEvents) {
+    if (matchingEvents != (UInt)0) {
         /* consume ALL the matching events */
         event->postedEvents &= ~matchingEvents;
     }
@@ -136,8 +137,9 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
     Queue_Handle pendQ;
     Clock_Struct clockStruct;
 
-    Assert_isTrue(((andMask | orMask) != 0), Event_A_nullEventMasks);
+    Assert_isTrue(((andMask | orMask) != 0U), Event_A_nullEventMasks);
 
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write5(Event_LM_pend, (UArg)event, (UArg)event->postedEvents,
                 (UArg)andMask, (UArg)orMask, (IArg)((Int)timeout));
 
@@ -148,26 +150,27 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
      */
 
     /* add Clock event if timeout is not FOREVER nor NO_WAIT */
-    if (BIOS_clockEnabled
+    if ((BIOS_clockEnabled != FALSE)
             && (timeout != BIOS_WAIT_FOREVER)
             && (timeout != BIOS_NO_WAIT)) {
         Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Event_pendTimeout, timeout, (UArg)&elem);
-        elem.tpElem.clock = Clock_handle(&clockStruct);
+        elem.tpElem.clockHandle = Clock_handle(&clockStruct);
         elem.pendState = Event_PendState_CLOCK_WAIT;
     }
     else {
-        elem.tpElem.clock = NULL;
+        elem.tpElem.clockHandle = NULL;
         elem.pendState = Event_PendState_WAIT_FOREVER;
     }
 
     /* fill in this task's Event_PendElem */
     elem.andMask = andMask;
     elem.orMask = orMask;
+    elem.matchingEvents = 0U;
 
     pendQ = Event_Instance_State_pendQ(event);
 
     /* get task handle */
-    elem.tpElem.task = Task_self();
+    elem.tpElem.taskHandle = Task_self();
 
     /* Atomically check for a match and block if none */
     hwiKey = Hwi_disable();
@@ -175,11 +178,11 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
     /* check if events are already available */
     matchingEvents = Event_checkEvents(event, andMask, orMask);
 
-    if (matchingEvents != 0) {
+    if (matchingEvents != 0U) {
         /* remove Clock object from Clock Q */
-        if (BIOS_clockEnabled && (elem.tpElem.clock != NULL)) {
-            Clock_removeI(elem.tpElem.clock);
-            elem.tpElem.clock = NULL;
+        if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != (Clock_Handle)NULL)) {
+            Clock_removeI(elem.tpElem.clockHandle);
+            elem.tpElem.clockHandle = NULL;
         }
 
         Hwi_restore(hwiKey);
@@ -199,26 +202,25 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
      * Verify that THIS core hasn't already disabled the scheduler
      * so that the Task_restore() call below will indeed block
      */
-    Assert_isTrue((Task_enabled()),
-                        Event_A_pendTaskDisabled);
+    Assert_isTrue(Task_enabled() != FALSE, Event_A_pendTaskDisabled);
 
     /* lock scheduler */
     tskKey = Task_disable();
 
     /* only one Task allowed!!! */
-    Assert_isTrue(Queue_empty(pendQ), Event_A_eventInUse);
+    Assert_isTrue(Queue_empty(pendQ) != FALSE, Event_A_eventInUse);
 
     /* leave a pointer for Task_delete() */
-    elem.tpElem.task->pendElem = (Task_PendElem *)&(elem);
+    elem.tpElem.taskHandle->pendElem = (Task_PendElem *)&(elem.tpElem);
 
     /* add it to Event_PendElem queue */
-    Queue_enqueue(pendQ, (Queue_Elem *)&elem);
+    Queue_enqueue(pendQ, &(elem.tpElem.qElem));
 
-    Task_blockI(elem.tpElem.task);
+    Task_blockI(elem.tpElem.taskHandle);
 
-    if (BIOS_clockEnabled &&
-            (elem.pendState == Event_PendState_CLOCK_WAIT)) {
-        Clock_startI(elem.tpElem.clock);
+    if ((BIOS_clockEnabled != FALSE) &&
+            (elem.tpElem.clockHandle != (Clock_Handle)NULL)) {
+        Clock_startI(elem.tpElem.clockHandle);
     }
 
     Hwi_restore(hwiKey);
@@ -231,12 +233,12 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
     hwiKey = Hwi_disable();
 
     /* remove Clock object from Clock Q */
-    if (BIOS_clockEnabled && (elem.tpElem.clock != NULL)) {
-        Clock_removeI(elem.tpElem.clock);
-        elem.tpElem.clock = NULL;
+    if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != (Clock_Handle)NULL)) {
+        Clock_removeI(elem.tpElem.clockHandle);
+        elem.tpElem.clockHandle = NULL;
     }
         
-    elem.tpElem.task->pendElem = NULL;
+    elem.tpElem.taskHandle->pendElem = NULL;
 
     Hwi_restore(hwiKey);
     
@@ -258,8 +260,9 @@ Void Event_post(Event_Object *event, UInt eventId)
     Event_PendElem *elem;
     Queue_Handle pendQ;
 
-    Assert_isTrue((eventId != 0), Event_A_nullEventId);
+    Assert_isTrue((eventId != 0U), Event_A_nullEventId);
 
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Event_LM_post, (UArg)event, (UArg)event->postedEvents, (UArg)eventId);
 
     pendQ = Event_Instance_State_pendQ(event);
@@ -271,7 +274,7 @@ Void Event_post(Event_Object *event, UInt eventId)
     event->postedEvents |= eventId;
 
     /* confirm that ANY tasks are pending on this event */
-    if (Queue_empty(pendQ)) {
+    if (Queue_empty(pendQ) == TRUE) {
         Hwi_restore(hwiKey);
         return;
     }
@@ -284,21 +287,21 @@ Void Event_post(Event_Object *event, UInt eventId)
     /* check for match, consume matching eventIds if so. */
     elem->matchingEvents = Event_checkEvents(event, elem->andMask, elem->orMask);
 
-    if (elem->matchingEvents != 0) {
+    if (elem->matchingEvents != 0U) {
 
         /* remove event elem from elem queue */
-        Queue_remove((Queue_Elem *)elem);
+        Queue_remove(&(elem->tpElem.qElem));
 
         /* mark the Event as having been posted */
         elem->pendState = Event_PendState_POSTED;
 
         /* disable Clock object */
-        if (BIOS_clockEnabled && (elem->tpElem.clock != NULL)) {
-            Clock_stop(elem->tpElem.clock);
+        if ((BIOS_clockEnabled != FALSE) && (elem->tpElem.clockHandle != NULL)) {
+            Clock_stop(elem->tpElem.clockHandle);
         }
 
         /* put task back into readyQ */
-        Task_unblockI(elem->tpElem.task, hwiKey);
+        Task_unblockI(elem->tpElem.taskHandle, hwiKey);
     }
 
     Hwi_restore(hwiKey);
@@ -313,7 +316,7 @@ Void Event_post(Event_Object *event, UInt eventId)
  */
 Void Event_sync(Event_Object *event, UInt eventId, UInt count)
 {
-    if (count) {
+    if (count != FALSE) {
         event->postedEvents |= eventId;
     }
     else {

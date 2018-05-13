@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Texas Instruments Incorporated
+ * Copyright (c) 2013-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,11 @@
 /*
  *  ======== Instance_init ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Queue_Instance_init(Queue_Object *obj, const Queue_Params *params)
 {
-    obj->elem.next = obj->elem.prev = &(obj->elem);
+    obj->elem.prev = &(obj->elem);
+    obj->elem.next = &(obj->elem);
 }
 
 /*
@@ -69,7 +71,7 @@ Ptr Queue_dequeue(Queue_Object *obj)
  */
 Bool Queue_empty(Queue_Object *obj)
 {
-    return (obj->elem.next == &(obj->elem));
+    return ((Bool)(obj->elem.next == &(obj->elem)));
 }
 
 /*
@@ -142,7 +144,8 @@ Ptr Queue_head(Queue_Object *obj)
  */
 Void Queue_elemClear(Queue_Elem *qelem)
 {
-    qelem->next = qelem->prev = qelem;
+    qelem->prev = qelem;
+    qelem->next = qelem;
 }
 
 /*
@@ -150,7 +153,14 @@ Void Queue_elemClear(Queue_Elem *qelem)
  */
 void Queue_insert(Queue_Elem *qelem, Queue_Elem *elem)
 {
-    Queue_enqueue((Queue_Object *)qelem, elem);
+    Queue_Elem *prev;
+
+    prev = qelem->prev;
+
+    elem->next = qelem;
+    elem->prev = prev;
+    prev->next = elem;
+    qelem->prev = elem;
 }
 
 /*
@@ -225,12 +235,16 @@ Void Queue_remove(Queue_Elem *qelem)
  */
 Bool Queue_isQueued(Queue_Elem *qelem) 
 {
+    Bool rv;
+
     if ((qelem->prev == qelem) && (qelem->next == qelem)) {
-        return (FALSE);
+        rv = (Bool)FALSE;
     }
     else {
-        return(TRUE);
+        rv = (Bool)TRUE;
     }
+
+    return rv;
 }
 
 

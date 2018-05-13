@@ -58,6 +58,7 @@ var family = {
     "gnu.targets.arm.M3" :                      "arm",
     "gnu.targets.arm.M4" :                      "arm",
     "gnu.targets.arm.M4F" :                     "arm",
+    "gnu.targets.arm.M33F" :                    "arm",
     "gnu.targets.arm.A8F" :                     "arm",
     "gnu.targets.arm.A9F" :                     "arm",
     "gnu.targets.arm.A15F" :                    "arm",
@@ -65,6 +66,7 @@ var family = {
     "iar.targets.arm.M3" :                      "arm",
     "iar.targets.arm.M4" :                      "arm",
     "iar.targets.arm.M4F" :                     "arm",
+    "iar.targets.arm.M33" :                     "arm",
     "ti.targets.arp32.elf.ARP32" :              "arp32",
     "ti.targets.arp32.elf.ARP32_far" :          "arp32",
 };
@@ -123,6 +125,7 @@ function module$meta$init()
     this.timerDelegate = getDefaultTimerDelegate();
     this.clockTimerDelegate = getDefaultClockTimerDelegate();
     this.secondsDelegate = getDefaultSecondsDelegate();
+    this.syscallDelegate = getDefaultSysCallDelegate();
 }
 
 /*
@@ -232,6 +235,14 @@ function getDefaultPowerDelegate()
 function getDefaultSecondsDelegate()
 {
     return (familySettings.getDefaultSecondsDelegate());
+}
+
+/*
+ *  ======== getDefaultSysCallDelegate ========
+ */
+function getDefaultSysCallDelegate()
+{
+    return (familySettings.getDefaultSysCallDelegate());
 }
 
 /*

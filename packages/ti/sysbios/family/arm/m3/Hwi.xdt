@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -187,6 +187,7 @@ Void ti_sysbios_family_arm_m3_Hwi_initIsrStackSize()
 {
     #pragma section = "CSTACK"
     ti_sysbios_family_arm_m3_Hwi_Module__state__V.isrStackBase = (Void *)__section_begin("CSTACK");
-    ti_sysbios_family_arm_m3_Hwi_Module__state__V.isrStackSize = (Void *)__section_size("CSTACK");
+    size_t size = (uint8_t *)__section_end("CSTACK") - (uint8_t *)__section_begin("CSTACK");
+    ti_sysbios_family_arm_m3_Hwi_Module__state__V.isrStackSize = (Void *)size;
 }
 #endif

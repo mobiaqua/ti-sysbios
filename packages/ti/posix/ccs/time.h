@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,6 +82,9 @@ extern "C" {
 #define TIMER_ABSTIME 4
 #endif
 
+#if defined(__TMS470__) && (__TI_COMPILER_VERSION__ >= 18001000)
+#include <../include/sys/timespec.h>
+#else
 struct timespec {
     time_t  tv_sec;   /* Seconds */
     long    tv_nsec;  /* Nanoseconds */
@@ -91,6 +94,7 @@ struct itimerspec {
     struct timespec it_interval;  /* Timer interval */
     struct timespec it_value;     /* Timer expiration */
 };
+#endif /* TI ARM version < 18.1.0.LTS */
 
 /*
  *  For clockId = CLOCK_REALTIME, clock_gettime() and clock_settime() use

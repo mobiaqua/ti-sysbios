@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -173,14 +173,4 @@ SizeT TaskSupport_getDefaultStackSize()
 UInt TaskSupport_getStackAlignment()
 {
     return (TaskSupport_stackAlignment);
-}
-
-/*
- *  ======== getCheckValueAddr ========
- */
-Ptr TaskSupport_getCheckValueAddr(Ptr curTask)
-{
-    Task_Object *tsk = (Task_Object *)(curTask);
-
-    return ((Ptr)((SizeT)tsk->stack + tsk->stackSize - 8));
 }

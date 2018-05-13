@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,10 @@ extern "C" {
 #endif
 
 /* Message queue descriptor */
-typedef void *mqd_t;
+#ifndef _MQD_T_DECLARED
+typedef void *mqd_t;    /* defined in TI ARM 18.1.0.LTS */
+#define _MQD_T_DECLARED
+#endif
 
 /*
  *  ======== mq_attr ========

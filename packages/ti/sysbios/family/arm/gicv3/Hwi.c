@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -382,7 +382,7 @@ Void Hwi_initIntController()
      * interrupt
      */
     for (i=0; i < Hwi_NUM_INTERRUPTS; i++) {
-        if ((Hwi_initGicd == TRUE) || (Hwi_module->dispatchTable[i] != NULL)) {
+        if (Hwi_module->dispatchTable[i] != NULL) {
             Hwi_setPriority(i, Hwi_module->dispatchTable[i]->priority);
         }
     }
@@ -896,19 +896,22 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp)
 
     intNum = Hwi_module->curIntId;
 
+    /* Process only this pending interrupt */
+    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x3FF];
+
+    if (hwi == NULL) {
+        Hwi_nonPluggedHwiHandler();
+        /* Signal End of Interrupt */
+        Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
+        return;
+    }
+
     if (Hwi_dispatcherSwiSupport) {
         swiKey = SWI_DISABLE();
     }
 
     /* set thread type to Hwi */
     prevThreadType = BIOS_setThreadType(BIOS_ThreadType_Hwi);
-
-    /* Process only this pending interrupt */
-    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x3FF];
-
-    if (hwi == NULL) {
-        Hwi_nonPluggedHwiHandler();
-    }
 
     hwi->irp = Hwi_module->irp;
 

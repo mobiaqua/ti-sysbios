@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_hal_Hwi__epilogue__include
+#define ti_sysbios_hal_Hwi__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -91,7 +94,9 @@ extern void _restore_interrupts(unsigned int key);
 
 #else
 
-#if defined(xdc_target__isaCompatible_v7M) || defined(xdc_target__isaCompatible_v7M4)
+#if defined(xdc_target__isaCompatible_v7M)  || \
+    defined(xdc_target__isaCompatible_v7M4) || \
+    defined(xdc_target__isaCompatible_v8M)
 
 #include "ti/sysbios/family/arm/m3/Hwi.h"
 
@@ -133,7 +138,7 @@ extern void _restore_interrupts(unsigned int key);
 /*
  *  ======== Hwi_restore ========
  */
-#define ti_sysbios_hal_Hwi_restore(key) _set_interrupt_priority(key) 
+#define ti_sysbios_hal_Hwi_restore(key) (Void)_set_interrupt_priority(key) 
 
 #else /* defined(__ti__) */
 
@@ -602,3 +607,5 @@ static inline Void ti_sysbios_hal_Hwi_restore(UInt key)
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ti_sysbios_hal_Hwi__epilogue__include */

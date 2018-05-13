@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,13 +46,26 @@
 #include <stdint.h>
 #include "_internal.h"
 
+/* include compiler sys/types.h */
+#include <../include/sys/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* include compiler sys/types.h */
-#include <../include/sys/types.h>
-
+/*  In order to use POSIX types defined by TI-POSIX, instead of those
+ *  defined by GCC, the user must define -std=c99 (or c++98), which will
+ *  omit the GCC defines and avoid type collisions with TI-POSIX. This
+ *  is new with GCC v7. In GCC v6, the compiler omitted the POSIX types
+ *  by default. This check is to inform the user of this requirement.
+ */
+#if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE)
+#ifdef __cplusplus
+#error "When compiling with TI-POSIX you must define -std=c++98 (or later)"
+#else
+#error "When compiling with TI-POSIX you must define -std=c99 (or later)"
+#endif
+#endif
 
 /*
  *************************************************************************
@@ -91,12 +104,16 @@ typedef union {
     struct freertos_Barrier freertos;
 } pthread_barrier_t;
 
-typedef struct {
+typedef union {
     struct sysbios_Cond sysbios;
     struct freertos_Cond freertos;
 } pthread_cond_t;
 
-typedef void *pthread_mutex_t;
+typedef union {
+    struct sysbios_Mutex sysbios;
+    struct freertos_Mutex freertos;
+} pthread_mutex_t;
+
 typedef uint32_t pthread_once_t;
 
 typedef union {

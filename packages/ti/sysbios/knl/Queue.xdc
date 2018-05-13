@@ -342,13 +342,28 @@ instance:
 
     /*!
      *  ======== dequeue ========
-     *  Remove the element from the front of queue and return elem.
+     *  Remove the element from the front of queue and return elem
+     *  (non-atomically).
      *
-     *  This function removes an element from the front of queue and returns
-     *  it. If the queue is empty, the return value of Queue_dequeue() will
-     *  be non-NULL, due to the Queue implementation. Use Queue_empty() to
-     *  determine whether or not the Queue is empty before calling
-     *  Queue_dequeue().
+     *  This function removes an element from the front of a queue and returns
+     *  it.
+     *
+     *  If called with an empty queue, this function will return a pointer to
+     *  the queue itself.
+     *
+     *  @a(note) As this function is non-atomic, the method for detecting an
+     *  empty Queue as shown in {@link #get Queue_get()} isn't reliable in
+     *  a multi-threaded system. Thread safety can be achieved as shown below:
+     *
+     *  @p(code)
+     *  key = Hwi_disable();
+     *
+     *  if ((Queue_Handle)(elem = Queue_dequeue(q)) != q) {
+     *      ` process elem `
+     *  }
+     *
+     *  Hwi_restore(key);
+     *  @p
      *
      *  @b(returns)             pointer to former first element
      */
@@ -374,11 +389,20 @@ instance:
      *  ======== get ========
      *  Get element from front of queue (atomically).
      *
-     *  This function removes the element from the front of queue and returns
-     *  a pointer to it.  If the queue is empty, the return value of
-     *  Queue_get() will be non-NULL, due to the Queue implementation.
-     *  Use Queue_empty() to determine whether or not the Queue is empty before
-     *  calling Queue_get().
+     *  This function removes an element from the front of a queue and returns
+     *  it.
+     *
+     *  If called with an empty queue, this function will return a pointer to
+     *  the queue itself.
+     *  This provides a means for using a single atomic action to check if a
+     *  queue is empty, and to remove and return the first element if it is
+     *  not empty:
+     *
+     *  @p(code)
+     *  if ((Queue_Handle)(elem = Queue_get(q)) != q) {
+     *      ` process elem `
+     *  }
+     *  @p
      *
      *  @b(returns)             pointer to former first element
      */
@@ -388,11 +412,19 @@ instance:
      *  ======== getTail ========
      *  Get the element at the end of the queue (atomically).
      *
-     *  This function removes the element at the end of queue and returns
-     *  a pointer to it.  If the queue is empty, the return value of
-     *  Queue_getTail() will be non-NULL, due to the Queue implementation.
-     *  Use Queue_empty() to determine whether or not the Queue is empty before
-     *  calling Queue_getTail().
+     *  This function removes the element at the end of a queue and returns
+     *  a pointer to it.  
+     *  If called with an empty queue, this function will return a pointer to
+     *  the queue itself.
+     *  This provides a means for using a single atomic action to check if a
+     *  queue is empty, and to remove and return the last element if it is
+     *  not empty:
+     *
+     *  @p(code)
+     *  if ((Queue_Handle)(elem = Queue_getTail(q)) != q) {
+     *      `process elem`
+     *  }
+     *  @p
      *
      *  @b(returns)             pointer to former end element
      */
@@ -400,13 +432,19 @@ instance:
 
     /*!
      *  ======== head ========
-     *  Return element at front of queue.
+     *  Return element at front of queue. (atomically)
      *
-     *  This function returns a pointer to the element at the front of queue.
+     *  This function returns a pointer to the element at the front of a queue.
      *  The element is not removed from the queue.
-     *  Due to the Queue implementation, the return value will be non-NULL
-     *  if the Queue is empty.  Use Queue_empty() to determine whether or
-     *  not the Queue is empty before calling Queue_head().
+     *  If called with an empty queue, this function will return a pointer to
+     *  the queue itself.
+     *  This provides a means for using a single atomic action to check if a queue
+     *  is empty, and to return a pointer to the first element if it is not empty:
+     *
+     *  @p(code)
+     *  if ((Queue_Handle)(elem = Queue_head(q)) != q) {
+     *      `process elem`
+     *  @p
      *
      *  @b(returns)             pointer to first element
      */

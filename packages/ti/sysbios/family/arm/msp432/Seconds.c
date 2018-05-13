@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,7 +77,6 @@
 #define CSSTAT          (HWREG32(0x40010434)) /* Status Register */
 #define CSCLKEN         (HWREG32(0x40010430)) /* Clock Enable Register */
 #define SELB            (0x00001000)          /* Selects the BCLK source */
-#define REFO_EN         (0x00000200)          /* REFO Oscillator Enable */
 #define BCLK_READY      (0x10000000)          /* BCLK Ready status */
 #define CSKEYVAL        (0x0000695A)          /* Key to unlock Clock module */
 
@@ -122,7 +121,6 @@ Int Seconds_Module_startup(Int status)
     while(!(CSSTAT & BCLK_READY)) {
     }
 
-    CSCLKEN |= REFO_EN;
     CSKEY = key;
 
     return (Startup_DONE);
@@ -291,6 +289,11 @@ Void Seconds_set(UInt32 seconds)
     volatile UInt8 rtcKey;
 
     currTime = LOCALTIME((const time_t *)&seconds, &result);
+
+    /* currTime should never be NULL, but this keeps klocwork happy */
+    if (currTime == NULL) {
+       return;
+    }
 
     /* localtime returns years from 1970 */
     currTime->tm_year += 1900;

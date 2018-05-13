@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -426,7 +426,7 @@ Bits16 Hwi_disableIER(Bits16 mask)
 
     key = _disable_interrupts();
     oldIER = IER;
-    IER &= ~mask;
+    IER = IER & (unsigned int)~mask;
     _restore_interrupts(key);
 
     return oldIER;
@@ -442,7 +442,7 @@ Bits16 Hwi_enableIER(Bits16 mask)
 
     key = _disable_interrupts();
     oldIER = IER;
-    IER |= mask;
+    IER = IER | (unsigned int)mask;
     _restore_interrupts(key);
 
     return oldIER;
@@ -803,13 +803,13 @@ Void Hwi_dispatchCore(Int intNum)
     /* call the user's isr */
     if (Hwi_dispatcherAutoNestingSupport) {
         oldIER = IER;
-        IER &= ~disableMask;
+        IER = IER & (unsigned int)~disableMask;
         _enable_interrupts();
 
         (fxn)(arg);
 
         _disable_interrupts();
-        IER |= (restoreMask & oldIER);
+        IER = IER | (unsigned int)(restoreMask & oldIER);
     }
     else {
         (fxn)(arg);

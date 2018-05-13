@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -572,9 +572,9 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  ======== setPriority ========
      *  Set an interrupt's priority.
      *
-     *  Valid priority values range from 0 to
+     *  Valid priority values range from 1 to
      *  ({@link #NUM_PRIORITIES} - 1),
-     *  0 is the highest priority.
+     *  1 is the highest priority.
      *
      *  @param(intNum)      ID of interrupt
      *  @param(priority)    priority
@@ -598,8 +598,8 @@ instance:
     /*
      *  Interrupt priority.
      *
-     *  Valid priorities are 0 - (Hwi_NUM_PRIORITIES - 1).
-     *  0 is the highest priority.
+     *  Valid priorities are 1 - (Hwi_NUM_PRIORITIES - 1).
+     *  1 is the highest priority.
      *
      *  The default value of -1 is used as a flag to indicate
      *  the lowest (logical) device-specific priority value.

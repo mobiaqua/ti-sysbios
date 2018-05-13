@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@
  */
 /*
  *  ======== Task.xdc ========
- *
  */
 
 package ti.sysbios.knl;
@@ -660,6 +659,16 @@ module Task
      */
     config Error.Id E_objectCheckFailed = {
         msg: "E_objectCheckFailed: Task 0x%x object data integrity check failed."
+    };
+
+    /*!
+     *  Error raised when BIOS.mpeEnabled is TRUE and Task object passed to
+     *  Task_construct() is not in Kernel address space. This can happen if a
+     *  user Task passes a Task object that resides in unprivileged memory to
+     *  Task_construct().
+     */
+    config Error.Id E_objectNotInKernelSpace = {
+        msg: "E_objectNotInKernelSpace: Task object passed not in Kernel address space."
     };
 
     // Asserts
@@ -1814,6 +1823,12 @@ instance:
      */
     config UInt affinity;
 
+    /*! Privileged task */
+    config Bool privileged = true;
+
+    /*! Domain Handle */
+    config Ptr domain = null;
+
     // -------- Handle Functions --------
 
     /*!
@@ -2141,6 +2156,14 @@ instance:
      */
     Void unblockI(UInt hwiKey);
 
+    /*!
+     *  ======== getPrivileged ========
+     *  Returns boolean indicating if Task is privileged.
+     *
+     *  @b(returns)    TRUE - privileged Task, FALSE - unprivileged Task
+     */
+    Bool getPrivileged(); 
+
 internal:   /* not for client use */
 
     /*! Target-specific support functions. */
@@ -2159,6 +2182,12 @@ internal:   /* not for client use */
      *  Task's initial entry point before entering task function.
      */
     Void enter();
+
+    /*
+     *  ======== enterUnpriv ========
+     *  Task's initial entry point before entering task function.
+     */
+    Void enterUnpriv();
 
     /*
      *  ======== sleepTimeout ========
@@ -2231,8 +2260,8 @@ internal:   /* not for client use */
      */
     struct PendElem {
         Queue.Elem      qElem;
-        Task.Handle     task;
-        Clock.Handle    clock;
+        Task.Handle     taskHandle;
+        Clock.Handle    clockHandle;
     };
 
     struct Instance_State {
@@ -2258,12 +2287,16 @@ internal:   /* not for client use */
         UInt            curCoreId;      // Core this task is currently running on.
         UInt            affinity;       // Core this task must run on
                                         // Task_AFFINITY_NONE = don't care
+        Bool            privileged;
+        Ptr             domain;
+        UInt32          checkValue;     // 32-bit Task object checksum value
+        Ptr             tls;            // TLS pointer
     };
 
     struct Module_State {
         volatile Bool   locked;         // Task scheduler locked flag
         volatile UInt   curSet;         // Bitmask reflects readyQ states
-        Bool            workFlag;       // Scheduler work is pending.
+        volatile Bool   workFlag;       // Scheduler work is pending.
                                         // Optimization. Must be set
                                         // whenever readyQs are modified.
         UInt            vitalTasks;     // number of tasks with
@@ -2287,6 +2320,8 @@ internal:   /* not for client use */
         Handle          idleTask[];             // Idle Task handles
         Handle          constructedTasks[];     // array of statically
                                                 // constructed Tasks
+        Bool            curTaskPrivileged;      // TRUE - privielged
+                                                // FALSE - unprivileged
     };
 
     struct RunQEntry {

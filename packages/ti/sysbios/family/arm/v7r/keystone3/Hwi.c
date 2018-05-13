@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -365,6 +365,34 @@ Void Hwi_startup()
 }
 
 /*
+ *  ======== Hwi_disableFIQ ========
+ *  disables only FIQ interrupts
+ */
+
+UInt Hwi_disableFIQ()
+{
+    return _disable_FIQ();
+}
+
+/*
+ *  ======== Hwi_enableFIQ ========
+ *  enables only FIQ interrupts
+ */
+UInt Hwi_enableFIQ()
+{
+    return _enable_FIQ();
+}
+
+/*
+ *  ======== Hwi_restoreFIQ ========
+ *  restores only IRQ interrupts
+ */
+Void Hwi_restoreFIQ( UInt key )
+{
+    Hwi_restore(key);
+}
+
+/*
  *  ======== Hwi_disableIRQ ========
  *  disables only IRQ interrupts
  */
@@ -693,7 +721,7 @@ Void interrupt Hwi_dispatchFIQC()
     dummy = Hwi_vim.FIQVECADDRESS;
 
     if (Hwi_vim.ACTIVEFIQ & 0x80000000) {
-        intNum = Hwi_vim.ACTIVEFIQ & 0x3F;
+        intNum = Hwi_vim.ACTIVEFIQ & 0x3FF;
     }
     else {
         Hwi_module->spuriousInts++;
@@ -733,7 +761,7 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp)
     BIOS_ThreadType prevThreadType;
 
     if (Hwi_vim.ACTIVEIRQ & 0x80000000) {
-        intNum = Hwi_vim.ACTIVEIRQ & 0x3F;
+        intNum = Hwi_vim.ACTIVEIRQ & 0x3FF;
     }
     else {
         Hwi_module->spuriousInts++;

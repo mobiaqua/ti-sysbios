@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,8 +49,8 @@
 #include <ti/sysbios/hal/Hwi.h>
 
 /* POSIX module Headers */
-#include <ti/sysbios/posix/semaphore.h>
-#include <ti/sysbios/posix/pthread.h>
+#include <semaphore.h>
+#include <pthread.h>
 #include <time.h>
 
 #define TASK1STACKSIZE           512

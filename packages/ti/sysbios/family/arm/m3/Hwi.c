@@ -454,6 +454,12 @@ Void Hwi_initNVIC()
     /* disable lazy stacking mode fp indications in control register */
     Hwi_nvic.FPCCR &= ~0xc0000000; /* clear ASPEN and LSPEN bits */
 #endif
+
+#if (defined(__IAR_SYSTEMS_ICC__) && (__CORE__ == __ARM8M_MAINLINE__)) || \
+    (defined(__GNUC__) && !defined(__ti__) && \
+     defined(__ARM_ARCH_8M_MAIN__))
+    Hwi_setStackLimit(Hwi_module->isrStackBase);
+#endif
 }
 
 /*
@@ -508,7 +514,7 @@ UInt Hwi_enableFxn()
  */
 Void Hwi_restoreFxn(UInt key)
 {
-    _set_interrupt_priority(key);
+    (Void)_set_interrupt_priority(key);
 }
 
 #else
@@ -1247,6 +1253,9 @@ Void Hwi_excUsageFault(UInt *excStack)
         }
         else if (Hwi_nvic.UFSR & 0x0008) {
             fault = "NOCP: Attempting to use co-processor";
+        }
+        else if (Hwi_nvic.UFSR & 0x0010) {
+            fault = "STKOF: Stack overflow error has occurred";
         }
         else if (Hwi_nvic.UFSR & 0x0100) {
             fault = "UNALIGNED: Unaligned memory access";

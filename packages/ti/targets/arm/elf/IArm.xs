@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2016 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2018 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -73,7 +73,9 @@ function getVersion()
      */
     var File = xdc.module("xdc.services.io.File");
     if (!(File.exists(this.rootDir + "/bin/armcl")
-        || File.exists(this.rootDir + "/bin/armcl.exe"))) {
+        || File.exists(this.rootDir + "/bin/armcl.exe")) &&
+        !(File.exists(this.rootDir + "/bin/tiarmclang")
+        || File.exists(this.rootDir + "/bin/tiarmclang.exe"))) {
         if (!(File.exists(this.rootDir + "/bin/cl470")
             || File.exists(this.rootDir + "/bin/cl470.exe"))) {
             throw new Error("Cannot find compiler in " + this.rootDir
@@ -89,7 +91,7 @@ function getVersion()
     return (xdc.module("ti.targets.ITarget").getVersion.$fxn.call(this));
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 11-8-2017 17:20:58; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 4-19-2018 16:54:19; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

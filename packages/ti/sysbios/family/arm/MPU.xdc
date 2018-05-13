@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -460,6 +460,19 @@ module MPU
      */
     Void setRegion(UInt8 regionId, Ptr regionBaseAddr,
         RegionSize regionSize, RegionAttrs *attrs);
+
+    /*!
+     *  @_nodoc
+     *  ======== setRegionRaw ========
+     *  Sets the MPU region attributes
+     *
+     *  Unlike MPU_setRegion(), this API takes compact MPU register
+     *  values and programs them without interpreting them.
+     *
+     *  @param(rbar)            MPU region base address
+     *  @param(rasr)            MPU region attribute and size
+     */
+    Void setRegionRaw(UInt32 rbar, UInt32 rasr);
 
     /*!
      *  @_nodoc

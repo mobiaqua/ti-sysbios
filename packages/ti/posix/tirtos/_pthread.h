@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,23 +48,22 @@
 extern "C" {
 #endif
 
-#ifndef ti_posix_tirtos_Settings_enableMutexPriority__D
-#define ti_posix_tirtos_Settings_enableMutexPriority__D 1
-#endif
-
 typedef void *(*pthread_RunFxn)(void *);
 
 /*
  *  ======== pthread_Obj ========
  */
 typedef struct pthread_Obj {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
     /*
+     *  Queue_Elem for mutex.  This is also used to put the thread
+     *  on a list of terminated threads.
      *  Each PTHREAD_PRIO_INHERIT mutex maintains a list of threads
      *  waiting on the mutex, so it can adjust its priority ceiling
      *  when pthread_mutex_timedlock() times out.
      */
     ti_sysbios_knl_Queue_Elem        qElem;
+
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     /*
      *  When a thread acquires a PTHREAD_PRIO_PROTECT mutex, the thread's
      *  priority will be boosted to the priority ceiling of the mutex, if
@@ -79,7 +78,7 @@ typedef struct pthread_Obj {
     ti_sysbios_knl_Queue_Struct      mutexList;
 
     /* PTHREAD_PRIO_INHERIT mutex the thread is blocked on */
-    pthread_mutex_t   blockedMutex;
+    pthread_mutex_t  *blockedMutex;
 #endif
     int               priority;
 
@@ -112,7 +111,7 @@ typedef struct pthread_Obj {
 #define _pthread_setRunningPriority(pthread, pri) \
     (ti_sysbios_knl_Task_setPri(((pthread_Obj *)(pthread))->task, (pri)))
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 extern int _pthread_getMaxPrioCeiling(pthread_Obj *thread);
 #endif
 

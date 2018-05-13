@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,6 @@
 
 var Mmu = null;
 var Memory = null;
-var Startup = null;
 
 /*
  *  ======== module$meta$init ========
@@ -59,9 +58,44 @@ function module$meta$init()
 function module$use()
 {
     Memory = xdc.module('xdc.runtime.Memory');
-    Startup = xdc.useModule('xdc.runtime.Startup');
 
-    Startup.firstFxns[Startup.firstFxns.length++] = Mmu.startup;
+    if (Mmu.initFunc == null) {
+        Mmu.$logError("Mmu.initFunc must be set to a valid function.",
+            Mmu, "initFunc");
+    }
+
+    switch (Mmu.granuleSize) {
+        case Mmu.GranuleSize_4KB:
+            Mmu.configInfo.granuleSizeBits = 12;
+            break;
+        case Mmu.GranuleSize_16KB:
+            Mmu.configInfo.granuleSizeBits = 14;
+            break;
+        case Mmu.GranuleSize_64KB:
+            Mmu.configInfo.granuleSizeBits = 16;
+            break;
+        default:
+            Mmu.$logError("Invalid granule size.", Mmu, "granuleSize");
+    }
+
+    Mmu.configInfo.indexBits = Mmu.configInfo.granuleSizeBits - 3;
+    Mmu.configInfo.tableLength = Mmu.granuleSize >> 3;
+    Mmu.configInfo.tableOffset[3] = Mmu.configInfo.granuleSizeBits;
+    Mmu.configInfo.tableOffset[2] = Mmu.configInfo.tableOffset[3] +
+                                    Mmu.configInfo.indexBits;
+    Mmu.configInfo.tableOffset[1] = Mmu.configInfo.tableOffset[2] +
+                                    Mmu.configInfo.indexBits;
+    Mmu.configInfo.tableOffset[0] = Mmu.configInfo.tableOffset[1] +
+                                    Mmu.configInfo.indexBits;
+
+    if (Mmu.configInfo.tableOffset[0] >= Mmu.PA_MAX_WIDTH) {
+        Mmu.configInfo.noLevel0Table = true;
+    }
+    else {
+        Mmu.configInfo.noLevel0Table = false;
+    }
+
+    Mmu.configInfo.indexMask = (1 << Mmu.configInfo.indexBits) - 1;
 }
 
 /*
@@ -69,32 +103,4 @@ function module$use()
  */
 function module$static$init(mod, params)
 {
-    /*
-     *  Place the first level table buffer into the specified section
-     *  name. The table buffer must be aligned on a 4096 Byte boundary.
-     */
-    Memory.staticPlace(
-                        mod.level1Table,
-                        (Mmu.NUM_LEVEL1_ENTRIES * 8),
-                        null
-                      );
-
-    /*
-     *  Place the second level table buffer into the specified section
-     *  name. The table buffer must be aligned on a 4096 Byte boundary.
-     */
-    Memory.staticPlace(
-                        mod.level2Table,
-                        (Mmu.NUM_LEVEL1_ENTRIES * 8),
-                        null
-                      );
-
-
-    mod.level1Table.length = Mmu.NUM_LEVEL1_ENTRIES;
-    mod.level2Table.length = Mmu.NUM_LEVEL1_ENTRIES;
-
-    for (var i = 0; i < Mmu.NUM_LEVEL1_ENTRIES; i++) {
-        mod.level1Table[i] = 0;
-        mod.level2Table[i] = 0;
-    }
 }

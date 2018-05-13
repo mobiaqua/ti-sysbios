@@ -1014,7 +1014,7 @@ internal:
         UInt32              nextScheduledTick;
         UInt32              maxSkippable;   // timer dependent (in tickPeriods)
         Bool                inWorkFunc;     // true if in Clock Swi servicing Q
-        Bool                startDuringWorkFunc; // Clock_start during workFunc?
+        volatile Bool       startDuringWorkFunc; // Clock_start during workFunc?
         Bool                ticking;        // set true during first Clock tick
     };
 }

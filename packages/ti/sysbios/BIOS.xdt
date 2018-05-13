@@ -1,7 +1,7 @@
 
 %%{
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -114,6 +114,10 @@ Void ti_sysbios_BIOS_atExitFunc__I(Int notused)
 }
 %if (Program.build.target.$name.match(/ti/)) {
 
+%if (BIOS.mpeEnabled) {
+#include <ti/sysbios/hal/SysCall.h>
+%}
+
 /*
  *  ======== BIOS_rtsLock ========
  *  Called by rts _lock() function
@@ -121,6 +125,9 @@ Void ti_sysbios_BIOS_atExitFunc__I(Int notused)
 Void ti_sysbios_BIOS_rtsLock()
 {
     IArg key;
+%if (BIOS.mpeEnabled) {
+    ti_sysbios_hal_SysCall_enterPrivMode();
+%}
 
     key = ti_sysbios_BIOS_RtsGateProxy_enter(`BIOS_module`->rtsGate);
     if (`BIOS_module`->rtsGateCount == 0) {
@@ -128,6 +135,9 @@ Void ti_sysbios_BIOS_rtsLock()
     }
     /* Increment need not be atomic */
     `BIOS_module`->rtsGateCount++;
+%if (BIOS.mpeEnabled) {
+    ti_sysbios_hal_SysCall_restorePrivMode();
+%}
 }
 
 /*
@@ -136,6 +146,9 @@ Void ti_sysbios_BIOS_rtsLock()
  */
 Void ti_sysbios_BIOS_rtsUnlock()
 {
+%if (BIOS.mpeEnabled) {
+    ti_sysbios_hal_SysCall_enterPrivMode();
+%}
 %if (BIOS.assertsEnabled == true) {
     xdc_runtime_Assert_isTrue((`BIOS_module`->rtsGateCount), NULL);
 
@@ -145,6 +158,9 @@ Void ti_sysbios_BIOS_rtsUnlock()
     if (`BIOS_module`->rtsGateCount == 0) {
         ti_sysbios_BIOS_RtsGateProxy_leave(`BIOS_module`->rtsGate, `BIOS_module`->rtsGateKey);
     }
+%if (BIOS.mpeEnabled) {
+    ti_sysbios_hal_SysCall_restorePrivMode();
+%}
 }
 
 /*

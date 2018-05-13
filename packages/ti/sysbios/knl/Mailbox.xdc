@@ -230,14 +230,6 @@ instance:
      *
      *  @param(msgSize)         size of message
      *  @param(numMsgs)         length of mailbox
-     *
-     *  @a(WARNING)
-     *  Be careful with the msgSize parameter!  The 'msg' pointer passed to
-     *  {@link #pend()} must point to a buffer whose size matches this msgSize
-     *  parameter.  {@link #pend()} does a blind copy of size 'msgSize' into
-     *  the destination pointer, so the destination buffer must be big enough to
-     *  handle this copy.
-     *
      */
     create(SizeT msgSize, UInt numMsgs);
 
@@ -389,6 +381,15 @@ instance:
      *  Mailbox_pend's return value indicates whether the mailbox was signaled
      *  successfully.
      *
+     *  @a(Event Object Note)
+     *  If the Mailbox object has been configured with an embedded readerEvent
+     *  Event object, then prior to returnig from this function, the Event
+     *  object's state is updated to reflect whether messages are available
+     *  in the Mailbox after the current message is removed.
+     *  If there are no more messages available, then the readerEventId is
+     *  cleared in the Event object. If more messages are available,
+     *  then the readerEventId is set in the Event object.
+     *
      *  @param(msg)     message pointer
      *  @param(timeout) maximum duration in system clock ticks
      *  @b(returns)     TRUE if successful, FALSE if timeout
@@ -397,7 +398,7 @@ instance:
      *  Be careful with the 'msg' parameter!  The size of the buffer that 'msg'
      *  points to must match the 'msgSize' that was specified
      *  when the mailbox was created.  This function does a blind copy of the
-     *  message from the mailbox to the destination pointer, so he destination
+     *  message from the mailbox to the destination pointer, so the destination
      *  buffer must be big enough to handle this copy.
      */
     Bool pend(Ptr msg, UInt32 timeout);
@@ -426,6 +427,15 @@ instance:
      *
      *  Mailbox_post's return value indicates whether the msg was 
      *  copied or not.
+     *
+     *  @a(Event Object Note)
+     *  If the Mailbox object has been configured with an embedded writerEvent
+     *  Event object, then prior to returnig from this function, the Event
+     *  object's state is updated to reflect whether more messages can be
+     *  posted to the Mailbox after the current message has been posted.
+     *  If no more room is available, then the writerEventId is
+     *  cleared in the Event object. If more room is available,
+     *  then the writerEventId is set in the Event object.
      *
      *  @param(msg)     message pointer
      *  @param(timeout) maximum duration in system clock ticks

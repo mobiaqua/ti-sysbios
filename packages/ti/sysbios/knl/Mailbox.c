@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,26 +55,27 @@
  *  Calls postInit on all of the statically created instances to split
  *  their buffers into blocks.
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Int Mailbox_Module_startup(Int phase)
 {
     Int i;
     SizeT blockSize;
     Mailbox_Object *obj;
 
-    for (i = 0; i < Mailbox_Object_count(); i++) {
+    for (i = (Int)0; i < (Int)Mailbox_Object_count(); i++) {
         obj = Mailbox_Object_get(NULL, i);
 
         if (obj->buf == NULL) {
             blockSize = (sizeof(Mailbox_MbxElem) + obj->msgSize
-                + (Mailbox_maxTypeAlign - 1)) &
-                ~(Mailbox_maxTypeAlign - 1);
+                + (Mailbox_maxTypeAlign - 1U)) &
+                ~(Mailbox_maxTypeAlign - 1U);
         }
         else {
             blockSize = (sizeof(Mailbox_MbxElem) + obj->msgSize);
         }
 
         /* call postInit for static instance */
-        Mailbox_postInit(obj, blockSize);
+        (Void)Mailbox_postInit(obj, blockSize);
     }
 
     return Startup_DONE;
@@ -109,20 +110,20 @@ Int Mailbox_Instance_init(Mailbox_Object *obj, SizeT msgSize,
 
     /* if user didn't specify a buf, alloc one; else use the one specified. */
     if (obj->buf == NULL) {
-        if (BIOS_runtimeCreatesEnabled) {
+        if (BIOS_runtimeCreatesEnabled == TRUE) {
             /*
              * Ensure blockSize is properly aligned.
              *
              * 'round up' blockSize so malloc'ed buf will respect HeapBuf's rules.
              * Use worst case alignment to match the HeapBuf default).
              */
-            blockSize = (blockSize + (Mailbox_maxTypeAlign - 1)) &
-                    ~(Mailbox_maxTypeAlign - 1);
+            blockSize = (blockSize + (Mailbox_maxTypeAlign - 1U)) &
+                    ~(Mailbox_maxTypeAlign - 1U);
 
             bufSize = blockSize * numMsgs;
 
             /* alloc buf from configured heap */
-            obj->allocBuf = Memory_alloc(obj->heap, bufSize, 0, eb);
+            obj->allocBuf = (Char *)Memory_alloc(obj->heap, bufSize, 0, eb);
 
             if (obj->allocBuf == NULL) {
                 /* clean-up in finalize */
@@ -143,7 +144,7 @@ Int Mailbox_Instance_init(Mailbox_Object *obj, SizeT msgSize,
     Queue_construct(Queue_struct(freeQue), NULL);
     Queue_construct(Queue_struct(dataQue), NULL);
 
-    Mailbox_postInit(obj, blockSize);
+    (Void)Mailbox_postInit(obj, blockSize);
 
     /* construct semaphores */
     Semaphore_Params_init(&semParams);
@@ -153,7 +154,7 @@ Int Mailbox_Instance_init(Mailbox_Object *obj, SizeT msgSize,
 
     semParams.event   = params->writerEvent;
     semParams.eventId = params->writerEventId;
-    Semaphore_construct(Semaphore_struct(freeSem), obj->numMsgs, &semParams);
+    Semaphore_construct(Semaphore_struct(freeSem), (Int)obj->numMsgs, &semParams);
 
     return 0;
 }
@@ -182,8 +183,8 @@ Void Mailbox_Instance_finalize(Mailbox_Object *obj, Int status)
         /* if buf is alloc'ed then free it */
         if (obj->allocBuf != NULL) {
             blockSize = (sizeof(Mailbox_MbxElem) + obj->msgSize +
-                        (Mailbox_maxTypeAlign - 1)) &
-                        ~(Mailbox_maxTypeAlign - 1);
+                        (Mailbox_maxTypeAlign - 1U)) &
+                        ~(Mailbox_maxTypeAlign - 1U);
 
             Memory_free(obj->heap, obj->allocBuf, blockSize * obj->numMsgs);
         }
@@ -210,7 +211,7 @@ SizeT Mailbox_getMsgSize(Mailbox_Object *obj)
 Int Mailbox_getNumFreeMsgs(Mailbox_Object *obj)
 {
     /* return the number of free msgs */
-    return (obj->numFreeMsgs);
+    return ((Int)obj->numFreeMsgs);
 }
 
 /*
@@ -219,7 +220,7 @@ Int Mailbox_getNumFreeMsgs(Mailbox_Object *obj)
 Int Mailbox_getNumPendingMsgs(Mailbox_Object *obj)
 {
     /* return the number of unread msgs */
-    return (obj->numMsgs - obj->numFreeMsgs);
+    return ((Int)obj->numMsgs - (Int)obj->numFreeMsgs);
 }
 
 /*
@@ -243,13 +244,14 @@ Bool Mailbox_pend(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
         elem = Queue_get(dataQue);
 
         /* copy message to user supplied pointer */
-        memcpy(msg, elem + 1, obj->msgSize);
+        /* SV.BANNED.REQUIRED.COPY */
+        (Void)memcpy(msg, elem + 1, obj->msgSize);
 
         /* perform the enqueue and increment numFreeMsgs atomically */
         key = Hwi_disable();
 
         /* put message on freeQue */
-        Queue_enqueue(freeQue, (Queue_Elem *)elem);
+        Queue_enqueue(freeQue, &(elem->elem));
 
         /* increment numFreeMsgs */
         obj->numFreeMsgs++;
@@ -303,10 +305,11 @@ Bool Mailbox_post(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
         Hwi_restore(key);
 
         /* copy msg to elem */
-        memcpy(elem + 1, msg, obj->msgSize);
+        /* SV.BANNED.REQUIRED.COPY */
+        (Void)memcpy(elem + 1, msg, obj->msgSize);
 
         /* put message on dataQueue */
-        Queue_put(dataQue, (Queue_Elem *)elem);
+        Queue_put(dataQue, &(elem->elem));
 
         /* post the semaphore */
         Semaphore_post(dataSem);
@@ -325,7 +328,7 @@ Int Mailbox_postInit(Mailbox_Object *obj, SizeT blockSize)
 {
     UInt i;
     Queue_Handle freeQue;
-    Char *buf = obj->buf;
+    Char *buf;
 
     freeQue = Mailbox_Instance_State_freeQue(obj);
 
@@ -341,12 +344,10 @@ Int Mailbox_postInit(Mailbox_Object *obj, SizeT blockSize)
      * add into the free Queue.
      */
     for (i = 0; i < obj->numMsgs; i++) {
+        /* MISRA.CAST.OBJ_PTR_TO_OBJ_PTR.2012 */
         Queue_put(freeQue, (Queue_Elem *)buf);
         buf += blockSize;
     }
 
     return (0);
 }
-
-
-

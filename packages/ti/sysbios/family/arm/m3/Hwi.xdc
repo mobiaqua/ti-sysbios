@@ -1398,6 +1398,11 @@ internal:   /* not for client use */
      */
     Void pendSV();
 
+    /*
+     *  ======== setStackLimit ========
+     */
+    Void setStackLimit(Ptr stackBase);
+
     /*! Hwi vector function type definition. */
     typedef Void (*HandlerFuncPtr)(Handle, UInt);
 

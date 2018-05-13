@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,20 @@ Void BIOS_linkedWithIncorrectBootLibrary(Void)
  */
 BIOS_ThreadType BIOS_getThreadType(Void)
 {
+    UInt key;
+    BIOS_ThreadType threadType;
+
     if (BIOS_smpEnabled == TRUE) {
-        return (BIOS_module->smpThreadType[Core_getId()]);
+        /*
+         * Disable interrupts locally on this core before reading
+         * the thread type as the thread may move to another core
+         * between the time the Core id is read and the smpThreadType
+         * array is indexed.
+         */
+        key = Core_hwiDisable();
+        threadType = BIOS_module->smpThreadType[Core_getId()];
+        Core_hwiRestore(key);
+        return (threadType);
     }
     else {
         return (BIOS_module->threadType);

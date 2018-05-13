@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -77,9 +77,8 @@ if (xdc.om.$name == "cfg") {
     deviceTable["RM57D8.*"] = deviceTable["RM57D8xx"];
     deviceTable["RM57L8.*"] = deviceTable["RM57L8xx"];
     deviceTable["RM48L.*"] = deviceTable["RM57L8xx"];
-    deviceTable["AWR16XX"] = deviceTable["AWR14XX"];
-    deviceTable["IWR14XX"] = deviceTable["AWR14XX"];
-    deviceTable["IWR16XX"] = deviceTable["AWR14XX"];
+    deviceTable["AWR1.*"] = deviceTable["AWR14XX"];
+    deviceTable["IWR1.*"] = deviceTable["AWR14XX"];
 }
 
 /*

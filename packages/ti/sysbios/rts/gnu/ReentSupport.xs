@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,21 @@ var SysStd = null;
 var Startup = null;
 var Semaphore = null;
 var ReentSupport = null;
+
+
+/*
+ *  ======== module$meta$init ========
+ */
+function module$meta$init()
+{
+    /* Only process during "cfg" phase */
+    if (xdc.om.$name != "cfg") {
+        return;
+    }
+
+    /* provide getCFiles() for Build.getCFiles() */
+    this.$private.getCFiles = getCFiles;
+}
 
 /*
  *  ======== module$use ========
@@ -102,7 +117,7 @@ function module$static$init(mod, params)
      * putch). Force initialize the global re-entrancy structure during
      * startup.
      */
-    if (SysStd.$used) {
+    if (SysStd.$used && ReentSupport.enableReentSupport == true) {
         var len = Startup.lastFxns.length;
         Startup.lastFxns.length++;
         Startup.lastFxns[len] = ReentSupport.initGlobalReent;
@@ -138,4 +153,22 @@ function viewInitModule(view, obj)
     var modCfg = Program.getModuleConfig("ti.sysbios.rts.gnu.ReentSupport");
 
     view.enableReentSupport = modCfg.enableReentSupport;
+}
+
+/*
+ *  ======== getCFiles ========
+ *  There's a hard reference to ReentSupport in MemAlloc.xs which always pulls
+ *  in the module. We provide a dummy stub implementation if enableReentSupport is false.
+ *  This is useful to support old versions of the GCC compiler. The ReentSupport.c file
+ *  has some dependencies on GCC compiler version so we need a dummy version for old
+ *  compilers.
+ */
+function getCFiles(targetName)
+{
+    if (ReentSupport.enableReentSupport == true) {
+        return (["ReentSupport.c"]);
+    }
+    else {
+        return (["ReentSupport_stub.c"]);
+    }
 }

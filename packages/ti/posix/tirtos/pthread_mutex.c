@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,15 +46,6 @@
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/knl/Semaphore.h>
 
-/*
- *  For custom builds, this will always be defined, but it will
- *  not be defined when building just the library.  Make sure
- *  this goes ahead of _pthread.h.
- */
-#ifndef ti_posix_tirtos_Settings_enableMutexPriority__D
-#define ti_posix_tirtos_Settings_enableMutexPriority__D TRUE
-#endif
-
 #include <pthread.h>
 #include <sys/types.h>
 #include <time.h>
@@ -63,64 +54,75 @@
 #include "_pthread.h"
 #include "pthread_util.h"
 
+/*  Compute base address of parent structure
+ *
+ *  Given the address (ptr) of a member (m) of a structure (s), compute
+ *  the structure base address. Useful when traversing a list of embedded
+ *  Queue_Elem objects. The Queue_Elem object may be anywhere in the
+ *  structure (i.e. it need *not* be the first member of the structure).
+ */
+#define BASE_ADDR(ptr, s, m) ((char *)(ptr) - (int)(&(((s *)0)->m)))
 
 /*
- *  ======== pthread_mutex_Obj ========
+ *  ======== mutex_prio_obj ========
+ *  Mutex priority structure
  */
-typedef struct pthread_mutex_Obj {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    /*
-     *  Each thread maintains a list of PTHREAD_PRIO_INHERIT and
+typedef struct mutex_prio_obj {
+    /*  Each thread maintains a list of PTHREAD_PRIO_INHERIT and
      *  PTHREAD_PRIO_PROTECT mutexes it owns.
      */
-    Queue_Elem                 qElem;
+    Queue_Elem qElem;
 
-    int                        protocol;
+    int protocol;
 
-    /*
-     *  The prioceiling will be used by both
-     *  PTHREAD_PRIO_INHERIT and PTHREAD_PRIO_PROTECT
-     *  mutexes.
+    /*  The prioceiling will be used by both PTHREAD_PRIO_INHERIT and
+     *  PTHREAD_PRIO_PROTECT mutexes.
      *
      *  For a PTHREAD_PRIO_PROTECT mutex, prioceiling is set at
      *  initialization to the pthread_mutexattr_t prioceiling, and
      *  can be changed at runtime with pthread_mutex_setprioceiling().
      *
-     *  For a PTHREAD_PRIO_INHERIT mutex, the prioceiling will be
-     *  set to the priority of the highest priority thread waiting on
-     *  the mutex.  If no thread is waiting on the mutex, its prioceiling
+     *  For a PTHREAD_PRIO_INHERIT mutex, the prioceiling will be set
+     *  to the priority of the highest priority thread waiting on the
+     *  mutex. If no thread is waiting on the mutex, its prioceiling
      *  will be 0.
      *
      *  A thread holding a PTHREAD_PRIO_PROTECT or PTHREAD_PRIO_INHERIT
      *  mutex must run at a priority >= the mutex prioceiling.
      */
-    int                        prioceiling;
+    int prioceiling;
 
-    /*
-     *  For a PTHREAD_PRIO_INHERIT mutex, keep a list of threads
-     *  waiting on the mutex.  If the timeout expires for one of
-     *  the waiting threads, we may need to lower the priority of
-     *  the thread that owns the mutex.
+    /*  For a PTHREAD_PRIO_INHERIT mutex, keep a list of threads waiting
+     *  on the mutex. If the timeout expires for one of the waiting threads,
+     *  we may need to lower the priority of the thread that owns the mutex.
      */
-    Queue_Struct               waitList;
-#endif
+    Queue_Struct waitList;
+} mutex_prio_obj;
 
-    pthread_Obj               *owner;
-    int                        lockCnt;
-    int                        type;
-    Semaphore_Struct           sem;
-} pthread_mutex_Obj;
+/*
+ *  ======== pthread_mutex_obj ========
+ *  SYS/BIOS implementation of a POSIX mutex
+ *
+ *  This object must align with 'struct sysbios_Mutex' (_internal.h).
+ */
+typedef struct pthread_mutex_obj {
+    pthread_Obj        *owner;
+    int                 lockCnt;
+    int                 type;
+    Semaphore_Struct    sem;
+    mutex_prio_obj     *mpo;    /* used only with priority mutex enabled */
+} pthread_mutex_obj;
 
-static int acquireMutex(pthread_mutex_Obj *mutex, UInt32 timeout);
-static int acquireMutexNone(pthread_mutex_Obj *mutex, UInt32 timeout);
+static int acquireMutex(pthread_mutex_obj *mutex, UInt32 timeout);
+static int acquireMutexNone(pthread_mutex_obj *mutex, UInt32 timeout);
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout);
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+static int acquireMutexPriority(pthread_mutex_obj *mutex, UInt32 timeout);
 static void adjustPri(pthread_Obj *thread);
-static void removeMutex(pthread_mutex_Obj *mutex);
-static void resetInheritPriority(pthread_mutex_Obj *mutex);
-static void setInheritPriority(pthread_mutex_Obj *mutex, int priority);
-static int setPrioCeiling(pthread_mutex_Obj *mutex);
+static void removeMutex(pthread_mutex_obj *mutex);
+static void resetInheritPriority(pthread_mutex_obj *mutex);
+static void setInheritPriority(pthread_mutex_obj *mutex, int priority);
+static int setPrioCeiling(pthread_mutex_obj *mutex);
 #endif
 
 /*
@@ -151,7 +153,7 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t *attr)
 int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr,
         int *prioceiling)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     *prioceiling = attr->prioceiling;
     return (0);
 #else
@@ -162,8 +164,7 @@ int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr,
 /*
  *  ======== pthread_mutexattr_gettype ========
  */
-int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
-        int *type)
+int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr, int *type)
 {
     *type = attr->type;
     return (0);
@@ -175,7 +176,7 @@ int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
 int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *attr,
         int *protocol)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     *protocol = attr->protocol;
     return (0);
 #else
@@ -198,7 +199,7 @@ int pthread_mutexattr_init(pthread_mutexattr_t *attr)
 int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr,
         const int prioceiling)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     if ((prioceiling >= (int)Task_numPriorities) || (prioceiling < 1)) {
         /* Bad priority value */
         return (EINVAL);
@@ -216,7 +217,7 @@ int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr,
  */
 int pthread_mutexattr_setprotocol(pthread_mutexattr_t *attr, int protocol)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
     if ((protocol != PTHREAD_PRIO_NONE) &&
             (protocol != PTHREAD_PRIO_INHERIT) &&
             (protocol != PTHREAD_PRIO_PROTECT)) {
@@ -256,24 +257,22 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type)
  */
 int pthread_mutex_destroy(pthread_mutex_t *mutex)
 {
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
 
-    if (mutexObj->owner != NULL) {
+    if (obj->owner != NULL) {
         return (EBUSY);
     }
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    if (!Queue_empty(Queue_handle(&(mutexObj->waitList)))) {
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    if (!Queue_empty(Queue_handle(&obj->mpo->waitList))) {
         return (EBUSY);
     }
 
-    Queue_destruct(&mutexObj->waitList);
+    Queue_destruct(&obj->mpo->waitList);
+    Memory_free(Task_Object_heap(), obj->mpo, sizeof(mutex_prio_obj));
 #endif
 
-    Semaphore_destruct(&mutexObj->sem);
-    Memory_free(Task_Object_heap(), mutexObj, sizeof(pthread_mutex_Obj));
-
-    *mutex = NULL;
+    Semaphore_destruct(&obj->sem);
 
     return (0);
 }
@@ -285,17 +284,17 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex)
  *    0      - Success.
  *    EINVAL - Mutex protocol is not PTHREAD_PRIO_PROTECT
  */
-int pthread_mutex_getprioceiling(const pthread_mutex_t *mutex,
-        int *prioceiling)
+int pthread_mutex_getprioceiling(const pthread_mutex_t *mutex, int *prioceiling)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
 
-    if (mutexObj->protocol != PTHREAD_PRIO_PROTECT) {
+
+    if (obj->mpo->protocol != PTHREAD_PRIO_PROTECT) {
         return (EINVAL);
     }
 
-    *prioceiling = mutexObj->prioceiling;
+    *prioceiling = obj->mpo->prioceiling;
     return (0);
 #else
     return (ENOSYS);
@@ -307,43 +306,44 @@ int pthread_mutex_getprioceiling(const pthread_mutex_t *mutex,
  */
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 {
-    pthread_mutex_Obj   *mutexObj;
-    Semaphore_Params     semParams;
-    Error_Block          eb;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
+    Semaphore_Params semParams;
+    Error_Block eb;
     pthread_mutexattr_t *mAttrs;
+
+    /* object size validation */
+    Assert_isTrue(sizeof(pthread_mutex_obj) <= sizeof(pthread_mutex_t), NULL);
 
     Error_init(&eb);
 
-    *mutex = NULL;
+    obj->owner = NULL;
+    obj->lockCnt = 0;
+    mAttrs = (attr == NULL) ? &defAttrs : (pthread_mutexattr_t *)attr;
+    obj->type = mAttrs->type;
 
-    mutexObj = (pthread_mutex_Obj *)Memory_alloc(Task_Object_heap(),
-            sizeof(pthread_mutex_Obj), 0, &eb);
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    obj->mpo = (mutex_prio_obj *)Memory_alloc(Task_Object_heap(),
+            sizeof(mutex_prio_obj), 0, &eb);
 
-    if (mutexObj == NULL) {
+    if (obj->mpo == NULL) {
         return (ENOMEM);
     }
-
-    mutexObj->owner = NULL;
-    mutexObj->lockCnt = 0;
-
-    mAttrs = (attr == NULL) ? &defAttrs : (pthread_mutexattr_t *)attr;
-
-    mutexObj->type = mAttrs->type;
-
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    mutexObj->protocol = mAttrs->protocol;
-    mutexObj->prioceiling = (mAttrs->protocol == PTHREAD_PRIO_PROTECT) ?
-            mAttrs->prioceiling : 0;
-
-    Queue_elemClear((Queue_Elem *)mutexObj);
-    Queue_construct(&(mutexObj->waitList), NULL);
+#else
+    obj->mpo = NULL;
 #endif
 
     Semaphore_Params_init(&semParams);
     semParams.mode = Semaphore_Mode_BINARY;
-    Semaphore_construct(&(mutexObj->sem), 1, &semParams);
+    Semaphore_construct(&obj->sem, 1, &semParams);
 
-    *mutex = (pthread_mutex_t)mutexObj;
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    obj->mpo->protocol = mAttrs->protocol;
+    obj->mpo->prioceiling = (mAttrs->protocol == PTHREAD_PRIO_PROTECT) ?
+            mAttrs->prioceiling : 0;
+
+    Queue_elemClear(&obj->mpo->qElem);
+    Queue_construct(&obj->mpo->waitList, NULL);
+#endif
 
     return (0);
 }
@@ -360,9 +360,9 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
  */
 int pthread_mutex_lock(pthread_mutex_t *mutex)
 {
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
 
-    return (acquireMutex(mutexObj, BIOS_WAIT_FOREVER));
+    return (acquireMutex(obj, BIOS_WAIT_FOREVER));
 }
 
 /*
@@ -376,12 +376,13 @@ int pthread_mutex_lock(pthread_mutex_t *mutex)
 int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling,
         int *oldceiling)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
+
     int                ret;
     int                priority;
 
-    if (mutexObj->protocol != PTHREAD_PRIO_PROTECT) {
+    if (obj->mpo->protocol != PTHREAD_PRIO_PROTECT) {
         return (EINVAL);
     }
 
@@ -411,10 +412,10 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling,
      *  to return an error.
      */
     if ((ret = pthread_mutex_lock(mutex)) == 0) {
-        *oldceiling = mutexObj->prioceiling;
-        mutexObj->prioceiling = prioceiling;
+        *oldceiling = obj->mpo->prioceiling;
+        obj->mpo->prioceiling = prioceiling;
 
-        if (mutexObj->lockCnt > 1) {
+        if (obj->lockCnt > 1) {
             /*
              *  Set this thread's priority to the new ceiling, if
              *  higher than the thread's priority
@@ -449,12 +450,12 @@ int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling,
 int pthread_mutex_timedlock(pthread_mutex_t *mutex,
         const struct timespec *abstime)
 {
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
-    UInt32             timeout;
-    int                retc;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
+    UInt32 timeout;
+    int retc;
 
     /* must attempt operation before validating abstime */
-    retc = acquireMutex(mutexObj, 0);
+    retc = acquireMutex(obj, 0);
 
     if (retc != EBUSY) {
         return (retc);
@@ -469,7 +470,7 @@ int pthread_mutex_timedlock(pthread_mutex_t *mutex,
         return (ETIMEDOUT);
     }
 
-    return (acquireMutex(mutexObj, timeout));
+    return (acquireMutex(obj, timeout));
 }
 
 /*
@@ -485,9 +486,9 @@ int pthread_mutex_timedlock(pthread_mutex_t *mutex,
  */
 int pthread_mutex_trylock(pthread_mutex_t *mutex)
 {
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
 
-    return (acquireMutex(mutexObj, 0));
+    return (acquireMutex(obj, 0));
 }
 
 /*
@@ -498,33 +499,34 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex)
  */
 int pthread_mutex_unlock(pthread_mutex_t *mutex)
 {
-    pthread_mutex_Obj *mutexObj = (pthread_mutex_Obj *)*mutex;
+    pthread_mutex_obj *obj = (pthread_mutex_obj *)(&mutex->sysbios);
+
     UInt               key;
 
     key = Task_disable();
 
-    if (mutexObj->owner != (pthread_Obj *)pthread_self()) {
+    if (obj->owner != (pthread_Obj *)pthread_self()) {
         Task_restore(key);
         return (EPERM);
     }
 
-    mutexObj->lockCnt--;
+    obj->lockCnt--;
 
-    if (mutexObj->lockCnt == 0) {
-        mutexObj->owner = NULL;
+    if (obj->lockCnt == 0) {
+        obj->owner = NULL;
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-        if (mutexObj->protocol == PTHREAD_PRIO_INHERIT) {
-            mutexObj->prioceiling = 0;
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+        if (obj->mpo->protocol == PTHREAD_PRIO_INHERIT) {
+            obj->mpo->prioceiling = 0;
         }
 
         /* This may change the thread's priority */
-        if ((mutexObj->protocol == PTHREAD_PRIO_PROTECT) ||
-                (mutexObj->protocol == PTHREAD_PRIO_INHERIT)) {
-            removeMutex(mutexObj);
+        if ((obj->mpo->protocol == PTHREAD_PRIO_PROTECT) ||
+                (obj->mpo->protocol == PTHREAD_PRIO_INHERIT)) {
+            removeMutex(obj);
         }
 #endif
-        Semaphore_post(Semaphore_handle(&(mutexObj->sem)));
+        Semaphore_post(Semaphore_handle(&obj->sem));
     }
 
     Task_restore(key);
@@ -538,7 +540,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex)
  *************************************************************************
  */
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== _pthread_getMaxPrioCeiling ========
  *  Return the maximum of the priority ceilings of the PTHREAD_PRIO_PROTECT
@@ -546,13 +548,14 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex)
  */
 int _pthread_getMaxPrioCeiling(pthread_Obj *thread)
 {
-    pthread_mutex_Obj  *mutex;
+    mutex_prio_obj     *mutex_prio;
     int                 maxPri = 0;
     int                 pri;
     UInt                key;
+    Queue_Handle        list;
+    Queue_Elem         *elem;
 
-    /*
-     *  If the thread is holding a PTHREAD_PRIO_PROTECT mutex and
+    /*  If the thread is holding a PTHREAD_PRIO_PROTECT mutex and
      *  running at its ceiling, we don't want to set its priority
      *  to a lower value.  Instead, we save the new priority to set
      *  it to, once the mutexes of higher priority ceilings are
@@ -560,12 +563,14 @@ int _pthread_getMaxPrioCeiling(pthread_Obj *thread)
      */
     key = Task_disable();
 
-    mutex = Queue_head(Queue_handle(&(thread->mutexList)));
+    list = Queue_handle(&(thread->mutexList));
+    elem = Queue_head(list);
 
-    while (mutex != (pthread_mutex_Obj *)Queue_handle(&thread->mutexList)) {
-        pri = mutex->prioceiling;
+    while (elem != (Queue_Elem *)list) {
+        mutex_prio = (mutex_prio_obj *)(BASE_ADDR(elem, mutex_prio_obj, qElem));
+        pri = mutex_prio->prioceiling;
         maxPri = (pri > maxPri) ? pri : maxPri;
-        mutex = (pthread_mutex_Obj *)Queue_next((Queue_Elem *)mutex);
+        elem = Queue_next(elem);
     }
 
     Task_restore(key);
@@ -577,11 +582,11 @@ int _pthread_getMaxPrioCeiling(pthread_Obj *thread)
 /*
  *  ======== acquireMutex ========
  */
-static int acquireMutex(pthread_mutex_Obj *mutex, UInt32 timeout)
+static int acquireMutex(pthread_mutex_obj *mutex, UInt32 timeout)
 {
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
-    if ((mutex->protocol == PTHREAD_PRIO_PROTECT) ||
-            (mutex->protocol == PTHREAD_PRIO_INHERIT)) {
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
+    if ((mutex->mpo->protocol == PTHREAD_PRIO_PROTECT) ||
+            (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT)) {
         return (acquireMutexPriority(mutex, timeout));
     }
     else {
@@ -595,7 +600,7 @@ static int acquireMutex(pthread_mutex_Obj *mutex, UInt32 timeout)
 /*
  *  ======== acquireMutexNone ========
  */
-static int acquireMutexNone(pthread_mutex_Obj *mutex, UInt32 timeout)
+static int acquireMutexNone(pthread_mutex_obj *mutex, UInt32 timeout)
 {
     UInt               key;
     pthread_Obj       *thisThread;
@@ -650,16 +655,17 @@ static int acquireMutexNone(pthread_mutex_Obj *mutex, UInt32 timeout)
     return (0);
 }
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== acquireMutexPriority ========
  */
-static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
+static int acquireMutexPriority(pthread_mutex_obj *mutex, UInt32 timeout)
 {
     UInt               key;
     Int                thisThreadPri;
     pthread_Obj       *thisThread;
     Queue_Handle       waitList;
+    Queue_Handle       mutexList;
 
     thisThread = (pthread_Obj *)pthread_self();
 
@@ -667,8 +673,8 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
 
     thisThreadPri = Task_getPri(thisThread->task);
 
-    if ((mutex->protocol == PTHREAD_PRIO_PROTECT) &&
-            (mutex->prioceiling < thisThread->priority)) {
+    if ((mutex->mpo->protocol == PTHREAD_PRIO_PROTECT) &&
+            (mutex->mpo->prioceiling < thisThread->priority)) {
         Task_restore(key);
         return (EINVAL);
     }
@@ -706,7 +712,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
          *  For PTHREAD_PRIO_INHERIT mutex, bump the priority of the
          *  mutex owner, if it is lower than the calling thread's priority.
          */
-        if (mutex->protocol == PTHREAD_PRIO_INHERIT) {
+        if (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT) {
 
             /*
              *  Boost the mutex owner's priority
@@ -722,9 +728,9 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
              *  a higher priority thread tries to acquire), so there
              *  is no point in sorting the queue.
              */
-            waitList = Queue_handle(&(mutex->waitList));
+            waitList = Queue_handle(&(mutex->mpo->waitList));
             Queue_enqueue(waitList, (Queue_Elem *)thisThread);
-            thisThread->blockedMutex = (pthread_mutex_t)mutex;
+            thisThread->blockedMutex = (pthread_mutex_t *)mutex;
         }
 
         Task_restore(key);
@@ -732,7 +738,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
         if (!Semaphore_pend(Semaphore_handle(&(mutex->sem)), timeout)) {
 
             /* Adjust prioceiling if mutex protocol is PTHREAD_PRIO_INHERIT */
-            if (mutex->protocol == PTHREAD_PRIO_INHERIT) {
+            if (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT) {
 
                 key = Task_disable();
 
@@ -761,7 +767,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
 
         thisThread->blockedMutex = NULL;
 
-        if (mutex->protocol == PTHREAD_PRIO_INHERIT) {
+        if (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT) {
             /* Remove thread from mutex wait queue */
             Queue_remove((Queue_Elem *)thisThread);
         }
@@ -773,7 +779,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
     mutex->owner = thisThread;
     mutex->lockCnt = 1;
 
-    if (mutex->protocol == PTHREAD_PRIO_INHERIT) {
+    if (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT) {
         /*
          *  Check the waitList.  The owner would have set the priority
          *  ceiling to 0 when unlocking the mutex, but there may still
@@ -785,16 +791,16 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
     }
 
     /* Add the mutex to this thread's list of owned mutexes */
-    if ((mutex->protocol == PTHREAD_PRIO_PROTECT) ||
-            (mutex->protocol == PTHREAD_PRIO_INHERIT)) {
+    if ((mutex->mpo->protocol == PTHREAD_PRIO_PROTECT) ||
+            (mutex->mpo->protocol == PTHREAD_PRIO_INHERIT)) {
 
-        Queue_enqueue(Queue_handle(&(thisThread->mutexList)),
-                (Queue_Elem *)mutex);
+        mutexList = Queue_handle(&(thisThread->mutexList));
+        Queue_enqueue(mutexList, &(mutex->mpo->qElem));
 
         thisThreadPri = Task_getPri(thisThread->task);
 
-        if (mutex->prioceiling > thisThreadPri) {
-            Task_setPri(Task_self(), mutex->prioceiling);
+        if (mutex->mpo->prioceiling > thisThreadPri) {
+            Task_setPri(Task_self(), mutex->mpo->prioceiling);
         }
     }
 
@@ -804,7 +810,7 @@ static int acquireMutexPriority(pthread_mutex_Obj *mutex, UInt32 timeout)
 }
 #endif
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== adjustPri ========
  *  Adjust thread's priorty to the max of the priority ceilings of the
@@ -823,31 +829,31 @@ static void adjustPri(pthread_Obj *thread)
 }
 #endif
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== removeMutex ========
  *  Remove a PTHREAD_PRIO_PROTECT or PTHREAD_PRIO_INHERIT mutex from the
  *  queue and restore priority, if necessary.
  *  Call with Task scheduling disabled.
  */
-static void removeMutex(pthread_mutex_Obj *mutex)
+static void removeMutex(pthread_mutex_obj *mutex)
 {
     pthread_Obj        *thread = (pthread_Obj *)pthread_self();
 
-    Queue_remove((Queue_Elem *)mutex);
+    Queue_remove(&(mutex->mpo->qElem));
     adjustPri(thread);
 }
 #endif
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== resetInheritPriority ========
  *  Called after a timeout, to recalculate inherited priorities
  */
-static void resetInheritPriority(pthread_mutex_Obj *mutex)
+static void resetInheritPriority(pthread_mutex_obj *mutex)
 {
     pthread_Obj       *owner;
-    pthread_mutex_Obj *next;
+    pthread_mutex_obj *next;
     int                priority;
     int                ownerPri;
 
@@ -877,20 +883,20 @@ static void resetInheritPriority(pthread_mutex_Obj *mutex)
          */
         adjustPri(owner);
 
-        next = ((pthread_Obj *)(owner))->blockedMutex;
-        owner = (next == NULL) ? NULL : (pthread_Obj *)(next->owner);
+        next = (pthread_mutex_obj *)(&owner->blockedMutex->sysbios);
+        owner = (next == NULL ? NULL : next->owner);
     }
 }
 #endif
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== setInheritPriority ========
  */
-static void setInheritPriority(pthread_mutex_Obj *mutex, int priority)
+static void setInheritPriority(pthread_mutex_obj *mutex, int priority)
 {
     pthread_Obj       *owner;
-    pthread_mutex_Obj *next;
+    pthread_mutex_obj *next;
     int                ownerPri;
 
     owner = mutex->owner;
@@ -902,7 +908,7 @@ static void setInheritPriority(pthread_mutex_Obj *mutex, int priority)
         if (ownerPri < priority) {
             /* Boost the mutex owner's priority */
             _pthread_setRunningPriority((pthread_t)owner, priority);
-            next->prioceiling = priority;
+            next->mpo->prioceiling = priority;
         }
         else {
             /*
@@ -915,32 +921,32 @@ static void setInheritPriority(pthread_mutex_Obj *mutex, int priority)
             break;
         }
 
-        next = ((pthread_Obj *)(owner))->blockedMutex;
-        owner = (next == NULL) ? NULL : (pthread_Obj *)(next->owner);
+        next = (pthread_mutex_obj *)(&owner->blockedMutex->sysbios);
+        owner = (next == NULL ? NULL : next->owner);
     }
 }
 #endif
 
-#if ti_posix_tirtos_Settings_enableMutexPriority__D
+#ifdef ti_posix_tirtos_Settings_enableMutexPriority__D
 /*
  *  ======== setPrioCeiling ========
  */
-static int setPrioCeiling(pthread_mutex_Obj *mutex)
+static int setPrioCeiling(pthread_mutex_obj *mutex)
 {
     pthread_t          pthread;
     Queue_Handle       waitList;
     int                priority = 0;
 
-    Assert_isTrue(mutex->protocol == PTHREAD_PRIO_INHERIT, 0);
+    Assert_isTrue(mutex->mpo->protocol == PTHREAD_PRIO_INHERIT, 0);
 
-    waitList = Queue_handle(&(mutex->waitList));
+    waitList = Queue_handle(&mutex->mpo->waitList);
     pthread = (pthread_t)Queue_head(waitList);
-    mutex->prioceiling = 0;
+    mutex->mpo->prioceiling = 0;
 
     while (pthread != (pthread_t)waitList) {
         priority = _pthread_getRunningPriority(pthread);
-        if (priority > mutex->prioceiling) {
-            mutex->prioceiling = priority;
+        if (priority > mutex->mpo->prioceiling) {
+            mutex->mpo->prioceiling = priority;
         }
         pthread = (pthread_t)Queue_next((Queue_Elem *)pthread);
     }

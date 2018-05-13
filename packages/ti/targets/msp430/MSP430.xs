@@ -17,7 +17,7 @@ function asmName(cname)
     return (cname);
 }
 /*
- *  @(#) ti.targets.msp430; 1, 0, 0,0; 11-8-2017 17:21:22; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) ti.targets.msp430; 1, 0, 0,0; 4-19-2018 16:54:56; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 

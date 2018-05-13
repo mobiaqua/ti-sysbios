@@ -47,6 +47,35 @@ var Program = null;
 var BIOS = null;
 
 /*
+ * ======== getCFiles ========
+ * return the array of C language files associated
+ * with targetName (ie Program.build.target.$name)
+ */
+function getCFiles(targetName)
+{
+    if (BIOS.mpeEnabled) {
+        return (["Semaphore.c", "Semaphore_svc.c"]);
+    }
+    else {
+        return (["Semaphore.c"]);
+    }
+}
+
+/*
+ *  ======== module$meta$init ========
+ */
+function module$meta$init()
+{
+    /* Only process during "cfg" phase */
+    if (xdc.om.$name != "cfg") {
+        return;
+    }
+
+    /* provide getCFiles() for Build.getCFiles() */
+    this.$private.getCFiles = getCFiles;
+}
+
+/*
  *  ======== module$use ========
  */
 function module$use()

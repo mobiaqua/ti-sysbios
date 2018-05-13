@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,7 @@ function module$meta$init()
         var settings = xdc.module('ti.sysbios.family.Settings');
         var defaultBootModule = settings.getDefaultBootModule();
         if (defaultBootModule != null) {
-            var BootModule = xdc.useModule(defaultBootModule);
+            var BootModule = xdc.module(defaultBootModule);
             if ('registerFreqListener' in BootModule) {
                 BootModule.registerFreqListener(this);
             }
@@ -200,6 +200,11 @@ function module$use()
 
     if ((BIOS.smpEnabled == true) || (BIOS.libType == BIOS.LibType_Debug)) {
         Core = xdc.useModule('ti.sysbios.hal.Core');
+    }
+
+    if (BIOS.mpeEnabled) {
+        xdc.useModule('ti.sysbios.hal.MemProtect');
+        xdc.useModule('ti.sysbios.hal.SysCall');
     }
 
     /* If app config has not specified an argSize, set it to zero */
@@ -371,6 +376,10 @@ function module$use()
         if (BIOS.heapSize != 0) {
             Program.exportModule('xdc.runtime.Memory');
 
+            if (BIOS.mpeEnabled && (BIOS.heapSection == null)) {
+                BIOS.heapSection = ".public_heap";
+            }
+
             var HeapMem = xdc.useModule('ti.sysbios.heaps.HeapMem', true);
             HeapMem.common$.fxntab = true;
             var heapMemParams = new HeapMem.Params;
@@ -394,6 +403,30 @@ function module$use()
 
     /* Set Program.heap accordingly */
     MemAlloc.configureProgramHeap();
+
+    if (BIOS.mpeEnabled) {
+        var HeapMem = xdc.useModule('ti.sysbios.heaps.HeapMem', true);
+        HeapMem.common$.fxntab = true;
+        var heapMemParams = new HeapMem.Params;
+        heapMemParams.size = BIOS.kernelHeapSize;
+        heapMemParams.sectionName = BIOS.kernelHeapSection;
+        var heap0 = HeapMem.create(heapMemParams);
+
+        if (BIOS.heapTrackEnabled) {
+            var HeapTrack = xdc.useModule('ti.sysbios.heaps.HeapTrack', true);
+            var heapTrackParams = new HeapTrack.Params;
+            heapTrackParams.heap = heap0;
+            var heap1 = HeapTrack.create(heapTrackParams);
+
+            BIOS.defaultKernelHeapInstance = heap1;
+        }
+        else {
+            BIOS.defaultKernelHeapInstance = heap0;
+        }
+
+        var Defaults = xdc.useModule("xdc.runtime.Defaults");
+        Defaults.common$.instanceHeap = BIOS.defaultKernelHeapInstance;
+    }
 
     /* Hijack Error.raiseHook and insert ours in before it */
     var Error = xdc.module('xdc.runtime.Error');

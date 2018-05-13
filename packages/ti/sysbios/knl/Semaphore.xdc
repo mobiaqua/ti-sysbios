@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Texas Instruments Incorporated
+ * Copyright (c) 2014-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ import xdc.rov.ViewInfo;
 import xdc.runtime.Diags;
 import xdc.runtime.Log;
 import xdc.runtime.Assert;
+import xdc.runtime.Error;
 
 import ti.sysbios.knl.Queue;
 import ti.sysbios.knl.Task;
@@ -62,11 +63,13 @@ import ti.sysbios.knl.Clock;
  *
  *  Binary semaphores can have only two states: available (count = 1) and
  *  unavailable (count = 0). They can be used to share a single resource
- *  between
- *  tasks. They can also be used for a basic signaling mechanism, where the
- *  semaphore can be posted multiple times. Binary semaphores do not keep track
- *  of the count; they simply track whether the semaphore has been posted
- *  or not.
+ *  between tasks. They can also be used for a basic signaling mechanism,
+ *  where the semaphore can be posted multiple times. Binary semaphores do
+ *  not keep track of the count; they simply track whether the semaphore has
+ *  been posted or not.
+ *
+ *  See {@link #getCount Semaphore_getCount()} for more details of the 'count'
+ *  behavior.
  *
  *  The Mailbox module uses a counting semaphore internally to manage the
  *  count of free (or full) mailbox elements. Another example of a counting
@@ -143,6 +146,7 @@ import ti.sysbios.knl.Clock;
  *  @p
  */
 
+@CustomHeader
 @DirectCall
 @InstanceFinalize       /* to destruct queue */
 @InstanceInitStatic     /* Construct/Destruct CAN becalled at runtime */
@@ -260,7 +264,7 @@ module Semaphore
      *  Assert raised if the semaphore count is incremented past 65535
      *
      *  Asserted when Semaphore_post() has been called when the 16 bit
-     *  semaphore count is at its maxmium value of 65535.
+     *  semaphore count is at its maximum value of 65535.
      */
     config Assert.Id A_overflow = {
         msg: "A_overflow: Count has exceeded 65535 and rolled over."
@@ -275,6 +279,18 @@ module Semaphore
      */
     config Assert.Id A_pendTaskDisabled = {
         msg: "A_pendTaskDisabled: Cannot call Semaphore_pend() while the Task or Swi scheduler is disabled."
+    };
+
+    // Errors
+
+    /*!
+     *  Error raised when BIOS.mpeEnabled is TRUE and Semaphore object passed to
+     *  Semaphore_construct() is not in Kernel address space. This can happen if
+     *  a user Task passes a Semaphore object that resides in unprivileged
+     *  memory to Semaphore_construct().
+     */
+    config Error.Id E_objectNotInKernelSpace = {
+        msg: "E_objectNotInKernelSpace: Semaphore object passed not in Kernel address space."
     };
 
     /*!
@@ -353,6 +369,20 @@ instance:
      *  This function returns the current value of the semaphore specified by
      *  the handle.
      *
+     *  A semaphore's count is incremented when Semaphore_post() is called.
+     *  If configured as a binary semaphore, the count will not increment past
+     *  1. If configured as a counting semaphore, the count will continue
+     *  incrementing and will rollover to zero after reaching a count of
+     *  65,535. Care must be taken in applications to avoid the rollover
+     *  situation as a count of zero will always be interpreted as an empty
+     *  semaphore.
+     *
+     *  A semaphore's count is decremented, if non-zero, when Semaphore_pend()
+     *  is called. A task will block on a semaphore if the count is zero when
+     *  Semaphore_pend() is called. An empty semaphore will always have a
+     *  count of zero regardless of the number of tasks that are blocked on
+     *  it.
+     *
      *  @b(returns)             current semaphore count
      */
     Int getCount();
@@ -364,7 +394,8 @@ instance:
      *  If the semaphore count is greater than zero (available), this function
      *  decrements the count and returns TRUE. If the semaphore count is zero
      *  (unavailable), this function suspends execution of the current task
-     *  until post() is called or the timeout expires.
+     *  (leaving the count equal to zero) until post() is called or the
+     *  timeout expires.
      *
      *  A timeout value of
      *  {@link ti.sysbios.BIOS#WAIT_FOREVER BIOS_WAIT_FOREVER} causes
@@ -372,6 +403,14 @@ instance:
      *
      *  A timeout value of {@link ti.sysbios.BIOS#NO_WAIT BIOS_NO_WAIT}
      *  causes Semaphore_pend to return immediately.
+     *
+     *  @a(Event Object Note)
+     *  If the Semaphore object has been configured with an embedded Event
+     *  object, then prior to returning from this function, the Event object's
+     *  state is updated to reflect the new value of 'count'. 
+     *  If 'count' is zero, then the configured Event_Id is cleared in the
+     *  Event object. If 'count' is non-zero, then the configured Event_Id
+     *  is set in the Event object.
      *
      *  @param(timeout)     return after this many system time units
      *
@@ -383,10 +422,11 @@ instance:
      *  ======== post ========
      *  Signal a semaphore.
      *
-     *  Readies the first task waiting for the semaphore. If no task is
-     *  waiting, this function simply increments the semaphore count and
-     *  returns.  In the case of a binary semaphore, the count has a
-     *  maximum value of one.
+     *  If any tasks are waiting on the semaphore, this function readies
+     *  the first task waiting for the semaphore without incrementing
+     *  the count. If no task is waiting, this function simply increments
+     *  the semaphore count and returns. In the case of a binary semaphore,
+     *  the count has a maximum value of one.
      */
     Void post();
 

@@ -57,7 +57,7 @@ PAGE 1 : /* Data Memory */
 
     M01SARAM : origin = 0x000122, length = 0x0006DE  /* on-chip RAM */
 
-    LS07SARAM : origin = 0x008000, length = 0x004000 /* on-chip RAM */
+    LS05SARAM : origin = 0x008000, length = 0x003000 /* on-chip RAM */
 
     /* on-chip Global shared RAMs */
     RAMGS0  : origin = 0x00C000, length = 0x002000
@@ -80,7 +80,7 @@ SECTIONS
     .text               : > FLASHA | FLASHB PAGE = 0
     codestart           : > BEGIN   PAGE = 0
     ramfuncs            : LOAD = FLASHA | FLASHB PAGE = 0
-                          RUN  = LS07SARAM  PAGE = 1
+                          RUN  = LS05SARAM  PAGE = 1
                           LOAD_START(_RamfuncsLoadStart),
                           LOAD_SIZE(_RamfuncsLoadSize),
                           LOAD_END(_RamfuncsLoadEnd),
@@ -89,16 +89,16 @@ SECTIONS
                           RUN_END(_RamfuncsRunEnd)
 
     /* Allocate uninitalized data sections: */
-    .stack              : > M01SARAM | LS07SARAM    PAGE = 1
+    .stack              : > M01SARAM | LS05SARAM    PAGE = 1
 #ifdef __TI_EABI__
-    .bss                : > M01SARAM | LS07SARAM    PAGE = 1
-    .sysmem             : > LS07SARAM | M01SARAM    PAGE = 1
-    .data               : > M01SARAM | LS07SARAM    PAGE = 1
+    .bss                : > M01SARAM | LS05SARAM    PAGE = 1
+    .sysmem             : > LS05SARAM | M01SARAM    PAGE = 1
+    .data               : > M01SARAM | LS05SARAM | RAMGS0 | RAMGS1    PAGE = 1
 #else
-    .ebss               : > M01SARAM | LS07SARAM    PAGE = 1
-    .esysmem            : > LS07SARAM | M01SARAM    PAGE = 1
+    .ebss               : > M01SARAM | LS05SARAM    PAGE = 1
+    .esysmem            : > LS05SARAM | M01SARAM    PAGE = 1
 #endif
-    .cio                : > LS07SARAM | M01SARAM    PAGE = 1
+    .cio                : > LS05SARAM | M01SARAM    PAGE = 1
 
     /* Initalized sections go in Flash */
 #ifdef __TI_EABI__

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@
 /*
  *  ======== Load.c ========
  */
+
+#include <stdint.h>
 
 #include <xdc/std.h>
 
@@ -133,9 +135,9 @@ Void Load_taskDeleteHook(Task_Handle task)
     }
 
     /* Only free dynamically allocated contexts */
-    if (((UInt32)pStoredContext < (UInt32)(Load_module->taskEnv)) ||
-            (UInt32)pStoredContext >=
-            (UInt32)(Load_module->taskEnv + Load_module->taskEnvLen)) {
+    if (((uintptr_t)pStoredContext < (uintptr_t)(Load_module->taskEnv)) ||
+            (uintptr_t)pStoredContext >=
+            (uintptr_t)(Load_module->taskEnv + Load_module->taskEnvLen)) {
         Memory_free(Task_Object_heap(), pStoredContext,
                 sizeof(Load_HookContext));
     }

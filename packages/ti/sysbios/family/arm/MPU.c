@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,10 @@
 Void MPU_startup()
 {
     UInt i;
+
+    if (MPU_isEnabled()) {
+        MPU_disable();
+    }
 
     MPU_disableBR();
 
@@ -281,4 +285,30 @@ Void MPU_setRegion(UInt8 regionId, Ptr regionBaseAddr,
     if (enabled) {
         MPU_enable();
     }
+}
+
+/*
+ *  ======== MPU_setRegionRaw ========
+ *  Cortex-M specific implementation
+ */
+Void MPU_setRegionRaw(UInt32 rbar, UInt32 rasr)
+{
+    UInt32 key;
+    Bool   enabled;
+
+    key = Hwi_disable();
+
+    enabled = MPU_isEnabled();
+
+    /* disable the MPU (if already disabled, does nothing) */
+    MPU_disable();
+
+    MPU_deviceRegs.RBAR = rbar;
+    MPU_deviceRegs.RASR = rasr;
+
+    if (enabled) {
+        MPU_enable();
+    }
+
+    Hwi_restore(key);
 }

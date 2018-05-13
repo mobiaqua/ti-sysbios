@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_knl_Event__epilogue__include
+#define ti_sysbios_knl_Event__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,4 +78,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

@@ -29,3 +29,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef ti_sysbios_knl_Intrinsics__prologue__include
+#define ti_sysbios_knl_Intrinsics__prologue__include
+
+#endif

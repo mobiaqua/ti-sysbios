@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,12 @@ with a Texas Instruments compiler. You appear to be using a different compiler.
 
 #include <stddef.h>
 #include <stdint.h>
+
+/*  TI ARM 18.1.0.LTS added sys/types.h but we intentionally do *not*
+ *  include it (effectively hiding it from source files). We were not
+ *  able to use it because of type collisions (off_t in file.h).
+ */
+
 #include "_internal.h"
 
 #ifdef __cplusplus
@@ -66,11 +72,35 @@ typedef __SIZE_T_TYPE__ ssize_t;
 #error __SIZE_T_TYPE__ not defined
 #endif
 
+#ifndef _CLOCKID_T_DECLARED
 typedef uint32_t clockid_t;
+#define _CLOCKID_T_DECLARED
+#endif
+
+#ifndef _USECONDS_T_DECLARED
 typedef unsigned long useconds_t;
+#define _USECONDS_T_DECLARED
+#endif
+
+#ifndef _TIMER_T_DECLARED
 typedef unsigned long timer_t;
+#define _TIMER_T_DECLARED
+#endif
+
+#ifndef _SUSECONDS_T_DECLARED
 typedef long suseconds_t;
+#define _SUSECONDS_T_DECLARED
+#endif
+
+#ifndef _UID_T_DECLARED
 typedef unsigned short uid_t;
+#define _UID_T_DECLARED
+#endif
+
+/*  TI compiler defines time_t in time.h (should be in sys/types.h).
+ *  Pull in time.h to get time_t definition.
+ */
+#include <../include/time.h>
 
 
 /*
@@ -110,12 +140,16 @@ typedef union {
     struct freertos_Barrier freertos;
 } pthread_barrier_t;
 
-typedef struct {
+typedef union {
     struct sysbios_Cond sysbios;
     struct freertos_Cond freertos;
 } pthread_cond_t;
 
-typedef void *pthread_mutex_t;
+typedef union {
+    struct sysbios_Mutex sysbios;
+    struct freertos_Mutex freertos;
+} pthread_mutex_t;
+
 typedef uint32_t pthread_once_t;
 
 typedef union {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,9 +50,6 @@ var objList = [
 /* generate makefiles */
 BiosBuild.buildLibs(objList, undefined, null, arguments);
 
-/* generate smp makefiles */
-BiosBuild.buildLibs(objList, undefined, null, ["profile=smp"]);
-
 Pkg.otherFiles = [ "package.bld", 
                    "Clock.xdt", 
                    "Clock.xml", 
@@ -63,9 +60,11 @@ Pkg.otherFiles = [ "package.bld",
                    "Task.xdt",
                    "Task__prologue.h", "Task__epilogue.h",
                    "Task_smp.c",
+                   "Task_svc.c",
                    "Swi.xml", 
                    "Swi_smp.c",
                    "Idle.xml",
+                   "Semaphore_svc.c",
                    "Semaphore.xml",
                    "Event__prologue.h", "Event__epilogue.h",
                    "Event.xml"

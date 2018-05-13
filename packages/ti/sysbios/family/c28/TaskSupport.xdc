@@ -50,5 +50,5 @@ module TaskSupport inherits ti.sysbios.interfaces.ITaskSupport
     override readonly config SizeT defaultStackSize = 256;
 
     /*! Required stack alignment (in MAUs). */
-    override readonly config UInt stackAlignment = 0;
+    override readonly config UInt stackAlignment = 2;
 }

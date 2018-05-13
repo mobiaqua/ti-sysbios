@@ -241,7 +241,6 @@ function instance$meta$init(name)
                 this.CPU.clockRate = 80;
             }
 
-            Boot.pllOutEnable = false;          /* no PLL output */
             Boot.ioscDisable = false;           /* IOSC is enabled */
             Boot.moscDisable = false;           /* MOSC is enabled */
 

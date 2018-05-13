@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1146,7 +1146,8 @@ instance:
      *  'swiFxn', no attempt is made to return the Swi function.
      *
      *  The 'params' argument is a pointer to a Swi_Params structure that will
-     *  contain the retrieved Swi attributes.
+     *  contain the retrieved Swi attributes.  If 'params' is NULL, no attempt
+     *  is made to retrieve the Swi_Params.
      *
      *  @related {@link #setAttrs Swi_setAttrs()}
      *
@@ -1182,7 +1183,7 @@ instance:
      *  @related {@link #getAttrs Swi_getAttrs()}
      *
      *  @param(swiFxn)     address of the Swi function
-     *  @param(params)     pointer for returning Swi's Params
+     *  @param(params)     pointer to optional Swi_Params structure
      */
     Void setAttrs(FuncPtr swiFxn, Params *params);
 
@@ -1193,7 +1194,10 @@ instance:
      *  Swi_setPri sets the priority of the Swi passed in as the
      *  argument.
      *
-     *  @Constraints
+     *  @a(constraints)
+     *  The priority must be in the range of 0 and numPriorities-1.
+     *
+     *  @a(constraints)
      *  Swi_setPri() must not be used on a Swi that is preempted
      *  or is ready to run.
      *

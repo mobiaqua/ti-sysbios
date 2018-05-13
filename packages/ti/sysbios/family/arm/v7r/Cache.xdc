@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -169,18 +169,6 @@ module Cache inherits ti.sysbios.interfaces.ICache
     config Bool enableCache = true;
 
     /*!
-     *  Enable Branch Prediction at startup, default is true.
-     *
-     *  This flag controls whether Branch Prediction should be automatically
-     *  enabled or disabled during system startup.
-     *
-     *  @a(NOTE)
-     *  Upon reset, Cortex-R core's Program Flow Prediction (Branch Prediction)
-     *  feature is disabled.
-     */
-    config Bool branchPredictionEnabled = true;
-
-    /*!
      *  ======== disable ========
      *  Disables the 'type' cache(s)
      *
@@ -222,35 +210,8 @@ module Cache inherits ti.sysbios.interfaces.ICache
     Void invL1pAll();
 
     /*!
-     *  ======== enableBP ========
-     *  Enable Branch Prediction
-     *
-     *  Calling this API will enable branch prediction.
-     *
-     *  @a(NOTE)
-     *  Upon reset, the R5's Program Flow Prediction (Branch Prediction)
-     *  feature is disabled.
-     */
-    Void enableBP();
-
-    /*!
-     *  ======== disableBP ========
-     *  Disable Branch Prediction
-     *
-     *  Calling this API will disable branch prediction.
-     *
-     *  @a(NOTE)
-     *  Upon reset, the R5's Program Flow Prediction (Branch Prediction)
-     *  feature is disabled.
-     */
-    Void disableBP();
-
-    /*!
      *  ======== invBPAll ========
      *  Invalidate all branch predictors
-     *
-     *  Invalidates all branch predictors on this core. If running in SMP mode,
-     *  this operation is broadcast to all other cores.
      */
     Void invBPAll();
 

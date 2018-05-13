@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2017, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifdef __TMS470__
-#if __TI_COMPILER_VERSION__ < 4009000
-#error "This version of BIOS requires the use of Arm codegen tools 4.9.0 or newer."
-#endif
-#endif
+#ifndef ti_sysbios_BIOS__epilogue__include
+#define ti_sysbios_BIOS__epilogue__include
 
+#endif

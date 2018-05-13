@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Swi.h>
 #include <ti/sysbios/knl/Intrinsics.h>
+#include <ti/sysbios/hal/MemProtect.h>
 
 #include "package/internal/Task.xdc.h"
 
@@ -64,7 +65,7 @@ extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
 #endif
 
 #define Task_moduleStateCheckValue   \
-    ti_sysbios_knl_Task_moduleStateCheckValue
+    (ti_sysbios_knl_Task_moduleStateCheckValue)
 
 #ifdef __ti__
 /* disable unused local variable warning during optimized compile */
@@ -77,7 +78,7 @@ extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
  *
  *  Must be called with interrupts disabled.
  */
-Void Task_schedule()
+Void Task_schedule(Void)
 {
     Queue_Handle maxQ;
     Task_Object *prevTask;
@@ -90,29 +91,34 @@ Void Task_schedule()
         Task_module->workFlag = 0;
 
         /* stall until a task is ready */
-        while (Task_module->curSet == 0) {
+        while (Task_module->curSet == 0U) {
             Task_allBlockedFunction();
         }
 
         /* Determine current max ready Task priority */
         maxQ = (Queue_Handle)((UInt8 *)(Task_module->readyQ) +
-                (UInt)(Intrinsics_maxbit(Task_module->curSet)*(2*sizeof(Ptr))));
+               (Intrinsics_maxbit(Task_module->curSet)*(2U*sizeof(Ptr))));
 
         /* if a higher priority task is ready - switch to it */
         if (maxQ > Task_module->curQ) {
             prevTask = Task_module->curTask;
             Task_module->curQ = maxQ;
-            Task_module->curTask = Queue_head(maxQ);
+            Task_module->curTask = (Task_Handle)Queue_head(maxQ);
             curTask = Task_module->curTask;
+            /* CWARN.CONSTCOND.IF */
+            if (BIOS_mpeEnabled != FALSE) {
+                Task_module->curTaskPrivileged = curTask->privileged;
+            }
 
             if (Task_checkStackFlag) {
+                /* UNREACH.GEN */
                 Task_checkStacks(prevTask, curTask);
             }
 
 #if !defined(ti_sysbios_knl_Task_DISABLE_ALL_HOOKS) \
     || (xdc_runtime_Log_DISABLE_ALL == 0)
             /* It's safe to enable intrs here */
-            Hwi_enable();
+            (Void)Hwi_enable();
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
             for (i = 0; i < Task_hooks.length; i++) {
@@ -122,15 +128,22 @@ Void Task_schedule()
             }
 #endif
 
+            /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
             Log_write4(Task_LM_switch, (UArg)prevTask, (UArg)prevTask->fxn,
                        (UArg)curTask, (UArg)curTask->fxn);
 
             /* Hard-disable intrs - this fxn is called with them disabled */
-            Hwi_disable();
-#elif (ti_sysbios_knl_Task_minimizeLatency__D == TRUE)
+            (Void)Hwi_disable();
+#elif defined(ti_sysbios_knl_Task_minimizeLatency__D) \
+    && (ti_sysbios_knl_Task_minimizeLatency__D == TRUE)
             Hwi_enable();
-            Hwi_disable();	
+            Hwi_disable();
 #endif
+            if ((BIOS_mpeEnabled == TRUE) &&
+                (prevTask->domain != curTask->domain)) {
+                MemProtect_switch((MemProtect_Struct *)curTask->domain);
+            }
+
             Task_SupportProxy_swap((Ptr)&prevTask->context,
                             (Ptr)&curTask->context);
         }
@@ -144,13 +157,13 @@ Void Task_schedule()
  *  Unlock the Task Scheduler to enter task as though we
  *  returned through Task_restore()
  */
-Void Task_enter()
+Void Task_enter(Void)
 {
     if (Task_module->workFlag) {
         Task_schedule();
     }
     Task_module->locked = FALSE;
-    Hwi_enable();
+    (Void)Hwi_enable();
 }
 
 /*
@@ -164,6 +177,7 @@ Void Task_enter()
  *  Initialize and start the Task Module.
  *  Called at system init time before main().
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Int Task_Module_startup (Int phase)
 {
     /*
@@ -190,17 +204,18 @@ Int Task_Module_startup (Int phase)
 
             if (Task_moduleStateCheckFlag) {
                 Task_moduleStateCheckValue =
+                    /* UNREACH.GEN */
                     Task_moduleStateCheckValueFxn(Task_module);
             }
 
             /* do post init on all statically Created tasks */
-            for (i = 0; i < Task_Object_count(); i++) {
-                Task_postInit(Task_Object_get(NULL, i), NULL);
+            for (i = 0; i < (Int)Task_Object_count(); i++) {
+                (Void)Task_postInit(Task_Object_get(NULL, i), NULL);
             }
 
             /* do post init on all statically Constructed tasks */
-            for (j = 0; j < Task_numConstructedTasks; j++) {
-                Task_postInit(Task_module->constructedTasks[j], NULL);
+            for (j = 0; j < (UInt)Task_numConstructedTasks; j++) {
+                (Void)Task_postInit(Task_module->constructedTasks[j], NULL);
             }
 
             return (Startup_DONE);
@@ -217,7 +232,7 @@ Int Task_Module_startup (Int phase)
 /*
  *  ======== Task_startup ========
  */
-Void Task_startup()
+Void Task_startup(Void)
 {
     Task_startCore(0);
 }
@@ -225,6 +240,7 @@ Void Task_startup()
 /*
  *  ======== Task_startCore ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Void Task_startCore(UInt coreId)
 {
     Queue_Handle maxQ;
@@ -234,35 +250,40 @@ Void Task_startCore(UInt coreId)
     Int i;
 #endif
 
-    Hwi_disable();      /* re-enabled in Task_enter of first task */
+    (Void)Hwi_disable();      /* re-enabled in Task_enter of first task */
 
     /* Use dummyTask as initial task to swap from */
     prevTask = Task_handle(&dummyTask);
 
     /* stall until a task is ready */
-    while (Task_module->curSet == 0) {
+    while (Task_module->curSet == 0U) {
         Task_allBlockedFunction();
     }
 
     /* Determine current max ready Task priority */
     maxQ = (Queue_Handle)((UInt8 *)(Task_module->readyQ) +
-                (UInt)(Intrinsics_maxbit(Task_module->curSet)*(2*sizeof(Ptr))));
+           (Intrinsics_maxbit(Task_module->curSet)*(2U*sizeof(Ptr))));
 
     Task_module->curQ = maxQ;
-    Task_module->curTask = Queue_head(maxQ);
+    Task_module->curTask = (Task_Handle)Queue_head(maxQ);
+    /* CWARN.CONSTCOND.IF */
+    if (BIOS_mpeEnabled) {
+        Task_module->curTaskPrivileged = Task_module->curTask->privileged;
+    }
 
     /* we've done the scheduler's work */
     Task_module->workFlag = 0;
 
     /* Signal that we are entering task thread mode */
-    BIOS_setThreadType(BIOS_ThreadType_Task);
+    (Void)BIOS_setThreadType(BIOS_ThreadType_Task);
 
     if (Task_checkStackFlag) {
+        /* UNREACH.GEN */
         Task_checkStacks(NULL, Task_module->curTask);
     }
 
     /* should be safe to enable intrs here */
-    Hwi_enable();
+    (Void)Hwi_enable();
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
     /* Run switch hooks for first real Task */
@@ -273,17 +294,23 @@ Void Task_startCore(UInt coreId)
     }
 #endif
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write4(Task_LM_switch, (UArg)0, (UArg)0,
                (UArg)Task_module->curTask,
                (UArg)Task_module->curTask->fxn);
 
     /* must leave this function with ints disabled */
-    Hwi_disable();
+    (Void)Hwi_disable();
 
     /* inform dispatcher that we're running on task stack */
     Hwi_switchFromBootStack();
 
-    /* start first task by way of enter() */
+    /* CWARN.CONSTCOND.IF */
+    if (BIOS_mpeEnabled) {
+        MemProtect_switch((MemProtect_Struct *)Task_module->curTask->domain);
+    }
+
+   /* start first task by way of enter() */
     Task_SupportProxy_swap((Ptr)&prevTask->context,
                 (Ptr)&Task_module->curTask->context);
 }
@@ -291,7 +318,7 @@ Void Task_startCore(UInt coreId)
 /*
  *  ======== Task_unlockSched ========
  */
-Void Task_unlockSched()
+Void Task_unlockSched(Void)
 {
     Task_module->locked = FALSE;
 }
@@ -299,26 +326,28 @@ Void Task_unlockSched()
 /*
  *  ======== Task_enabled ========
  */
-Bool Task_enabled()
+Bool Task_enabled(Void)
 {
     if (BIOS_swiEnabled == FALSE) {
-        return (Task_module->locked == FALSE);
+        /* UNREACH.GEN */
+        return (Bool)(Task_module->locked == FALSE);
     }
     else {
-        return ((Task_module->locked == FALSE) && Swi_enabled());
+        return (Bool)((Task_module->locked == FALSE) && Swi_enabled() == TRUE);
     }
 }
 
 /*
  *  ======== Task_disable ========
  */
-UInt Task_disable()
+UInt Task_disable(Void)
 {
-    UInt key = Task_module->locked;
+    UInt key = (UInt)Task_module->locked;
 
     Task_module->locked = TRUE;
 
     if (Task_moduleStateCheckFlag) {
+        /* UNREACH.GEN */
         if (Task_moduleStateCheckFxn(Task_module,
                                      Task_moduleStateCheckValue) != 0) {
             Error_raise(NULL, Task_E_moduleStateCheckFailed, 0, 0);
@@ -331,7 +360,7 @@ UInt Task_disable()
 /*
  *  ======== Task_enable ========
  */
-Void Task_enable()
+Void Task_enable(Void)
 {
     Task_restore(0);
 }
@@ -342,13 +371,14 @@ Void Task_enable()
 Void Task_restore(UInt tskKey)
 {
     if (tskKey == FALSE) {
-        Hwi_disable();
-        if (Task_module->workFlag
-            && (!BIOS_swiEnabled || (BIOS_swiEnabled && Swi_enabled()))) {
+        (Void)Hwi_disable();
+        if (Task_module->workFlag == TRUE &&
+            (BIOS_swiEnabled == FALSE ||
+             (BIOS_swiEnabled == TRUE && Swi_enabled() == TRUE))) {
             Task_schedule();
         }
         Task_module->locked = FALSE;
-        Hwi_enable();
+        (Void)Hwi_enable();
     }
 }
 
@@ -365,8 +395,9 @@ Void Task_restore(UInt tskKey)
 Void Task_restoreHwi(UInt tskKey)
 {
     if (tskKey == FALSE) {
-        if (Task_module->workFlag
-            && (!BIOS_swiEnabled || (BIOS_swiEnabled && Swi_enabled()))) {
+        if (Task_module->workFlag == TRUE &&
+            (BIOS_swiEnabled == FALSE ||
+             (BIOS_swiEnabled == TRUE && Swi_enabled() == TRUE))) {
             Task_schedule();
         }
         Task_module->locked = FALSE;
@@ -376,7 +407,7 @@ Void Task_restoreHwi(UInt tskKey)
 /*
  *  ======== Task_self ========
  */
-Task_Handle Task_self()
+Task_Handle Task_self(Void)
 {
     return (Task_module->curTask);
 }
@@ -386,18 +417,16 @@ Task_Handle Task_self()
  */
 Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
 {
-    UInt32 *checkValue;
     UInt oldTaskStack; /* used to obtain current (oldTask) stack address */
 
     if (Task_objectCheckFlag) {
+        /* UNREACH.GEN */
         if (oldTask != NULL) {
-            checkValue = Task_SupportProxy_getCheckValueAddr(oldTask);
-            if (Task_objectCheckFxn(oldTask, *checkValue) != 0) {
+            if (Task_objectCheckFxn(oldTask, oldTask->checkValue) != 0) {
                 Error_raise(NULL, Task_E_objectCheckFailed, oldTask, 0);
             }
         }
-        checkValue = Task_SupportProxy_getCheckValueAddr(newTask);
-        if (Task_objectCheckFxn(newTask, *checkValue) != 0) {
+        if (Task_objectCheckFxn(newTask, newTask->checkValue) != 0) {
             Error_raise(NULL, Task_E_objectCheckFailed, newTask, 0);
         }
     }
@@ -410,23 +439,27 @@ Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
     }
 
     /* check top of stacks for 0xbe */
-    if (!Task_SupportProxy_checkStack(oldTask->stack, oldTask->stackSize)) {
+    if (Task_SupportProxy_checkStack(oldTask->stack, oldTask->stackSize) ==
+        FALSE) {
         Error_raise(NULL, Task_E_stackOverflow, oldTask, 0);
     }
 
-    if (!Task_SupportProxy_checkStack(newTask->stack, newTask->stackSize)) {
+    if (Task_SupportProxy_checkStack(newTask->stack, newTask->stackSize) ==
+        FALSE) {
         Error_raise(NULL, Task_E_stackOverflow, newTask, 0);
     }
 
     /* check sp's for being in bounds */
     if (((UArg)&oldTaskStack < (UArg)oldTask->stack) ||
         ((UArg)&oldTaskStack > (UArg)(oldTask->stack+oldTask->stackSize))) {
-        Error_raise(NULL, Task_E_spOutOfBounds, oldTask, oldTask->context);
+        /* MISRA.CAST.VOID_PTR_TO_INT.2012 */
+        Error_raise(NULL, Task_E_spOutOfBounds, (UArg)oldTask, (UArg)oldTask->context);
     }
 
     if ((newTask->context < (Ptr)newTask->stack) ||
         (newTask->context > (Ptr)(newTask->stack+newTask->stackSize))) {
-        Error_raise(NULL, Task_E_spOutOfBounds, newTask, newTask->context);
+        /* MISRA.CAST.VOID_PTR_TO_INT.2012 */
+        Error_raise(NULL, Task_E_spOutOfBounds, (UArg)newTask, (UArg)newTask->context);
     }
 }
 
@@ -440,7 +473,8 @@ Void Task_processVitalTaskFlag(Task_Object *tsk)
     UInt hwiKey;
     if (tsk->vitalTaskFlag == TRUE) {
         hwiKey = Hwi_disable();
-        if (--Task_module->vitalTasks == 0) {
+        Task_module->vitalTasks--;
+        if (Task_module->vitalTasks == 0U) {
             Hwi_restore(hwiKey);
             BIOS_exit(0);
         }
@@ -451,7 +485,7 @@ Void Task_processVitalTaskFlag(Task_Object *tsk)
 /*
  *  ======== Task_exit ========
  */
-Void Task_exit()
+Void Task_exit(Void)
 {
     UInt tskKey, hwiKey;
     Task_Object *tsk;
@@ -472,6 +506,7 @@ Void Task_exit()
     }
 #endif
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write2(Task_LD_exit, (UArg)tsk, (UArg)tsk->fxn);
 
     tskKey = Task_disable();
@@ -485,18 +520,19 @@ Void Task_exit()
 
     Hwi_restore(hwiKey);
 
-    Queue_elemClear((Queue_Elem *)tsk);
+    Queue_elemClear(&tsk->qElem);
 
     /* add to terminated task list if it was dynamically created */
     if (Task_deleteTerminatedTasks == TRUE) {
         Task_Handle dynTask;
 
+        /* UNREACH.GEN */
         dynTask = Task_Object_first();
 
         while (dynTask) {
             if (tsk == dynTask) {
                 tsk->readyQ = Task_Module_State_terminatedQ();
-                Queue_put(tsk->readyQ, (Queue_Elem *)tsk);
+                Queue_put(tsk->readyQ, &tsk->qElem);
                 break;
             }
             else {
@@ -524,7 +560,7 @@ Void Task_sleepTimeout(UArg arg)
      * No need for Task_disable/restore sandwich since this
      * is called within Swi (or Hwi) thread
      */
-    Task_unblockI(elem->task, hwiKey);
+    Task_unblockI(elem->taskHandle, hwiKey);
 
     Hwi_restore(hwiKey);
 }
@@ -552,8 +588,12 @@ Void Task_sleep(UInt32 timeout)
     if (BIOS_clockEnabled) {
         /* add Clock event */
         Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Task_sleepTimeout, timeout, (UArg)&elem);
-        elem.clock = Clock_handle(&clockStruct);
+        elem.clockHandle = Clock_handle(&clockStruct);
     }
+
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
+    Log_write3(Task_LM_sleep, (UArg)Task_self(), (UArg)(Task_self()->fxn),
+               (UArg)timeout);
 
     hwiKey = Hwi_disable();
 
@@ -561,34 +601,30 @@ Void Task_sleep(UInt32 timeout)
      * Verify that THIS core hasn't already disabled the scheduler
      * so that the Task_restore() call below will indeed block
      */
-    Assert_isTrue((Task_enabled()),
-                    Task_A_sleepTaskDisabled);
+    Assert_isTrue(Task_enabled() == TRUE, Task_A_sleepTaskDisabled);
 
     /* lock scheduler */
     tskKey = Task_disable();
 
     /* get task handle and block tsk */
-    elem.task = Task_self();
+    elem.taskHandle = Task_self();
 
-    Task_blockI(elem.task);
+    Task_blockI(elem.taskHandle);
 
     /*
      * BIOS_clockEnabled check is here to eliminate Clock module 
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
-        Clock_startI(elem.clock);
+        Clock_startI(elem.clockHandle);
     }
 
     /* Only needed for Task_delete() */
     Queue_elemClear(&elem.qElem);
 
-    elem.task->pendElem = (Ptr)(&elem);
+    elem.taskHandle->pendElem = (Ptr)(&elem);
 
     Hwi_restore(hwiKey);
-
-    Log_write3(Task_LM_sleep, (UArg)elem.task, (UArg)elem.task->fxn,
-               (UArg)timeout);
 
     /* unlock task scheduler and block */
     Task_restore(tskKey);       /* the calling task will block here */
@@ -600,19 +636,19 @@ Void Task_sleep(UInt32 timeout)
     if (BIOS_clockEnabled) {
         hwiKey = Hwi_disable();
         /* remove Clock object from Clock Q */
-        Clock_removeI(elem.clock);
-        elem.clock = NULL;
+        Clock_removeI(elem.clockHandle);
+        elem.clockHandle = NULL;
         Hwi_restore(hwiKey);
     }
 
-    elem.task->pendElem = NULL;
+    elem.taskHandle->pendElem = NULL;
 }
 
 
 /*
  *  ======== Task_yield ========
  */
-Void Task_yield()
+Void Task_yield(Void)
 {
     UInt tskKey, hwiKey;
 
@@ -629,6 +665,7 @@ Void Task_yield()
 
     Hwi_restore(hwiKey);
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Task_LM_yield, (UArg)Task_module->curTask, (UArg)(Task_module->curTask->fxn), (UArg)(BIOS_getThreadType()));
 
     Task_restore(tskKey);
@@ -638,7 +675,7 @@ Void Task_yield()
 /*
  *  ======== Task_getIdleTask ========
  */
-Task_Handle Task_getIdleTask()
+Task_Handle Task_getIdleTask(Void)
 {
     return(Task_module->idleTask[0]);
 }
@@ -648,7 +685,7 @@ Task_Handle Task_getIdleTask()
  */
 Task_Handle Task_getIdleTaskHandle(UInt coreId)
 {
-    Assert_isTrue((coreId == 0), Task_A_invalidCoreId);
+    Assert_isTrue((coreId == 0U), Task_A_invalidCoreId);
 
     return(Task_module->idleTask[coreId]);
 }
@@ -666,9 +703,10 @@ Task_Handle Task_getIdleTaskHandle(UInt coreId)
 Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
                 const Task_Params *params, Error_Block *eb)
 {
-    Int align;
+    UInt align;
     Int status;
     SizeT stackSize;
+    Task_Object *curTask;
 
     Assert_isTrue((BIOS_taskEnabled == TRUE), Task_A_taskDisabled);
 
@@ -678,6 +716,15 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
     Assert_isTrue((((params->priority == -1) || (params->priority > 0)) &&
                    (params->priority < (Int)Task_numPriorities)),
                    Task_A_badPriority);
+
+    /* CWARN.CONSTCOND.IF */
+    if (BIOS_mpeEnabled) {
+        /* Check if Task object in kernel memory space */
+        if (MemProtect_isDataInKernelSpace((Ptr)tsk,
+            sizeof(Task_Object)) == FALSE) {
+            Error_raise(NULL, Task_E_objectNotInKernelSpace, 0, 0);
+        }
+    }
 
     tsk->priority = params->priority;
 
@@ -689,8 +736,8 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
         tsk->stackHeap = params->stackHeap;
     }
 
-    if (params->stackSize == 0) {
-        stackSize = Task_defaultStackSize;
+    if (params->stackSize == 0U) {
+        stackSize = (SizeT)Task_defaultStackSize;
     }
     else {
         stackSize = params->stackSize;
@@ -699,22 +746,24 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
     align = Task_SupportProxy_getStackAlignment();
 
     if (params->stack != NULL) {
-        if (align != 0) {
+        if (align != 0U) {
             UArg stackTemp;
             /* align low address to stackAlignment */
+            /* MISRA.CAST.VOID_PTR_TO_INT.2012 */
             stackTemp = (UArg)params->stack;
-            stackTemp += align - 1;
-            stackTemp &= -align;
-            tsk->stack = (Ptr)xdc_uargToPtr(stackTemp);
+            stackTemp = stackTemp + (align - 1U);
+            stackTemp = stackTemp & ~(align - 1U);
+            tsk->stack = (Char *)xdc_uargToPtr(stackTemp);
 
             /* subtract what we removed from the low address from stackSize */
+            /* MISRA.CAST.VOID_PTR_TO_INT.2012 */
             tsk->stackSize = stackSize - (stackTemp - (UArg)params->stack);
 
             /* lower the high address as necessary */
-            tsk->stackSize &= -align;
+            tsk->stackSize = tsk->stackSize & (SizeT)~(align - 1U);
         }
         else {
-            tsk->stack = params->stack;
+            tsk->stack = (Char *)params->stack;
             tsk->stackSize = stackSize;
         }
         /* tell Task_delete that stack was provided */
@@ -722,17 +771,17 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
     }
     else {
         if (BIOS_runtimeCreatesEnabled) {
-            if (align != 0) {
+            if (align != 0U) {
                 /*
                  * round stackSize up to the nearest multiple of the alignment.
                  */
-                tsk->stackSize = (stackSize + align - 1) & -align;
+                tsk->stackSize = (stackSize + (align - 1U)) & ~(align - 1U);
             }
             else {
                 tsk->stackSize = stackSize;
             }
 
-            tsk->stack = Memory_alloc(tsk->stackHeap, tsk->stackSize,
+            tsk->stack = (Char *)Memory_alloc(tsk->stackHeap, tsk->stackSize,
                                       align, eb);
 
             if (tsk->stack == NULL) {
@@ -752,13 +801,46 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
 
     tsk->vitalTaskFlag = params->vitalTaskFlag;
     if (tsk->vitalTaskFlag == TRUE) {
-        Task_module->vitalTasks += 1;
+        Task_module->vitalTasks += 1U;
     }
+
+    /* CWARN.CONSTCOND.IF */
+    if (BIOS_mpeEnabled == TRUE) {
+        curTask = Task_self();
+
+        if ((BIOS_ThreadType_Task == BIOS_getThreadType()) &&
+            (curTask->privileged == FALSE)) {
+            /*
+             * Tasks created by an unprivileged task run in unprivileged mode
+             * and inherit the parent task's domain.
+             */
+            if (params->privileged == TRUE) {
+                Assert_isTrue(0 == 1, NULL);
+                /* TODO return a meaningful error code */
+            }
+            else {
+                if ((params->domain != NULL) &&
+                     (params->domain != curTask->domain)) {
+                    Assert_isTrue(0 == 1, NULL);
+                    /* TODO return a meaningful error code */
+                }
+            }
+        }
+    }
+
+    /*
+     * These fields are not used when BIOS_mpeEnable is FALSE, but,
+     * are being initialized to mirror the static initialization.
+     */
+    tsk->privileged = params->privileged;
+    tsk->domain = params->domain;
+
+    tsk->tls = NULL;
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
     if (Task_hooks.length > 0) {
-        tsk->hookEnv = Memory_calloc(Task_Object_heap(),
-                Task_hooks.length * sizeof (Ptr), 0, eb);
+        tsk->hookEnv = (Ptr *)Memory_calloc(Task_Object_heap(),
+                (UInt)Task_hooks.length * sizeof (Ptr), 0, eb);
 
         if (tsk->hookEnv == NULL) {
             return (2);
@@ -790,7 +872,6 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
  */
 Int Task_postInit(Task_Object *tsk, Error_Block *eb)
 {
-    UInt32 *checkValue;
     UInt tskKey, hwiKey;
     Queue_Handle readyQ;
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
@@ -813,8 +894,8 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
     tsk->pendElem = NULL;
 
     if (Task_objectCheckFlag) {
-        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
-        *checkValue = Task_objectCheckValueFxn(tsk);
+        /* UNREACH.GEN */
+        tsk->checkValue = Task_objectCheckValueFxn(tsk);
     }
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
@@ -841,10 +922,10 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
     if (tsk->priority < 0) {
         tsk->mask = 0;
         tsk->readyQ = Task_Module_State_inactiveQ();
-        Queue_put(tsk->readyQ, (Queue_Elem *)tsk);
+        Queue_put(tsk->readyQ, &tsk->qElem);
     }
     else {
-        tsk->mask = 1 << tsk->priority;
+        tsk->mask = (UInt)1 << (UInt)tsk->priority;
         readyQ = Queue_Object_get(Task_module->readyQ, tsk->priority);
         tsk->readyQ = readyQ;
 
@@ -882,6 +963,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
         if ((Task_deleteTerminatedTasks == TRUE)
              && (Task_getMode(tsk) == Task_Mode_TERMINATED)
              && (tsk->readyQ == Task_Module_State_terminatedQ())) {
+            /* UNREACH.GEN */
             Error_raise(NULL, Task_E_deleteNotAllowed, tsk, 0);
         }
 
@@ -896,7 +978,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
 
         if (tsk->mode == Task_Mode_READY) {
             /* remove task from its ready list */
-            Queue_remove((Queue_Elem *)tsk);
+            Queue_remove(&tsk->qElem);
             /* if last task in readyQ, remove corresponding bit in curSet */
             if (Queue_empty(tsk->readyQ)) {
                 Task_module->curSet &= ~tsk->mask;
@@ -907,8 +989,8 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
              * then its clock object is still on the Clock service Q.
              */
             if (tsk->pendElem != NULL) {
-                if (BIOS_clockEnabled && tsk->pendElem->clock) {
-                    Clock_removeI(tsk->pendElem->clock);
+                if (BIOS_clockEnabled && tsk->pendElem->clockHandle) {
+                    Clock_removeI(tsk->pendElem->clockHandle);
                 }
             }
         }
@@ -919,15 +1001,15 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
             /* Seemingly redundant test in case Asserts are disabled */
             if (tsk->pendElem != NULL) {
                 Queue_remove(&(tsk->pendElem->qElem));
-                if (BIOS_clockEnabled && tsk->pendElem->clock) {
-                    Clock_removeI(tsk->pendElem->clock);
+                if (BIOS_clockEnabled && tsk->pendElem->clockHandle) {
+                    Clock_removeI(tsk->pendElem->clockHandle);
                 }
             }
         }
 
         if (tsk->mode == Task_Mode_TERMINATED) {
             /* remove task from terminated task list */
-            Queue_remove((Queue_Elem *)tsk);
+            Queue_remove(&tsk->qElem);
         }
         else {
             Task_processVitalTaskFlag(tsk);
@@ -982,7 +1064,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
         }
 
         Memory_free(Task_Object_heap(), tsk->hookEnv,
-                Task_hooks.length * sizeof (Ptr));
+                (UInt)Task_hooks.length * sizeof (Ptr));
     }
 #endif
 }
@@ -1089,6 +1171,7 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
                    (priority < (Int)Task_numPriorities)),
                    Task_A_badPriority);
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write4(Task_LM_setPri, (UArg)tsk, (UArg)tsk->fxn,
                        (UArg)tsk->priority, (UArg)priority);
 
@@ -1100,7 +1183,7 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
     if (oldPri == priority) {
         Hwi_restore(hwiKey);
         Task_restore(tskKey);
-        return (oldPri);
+        return ((UInt)oldPri);
     }
 
     if (priority < 0) {
@@ -1108,13 +1191,13 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
         newQ = Task_Module_State_inactiveQ();
     }
     else {
-        newMask = 1 << priority;
+        newMask = (UInt)1 << (UInt)priority;
         newQ = (Queue_Handle)((UInt8 *)(Task_module->readyQ) +
-                (UInt)(priority*(2*sizeof(Ptr))));
+                (UInt)((UInt)priority*(2U*sizeof(Ptr))));
     }
 
     if (tsk->mode == Task_Mode_READY) {
-        Queue_remove((Queue_Elem *)tsk);
+        Queue_remove(&tsk->qElem);
 
         /* if last task in readyQ, remove corresponding bit in curSet */
         if (Queue_empty(tsk->readyQ)) {
@@ -1125,11 +1208,11 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
             Task_module->curQ = newQ;   /* force a Task_switch() */
                                         /* if no longer maxQ */
             /* Put current task at front of its new readyQ */
-            Queue_insert(((Queue_Elem *)(newQ))->next, (Queue_Elem *)tsk);
+            Queue_insert(((Queue_Elem *)(newQ))->next, &tsk->qElem);
         }
         else {
             /* place task at end of its readyQ */
-            Queue_enqueue(newQ, (Queue_Elem *)tsk);
+            Queue_enqueue(newQ, &tsk->qElem);
         }
 
         Task_module->curSet |= newMask;
@@ -1148,7 +1231,7 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
     Hwi_restore(hwiKey);
     Task_restore(tskKey);
 
-    return oldPri;
+    return (UInt)oldPri;
 }
 
 /*
@@ -1168,12 +1251,20 @@ Task_Mode Task_getMode(Task_Object *tsk)
 }
 
 /*
+ *  ======== Task_getPrivileged ========
+ */
+Bool Task_getPrivileged(Task_Object *tsk)
+{
+    return (tsk->privileged);
+}
+
+/*
  *  ======== Task_stat ========
  */
 Void Task_stat(Task_Object *tsk, Task_Stat *statbuf)
 {
     statbuf->priority = tsk->priority;
-    statbuf->stack = tsk->stack;
+    statbuf->stack = (Ptr)tsk->stack;
     statbuf->stackSize = tsk->stackSize;
     statbuf->stackHeap = tsk->stackHeap;
     statbuf->env = tsk->env;
@@ -1211,18 +1302,18 @@ Void Task_blockI(Task_Object *tsk)
     Queue_Object *readyQ = tsk->readyQ;
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
-    UInt32 *checkValue;
 
     if (Task_objectCheckFlag) {
-        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
-        if (Task_objectCheckFxn(tsk, *checkValue) != 0) {
+        /* UNREACH.GEN */
+        if (Task_objectCheckFxn(tsk, tsk->checkValue) != 0) {
             Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
         }
     }
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write2(Task_LD_block, (UArg)tsk, (UArg)tsk->fxn);
 
-    Queue_remove((Queue_Elem *)tsk);
+    Queue_remove(&tsk->qElem);
 
     /* if last task in readyQ, remove corresponding bit in curSet */
     if (Queue_empty(readyQ)) {
@@ -1265,16 +1356,15 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
 #endif
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
-    UInt32 *checkValue;
 
     if (Task_objectCheckFlag) {
-        checkValue = Task_SupportProxy_getCheckValueAddr(tsk);
-        if (Task_objectCheckFxn(tsk, *checkValue) != 0) {
+        /* UNREACH.GEN */
+        if (Task_objectCheckFxn(tsk, tsk->checkValue) != 0) {
             Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
         }
     }
 
-    Queue_enqueue(tsk->readyQ, (Queue_Elem *)tsk);
+    Queue_enqueue(tsk->readyQ, &tsk->qElem);
 
     Task_module->curSet = curset | mask;
     tsk->mode = Task_Mode_READY;
@@ -1291,31 +1381,32 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
     }
 #endif
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Task_LD_ready, (UArg)tsk, (UArg)tsk->fxn, (UArg)tsk->priority);
 
     /* Hard-disable intrs - this fxn is called with them disabled */
-    Hwi_disable();
+    (Void)Hwi_disable();
 }
 
 /*
  *  ======== Task_allBlockedFunction ========
  */
-Void Task_allBlockedFunction()
+Void Task_allBlockedFunction(Void)
 {
     volatile UInt delay;
 
-    if (Task_allBlockedFunc == Idle_run) {
-        Hwi_enable();
+    if (Task_allBlockedFunc == &Idle_run) {
+        (Void)Hwi_enable();
         Idle_run();
-        Hwi_disable();
+        (Void)Hwi_disable();
     }
     else if (Task_allBlockedFunc == NULL) {
-        Hwi_enable();
+        (Void)Hwi_enable();
         /* Guarantee that interrupts are enabled briefly */
-        for (delay = 0; delay < 1; delay++) {
+        for (delay = 0; delay < 1U; delay = delay + 1U) {
            ;
         }
-        Hwi_disable();
+        (Void)Hwi_disable();
     }
     else {
         Task_allBlockedFunc();
@@ -1323,14 +1414,14 @@ Void Task_allBlockedFunction()
          * disable ints just in case the
          * allBlockedFunc left them enabled
          */
-        Hwi_disable();
+        (Void)Hwi_disable();
     }
 }
 
 /*
  *  ======== Task_deleteTerminatedTasksFunc ========
  */
-Void Task_deleteTerminatedTasksFunc()
+Void Task_deleteTerminatedTasksFunc(Void)
 {
     UInt hwiKey, taskKey;
     Task_Handle tsk;
@@ -1339,8 +1430,8 @@ Void Task_deleteTerminatedTasksFunc()
 
     hwiKey = Hwi_disable();
 
-    if (!Queue_empty(Task_Module_State_terminatedQ())) {
-        tsk = Queue_head(Task_Module_State_terminatedQ());
+    if (Queue_empty(Task_Module_State_terminatedQ()) == FALSE) {
+        tsk = (Task_Handle)Queue_head(Task_Module_State_terminatedQ());
         Hwi_restore(hwiKey);
         tsk->readyQ = NULL;
         Task_delete(&tsk);
@@ -1368,7 +1459,7 @@ Int Task_moduleStateCheck(Task_Module_State *moduleState, UInt32 checkValue)
     if (((moduleState->curQ != NULL) &&
         ((moduleState->curQ < (Queue_Handle)(moduleState->readyQ)) ||
          (moduleState->curQ > (Queue_Handle)((UInt8 *)(moduleState->readyQ) +
-         (UInt)(Task_numPriorities*(2*sizeof(Ptr)))))))) {
+         (UInt)(Task_numPriorities*(2U*sizeof(Ptr)))))))) {
         return (-1);
     }
 
@@ -1380,16 +1471,17 @@ Int Task_moduleStateCheck(Task_Module_State *moduleState, UInt32 checkValue)
  */
 UInt32 Task_getModuleStateCheckValue(Task_Module_State *moduleState)
 {
+    /* PORTING.CMPSPEC.TYPE.LONGLONG */
     UInt64 checksum;
 
-    checksum = (uintptr_t)moduleState->readyQ +
+    checksum = (UInt64)(UInt)((uintptr_t)moduleState->readyQ +
                (uintptr_t)moduleState->smpCurSet +
                (uintptr_t)moduleState->smpCurMask +
                (uintptr_t)moduleState->smpCurTask +
                (uintptr_t)moduleState->smpReadyQ +
                (uintptr_t)moduleState->idleTask +
-               (uintptr_t)moduleState->constructedTasks;
-    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFF);
+               (uintptr_t)moduleState->constructedTasks);
+    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFFU);
     checksum = checksum + (checksum >> 32);
 
     return ((UInt32)(~checksum));
@@ -1415,21 +1507,23 @@ Int Task_objectCheck(Task_Handle handle, UInt32 checkValue)
  */
 UInt32 Task_getObjectCheckValue(Task_Handle taskHandle)
 {
+    /* PORTING.CMPSPEC.TYPE.LONGLONG */
     UInt64 checksum;
 
-    checksum = taskHandle->stackSize +
+    checksum = (UInt64)(UInt)(taskHandle->stackSize +
                (uintptr_t)taskHandle->stack +
                (uintptr_t)taskHandle->stackHeap +
 #if defined(__IAR_SYSTEMS_ICC__)
                (UInt64)taskHandle->fxn +
 #else
+               /* MISRA.CAST.FUNC_PTR.2012 */
                (uintptr_t)taskHandle->fxn +
 #endif
                taskHandle->arg0 +
                taskHandle->arg1 +
                (uintptr_t)taskHandle->hookEnv +
-               taskHandle->vitalTaskFlag;
-    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFF);
+               (UInt)taskHandle->vitalTaskFlag);
+    checksum = (checksum >> 32) + (checksum & 0xFFFFFFFFU);
     checksum = checksum + (checksum >> 32);
 
     return ((UInt32)(~checksum));

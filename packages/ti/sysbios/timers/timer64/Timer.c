@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1054,12 +1054,12 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     /* get CPU frequency */
     BIOS_getCpuFreq(&cpufreq);
     cpuCounts = (UInt64)cpufreq.hi << 32;
-    cpuCounts |=  cpufreq.lo;
+    cpuCounts = cpuCounts | (UInt64)cpufreq.lo;
 
     /* get Timer frequency */
     Timer_getFreq(obj, &timerfreq);
     timerCounts = (UInt64)timerfreq.hi << 32;
-    timerCounts |= timerfreq.lo;
+    timerCounts = timerCounts | (UInt64)timerfreq.lo;
 
     /* calculate the CPU and timer frequency ratio */
     ratio = (cpuCounts * 10) / timerCounts;

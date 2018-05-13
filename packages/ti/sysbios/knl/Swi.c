@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +55,8 @@
 #define TASK_DISABLE Task_disable
 #define TASK_RESTORE Task_restore
 #else
-#define TASK_DISABLE Swi_taskDisable
-#define TASK_RESTORE Swi_taskRestore
+#define TASK_DISABLE (Swi_taskDisable)
+#define TASK_RESTORE (Swi_taskRestore)
 #endif
 
 #ifdef __ti__
@@ -81,7 +81,7 @@
 Void Swi_run(Swi_Object *swi)
 {
     UInt saved_curTrigger = Swi_module->curTrigger;
-    Swi_Object *saved_curSwi = Swi_module->curSwi;
+    Swi_Object *saved_curSwi = (Swi_Object *)Swi_module->curSwi;
     Queue_Handle saved_curQ = Swi_module->curQ;
     BIOS_ThreadType prevThreadType;
 #ifndef ti_sysbios_knl_Swi_DISABLE_ALL_HOOKS
@@ -101,7 +101,7 @@ Void Swi_run(Swi_Object *swi)
     /* set thread type to Swi */
     prevThreadType = BIOS_setThreadType(BIOS_ThreadType_Swi);
 
-    Hwi_enable();
+    (Void)Hwi_enable();
 
 #ifndef ti_sysbios_knl_Swi_DISABLE_ALL_HOOKS
     for (i = 0; i < Swi_hooks.length; i++) {
@@ -111,10 +111,12 @@ Void Swi_run(Swi_Object *swi)
     }
 #endif
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Swi_LM_begin, (UArg)swi, (UArg)swi->fxn, (UArg)prevThreadType);
 
     (swi->fxn)(swi->arg0, swi->arg1);
 
+    /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write1(Swi_LD_end, (UArg)swi);
 
 #ifndef ti_sysbios_knl_Swi_DISABLE_ALL_HOOKS
@@ -125,10 +127,10 @@ Void Swi_run(Swi_Object *swi)
     }
 #endif
 
-    Hwi_disable();
+    (Void)Hwi_disable();
 
     /* restore thread type */
-    BIOS_setThreadType(prevThreadType);
+    (Void)BIOS_setThreadType(prevThreadType);
 
     Swi_module->locked = TRUE;       /* relock the scheduler */
 
@@ -145,12 +147,12 @@ Void Swi_run(Swi_Object *swi)
  *  builds.
  */
 
-extern Void ti_sysbios_family_xxx_Hwi_switchAndRunFunc(Void (*func)());
+extern Void ti_sysbios_family_xxx_Hwi_switchAndRunFunc(Void (*func)(Void));
 
 /*
  *  ======== Swi_runLoop ========
  */
-Void Swi_runLoop()
+Void Swi_runLoop(Void)
 {
     Queue_Handle curQ, maxQ;
     Swi_Object *swi;
@@ -160,7 +162,7 @@ Void Swi_runLoop()
 
     /* refresh maxQ */
     maxQ = (Queue_Handle)((UInt8 *)(Swi_module->readyQ) +
-           (UInt)(Intrinsics_maxbit(Swi_module->curSet)*(2*sizeof(Ptr))));
+           (Intrinsics_maxbit(Swi_module->curSet)*(2U*sizeof(Ptr))));
 
     /*
      * Run all Swis of higher priority than
@@ -177,12 +179,12 @@ Void Swi_runLoop()
 
         Swi_run(swi);
 
-        if (Swi_module->curSet == 0) {
+        if (Swi_module->curSet == 0U) {
             break;
         }
 
         maxQ = (Queue_Handle)((UInt8 *)(Swi_module->readyQ) +
-               (UInt)(Intrinsics_maxbit(Swi_module->curSet)*(2*sizeof(Ptr))));
+               (Intrinsics_maxbit(Swi_module->curSet)*(2U*sizeof(Ptr))));
     }
     while (maxQ > curQ);
 }
@@ -197,7 +199,7 @@ Void Swi_runLoop()
  *  Exits with Swi_module->locked = FALSE;
  */
 
-Void Swi_schedule()
+Void Swi_schedule(Void)
 {
     Queue_Handle curQ, maxQ;
     UInt hwiKey;
@@ -210,7 +212,7 @@ Void Swi_schedule()
 
     /* determine current highest priority Q */
     maxQ = (Queue_Handle)((UInt8 *)(Swi_module->readyQ) +
-                (UInt)(Intrinsics_maxbit(Swi_module->curSet)*(2*sizeof(Ptr))));
+           (Intrinsics_maxbit(Swi_module->curSet)*(2U*sizeof(Ptr))));
 
     if (maxQ > curQ) {
         if (BIOS_taskEnabled) {
@@ -221,6 +223,7 @@ Void Swi_schedule()
         }
         else {
             /* Call Swi_runLoop() */
+            /* UNREACH.GEN */
             Swi_runLoop();
         }
 
@@ -248,6 +251,7 @@ Void Swi_schedule()
 /*
  *  ======== Swi_Module_startup ========
  */
+/* MISRA.FUNC.UNUSEDPAR.2012 */
 Int Swi_Module_startup(Int phase)
 {
     /*
@@ -266,13 +270,13 @@ Int Swi_Module_startup(Int phase)
         }
 #endif
 
-        for (i = 0; i < Swi_Object_count(); i++) {
-            Swi_postInit(Swi_Object_get(NULL, i), NULL);
+        for (i = 0; i < (Int)Swi_Object_count(); i++) {
+            (Void)Swi_postInit(Swi_Object_get(NULL, i), NULL);
         }
 
         /* do post init on all statically Constructed Swis */
-        for (j = 0; j < Swi_numConstructedSwis; j++) {
-            Swi_postInit(Swi_module->constructedSwis[j], NULL);
+        for (j = 0; j < (UInt)Swi_numConstructedSwis; j++) {
+            (Void)Swi_postInit(Swi_module->constructedSwis[j], NULL);
         }
     }
 
@@ -282,7 +286,7 @@ Int Swi_Module_startup(Int phase)
 /*
  *  ======== Swi_startup ========
  */
-Void Swi_startup()
+Void Swi_startup(Void)
 {
     Swi_restore(FALSE);
 }
@@ -290,7 +294,7 @@ Void Swi_startup()
 /*
  *  ======== Swi_unlockSched ========
  */
-Void Swi_unlockSched()
+Void Swi_unlockSched(Void)
 {
     Swi_module->locked = FALSE;
 }
@@ -298,17 +302,17 @@ Void Swi_unlockSched()
 /*
  *  ======== Swi_enabled ========
  */
-Bool Swi_enabled()
+Bool Swi_enabled(Void)
 {
-    return (Swi_module->locked == FALSE);
+    return (Bool)(Swi_module->locked == FALSE);
 }
 
 /*
  *  ======== Swi_disable ========
  */
-UInt Swi_disable()
+UInt Swi_disable(Void)
 {
-    UInt key = Swi_module->locked;
+    UInt key = (UInt)Swi_module->locked;
 
     Swi_module->locked = TRUE;
 
@@ -318,7 +322,7 @@ UInt Swi_disable()
 /*
  *  ======== Swi_enable ========
  */
-Void Swi_enable()
+Void Swi_enable(Void)
 {
     Swi_restore(FALSE);
 }
@@ -376,16 +380,15 @@ Void Swi_restoreHwi(UInt swiKey)
     if (swiKey == FALSE) {
         if (Swi_module->curSet) {
             /* latency reduction */ 
-            Hwi_enable();
-            Hwi_disable();
+            (Void)Hwi_enable();
+            (Void)Hwi_disable();
 
             /* Remember current Swi priority */
             curQ = Swi_module->curQ;
 
             /* determine current highest priority Q */
             maxQ = (Queue_Handle)((UInt8 *)(Swi_module->readyQ) +
-                    (UInt)(Intrinsics_maxbit(Swi_module->curSet) *
-                    (2*sizeof(Ptr))));
+                   (Intrinsics_maxbit(Swi_module->curSet) * (2U*sizeof(Ptr))));
             /* 
              * Run all Swis of higher priority than the current Swi priority
              * Will pre-empt any currently running swi.
@@ -400,12 +403,12 @@ Void Swi_restoreHwi(UInt swiKey)
 
                 Swi_run(swi);
 
-                if (Swi_module->curSet == 0) {
+                if (Swi_module->curSet == 0U) {
                     break;
                 }
                 maxQ = (Queue_Handle)((UInt8 *)(Swi_module->readyQ) +
-                        (UInt)(Intrinsics_maxbit(Swi_module->curSet) *
-                        (2*sizeof(Ptr))));
+                       (Intrinsics_maxbit(Swi_module->curSet) *
+                        (2U*sizeof(Ptr))));
             }
         }
         Swi_module->locked = FALSE;
@@ -415,7 +418,7 @@ Void Swi_restoreHwi(UInt swiKey)
 /*
  *  ======== Swi_self ========
  */
-Swi_Handle Swi_self()
+Swi_Handle Swi_self(Void)
 {
     return (Swi_module->curSwi);
 }
@@ -424,7 +427,7 @@ Swi_Handle Swi_self()
 /*
  *  ======== Swi_getTrigger ========
  */
-UInt Swi_getTrigger()
+UInt Swi_getTrigger(Void)
 {
     return (Swi_module->curTrigger);
 }
@@ -444,7 +447,7 @@ UInt Swi_raisePri(UInt priority)
     hwiKey = Hwi_disable();
 
     oldCurQ = Swi_module->curQ;
-    newCurQ = Queue_Object_get(Swi_module->readyQ, priority);
+    newCurQ = Queue_Object_get(Swi_module->readyQ, (Int)priority);
     Swi_module->curQ = newCurQ > oldCurQ ? newCurQ : oldCurQ;
 
     Hwi_restore(hwiKey);
@@ -461,7 +464,7 @@ Void Swi_restorePri(UInt priority)
 
     swiKey = Swi_disable();
 
-    Swi_module->curQ = Queue_Object_get(Swi_module->readyQ, priority);
+    Swi_module->curQ = Queue_Object_get(Swi_module->readyQ, (Int)priority);
 
     Swi_restore(swiKey);
 }
@@ -480,12 +483,14 @@ Swi_Handle Swi_construct2(Swi_Struct2 *swiStruct2, Swi_FuncPtr swiFxn,
 {
     Swi_Handle   swi;
 
-    Swi_construct((Swi_Struct *)swiStruct2, swiFxn, prms, Error_IGNORE);
+    Swi_construct((Swi_Struct *)(Ptr)swiStruct2, swiFxn, prms, Error_IGNORE);
     if (swiStruct2->fxn == NULL) {
-        return (NULL);
+        swi = (Swi_Handle)NULL;
+    }
+    else {
+        swi = Swi_handle((Swi_Struct *)(Ptr)swiStruct2);
     }
 
-    swi = Swi_handle((Swi_Struct *)swiStruct2);
     return (swi);
 }
 
@@ -504,8 +509,8 @@ Int Swi_Instance_init(Swi_Object *swi, Swi_FuncPtr fxn,
     swi->arg0 = params->arg0;
     swi->arg1 = params->arg1;
 
-    if (params->priority == ~0) {
-        swi->priority = Swi_numPriorities - 1;
+    if (params->priority == ~(0U)) {
+        swi->priority = Swi_numPriorities - 1U;
     }
     else {
         swi->priority = params->priority;
@@ -514,15 +519,16 @@ Int Swi_Instance_init(Swi_Object *swi, Swi_FuncPtr fxn,
     Assert_isTrue((swi->priority < Swi_numPriorities),
                    Swi_A_badPriority);
 
-    swi->mask = 1 << swi->priority;
+    swi->mask = (UInt)1 << swi->priority;
     swi->posted = FALSE;
-    swi->initTrigger = swi->trigger = params->trigger;
-    swi->readyQ = Queue_Object_get(Swi_module->readyQ, swi->priority);
+    swi->trigger = params->trigger;
+    swi->initTrigger = params->trigger;
+    swi->readyQ = Queue_Object_get(Swi_module->readyQ, (Int)swi->priority);
 
 #ifndef ti_sysbios_knl_Swi_DISABLE_ALL_HOOKS
     if (Swi_hooks.length > 0) {
-        swi->hookEnv = Memory_alloc(Swi_Object_heap(),
-                Swi_hooks.length * sizeof(Ptr), 0, eb);
+        swi->hookEnv = (Ptr *)Memory_alloc(Swi_Object_heap(),
+                (UInt)Swi_hooks.length * sizeof(Ptr), 0, eb);
 
         if (swi->hookEnv == NULL) {
             /*
@@ -543,6 +549,7 @@ Int Swi_Instance_init(Swi_Object *swi, Swi_FuncPtr fxn,
      * from Instance_init errors
      */
     if (status != 0) {
+        /* UNREACH.GEN */
         return (2 + status);
     }
 
@@ -611,7 +618,7 @@ Void Swi_Instance_finalize(Swi_Object *swi, Int status)
     }
 
     /* Can't delete a currently posted Swi */
-    Assert_isTrue((swi->posted == 0), NULL);
+    Assert_isTrue((swi->posted == 0U), NULL);
 
 #ifndef ti_sysbios_knl_Swi_DISABLE_ALL_HOOKS
     if (Swi_hooks.length > 0) {
@@ -629,7 +636,7 @@ Void Swi_Instance_finalize(Swi_Object *swi, Int status)
         }
 
         Memory_free(Swi_Object_heap(), swi->hookEnv,
-                Swi_hooks.length * sizeof (Ptr));
+                (UInt)Swi_hooks.length * sizeof (Ptr));
     }
 #endif
 }
@@ -645,6 +652,7 @@ Void Swi_post(Swi_Object *swi)
     Int i;
 #endif
 
+    /* MISRA.CAST.FUNC_PTR.2012 MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 */
     Log_write3(Swi_LM_post, (UArg)swi, (UArg)swi->fxn, (UArg)swi->priority);
 
     hwiKey = Hwi_disable();
@@ -659,7 +667,7 @@ Void Swi_post(Swi_Object *swi)
     swiKey = Swi_disable();
 
     /* Place the Swi in the appropriate ready Queue. */
-    Queue_enqueue(swi->readyQ, (Queue_Elem *)swi);
+    Queue_enqueue(swi->readyQ, &swi->qElem);
 
     /* Add this priority to current set */
     Swi_module->curSet |= swi->mask;
@@ -735,7 +743,7 @@ Void Swi_inc(Swi_Object *swi)
     UInt hwiKey;
 
     hwiKey = Hwi_disable();
-    swi->trigger += 1;
+    swi->trigger += 1U;
     Hwi_restore(hwiKey);
     Swi_post(swi);
 }
@@ -762,9 +770,9 @@ Void Swi_andn(Swi_Object *swi, UInt mask)
 
     hwiKey = Hwi_disable();
 
-    if (swi->trigger != 0) {
+    if (swi->trigger != 0U) {
         swi->trigger &= ~mask;
-        if (swi->trigger == 0) {
+        if (swi->trigger == 0U) {
             Hwi_restore(hwiKey);
             Swi_post(swi);
             return;
@@ -783,9 +791,9 @@ Void Swi_dec(Swi_Object *swi)
 
     hwiKey = Hwi_disable();
 
-    if (swi->trigger != 0) {
-        swi->trigger -= 1;
-        if (swi->trigger == 0) {
+    if (swi->trigger != 0U) {
+        swi->trigger -= 1U;
+        if (swi->trigger == 0U) {
             Hwi_restore(hwiKey);
             Swi_post(swi);
             return;
@@ -798,12 +806,14 @@ Void Swi_dec(Swi_Object *swi)
 /*
  *  ======== Swi_setAttrs ========
  */
-Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *params)
+Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *p)
 {
     UInt hwiKey;
     Swi_Params swiParams;
+    Swi_Params *params;
 
-    if (params == NULL) {
+    params = p;
+    if (p == NULL) {
         Swi_Params_init(&swiParams);
         params = &swiParams;
     }
@@ -811,7 +821,7 @@ Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *params)
     hwiKey = Hwi_disable();
 
     /* defensively remove swi from its readyQ */
-    Queue_remove((Queue_Elem *)swi);
+    Queue_remove(&swi->qElem);
 
     if (fxn != NULL) {
         swi->fxn = fxn;
@@ -822,8 +832,8 @@ Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *params)
     swi->arg0 = params->arg0;
     swi->arg1 = params->arg1;
 
-    if (params->priority == ~0) {
-        swi->priority = Swi_numPriorities - 1;
+    if (params->priority == ~(0U)) {
+        swi->priority = Swi_numPriorities - 1U;
     }
     else {
         swi->priority = params->priority;
@@ -832,9 +842,10 @@ Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *params)
     Assert_isTrue((swi->priority < Swi_numPriorities),
                    Swi_A_badPriority);
 
-    swi->mask = 1 << swi->priority;
-    swi->initTrigger = swi->trigger = params->trigger;
-    swi->readyQ = Queue_Object_get(Swi_module->readyQ, swi->priority);
+    swi->mask = (UInt)1 << swi->priority;
+    swi->trigger = params->trigger;
+    swi->initTrigger = params->trigger;
+    swi->readyQ = Queue_Object_get(Swi_module->readyQ, (Int)swi->priority);
 
     Hwi_restore(hwiKey);
 }
@@ -842,21 +853,22 @@ Void Swi_setAttrs(Swi_Object *swi, Swi_FuncPtr fxn, Swi_Params *params)
 /*
  *  ======== Swi_setPri ========
  */
-Void Swi_setPri(Swi_Object *swi, UInt priority)
+Void Swi_setPri(Swi_Object *swi, UInt pri)
 {
     UInt hwiKey;
+    UInt priority = pri;
 
-    if (priority == ~0) {
-        priority = Swi_numPriorities - 1;
+    if (priority == ~(0U)) {
+        priority = Swi_numPriorities - 1U;
     }
 
-    Assert_isTrue(priority < Swi_numPriorities, Swi_A_badPriority);
+    Assert_isTrue(priority < (UInt)Swi_numPriorities, Swi_A_badPriority);
 
     hwiKey = Hwi_disable();
 
     swi->priority = priority;
-    swi->mask = 1 << priority;
-    swi->readyQ = Queue_Object_get(Swi_module->readyQ, priority);
+    swi->mask = (UInt)1 << priority;
+    swi->readyQ = Queue_Object_get(Swi_module->readyQ, (Int)priority);
 
     Hwi_restore(hwiKey);
 }

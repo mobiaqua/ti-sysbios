@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -174,6 +174,8 @@ settings.device["Vayu"]           = settings.device["DRA7XX"];
 settings.device["TDA3XX"]         = settings.device["DRA7XX"];
 
 settings.device["IWR16XX"]        = settings.device["AWR16XX"];
+settings.device["AWR18XX"]        = settings.device["AWR16XX"];
+settings.device["IWR18XX"]        = settings.device["AWR16XX"];
 
 /*
  *  ======== deviceSupportCheck ========
@@ -284,6 +286,14 @@ function getDefaultCacheDelegate()
  *  ======== getDefaultSecondsDelegate ========
  */
 function getDefaultSecondsDelegate()
+{
+    return (null);
+}
+
+/*
+ *  ======== getDefaultSysCallDelegate ========
+ */
+function getDefaultSysCallDelegate()
 {
     return (null);
 }

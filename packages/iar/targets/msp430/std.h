@@ -84,7 +84,7 @@ static inline xdc_Ptr xdc_uargToPtr(xdc_UArg a) { return ((xdc_Ptr)(int)a); }
 
 #endif /* iar_targets_msp430_STD_ */
 /*
- *  @(#) iar.targets.msp430; 1, 0, 0,0; 11-8-2017 17:20:38; /db/ztree/library/trees/xdctargets/xdctargets-p04/src/ xlibrary
+ *  @(#) iar.targets.msp430; 1, 0, 0,0; 4-19-2018 16:53:58; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
 
  */
 
