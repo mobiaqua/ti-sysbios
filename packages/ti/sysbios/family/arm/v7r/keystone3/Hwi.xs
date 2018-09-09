@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,6 @@
 
 var Hwi = null;
 var BIOS = null;
-var Core = null;
 var Memory = null;
 var device = null;
 var Exception = null;
@@ -43,17 +42,15 @@ var Exception = null;
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "SIMFLEMING": {
-            lockstepDevice              : true,//false,
             vimBaseAddress              : 0x40F80000,
             resetVectorAddress          : 0x00000000,
-            resetVectorHandlerAddress   : 0x00550000,
-            vectorTable0Address         : 0x00550180,
-            vectorTable1Address         : 0x00550180,
             numInterrupts               : 512
         }
     }
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -65,14 +62,7 @@ function getAsmFiles(targetName)
 {
     switch(targetName) {
         case "ti.targets.arm.elf.R5F":
-            if ((Core.id == 0) && (!Hwi.lockstepDevice)) {
-                return (["Hwi_asm.sv7R", "Hwi_asm_vecs.sv7R",
-                         "Hwi_asm_switch.sv7R"]);
-            }
-            else {
-                return (["Hwi_asm.sv7R", "Hwi_asm_switch.sv7R"]);
-            }
-            break;
+            return (["Hwi_asm.sv7R", "Hwi_asm_switch.sv7R"]);
 
         default:
             return (null);
@@ -118,19 +108,6 @@ function module$meta$init()
         throw new Error ("Unsupported device!");
     }
 
-    Hwi.lockstepDevice = device.lockstepDevice;
-
-    if (!Hwi.lockstepDevice) {
-        Hwi.core0VectorTableAddress = device.vectorTable0Address;
-        Hwi.core1VectorTableAddress = device.vectorTable1Address;
-        Hwi.resetVectorHandlerAddress = device.resetVectorHandlerAddress;
-    }
-    else {
-        Hwi.core0VectorTableAddress = 0;
-        Hwi.core1VectorTableAddress = 0;
-        Hwi.resetVectorHandlerAddress = 0;
-    }
-
     Hwi.vimBaseAddress = device.vimBaseAddress;
 
     Hwi.NUM_INTERRUPTS = device.numInterrupts;
@@ -171,7 +148,6 @@ function module$meta$init()
 function module$use()
 {
     BIOS = xdc.useModule('ti.sysbios.BIOS');
-    Core = xdc.useModule('ti.sysbios.family.arm.v7r.keystone3.Core');
     Memory = xdc.useModule('xdc.runtime.Memory');
 
     xdc.useModule('xdc.runtime.Log');
@@ -218,38 +194,11 @@ function module$use()
         Hwi.taskRestoreHwi = null;
     }
 
-    if ((Core.id == 0) && (!Hwi.lockstepDevice)) {
-        /* place .resetVecs section */
-        if (Program.sectMap[".resetVecs"] === undefined) {
-            Program.sectMap[".resetVecs"] = new Program.SectionSpec();
-            Program.sectMap[".resetVecs"].loadAddress =
-                device.resetVectorAddress;
-        }
-    }
-
-    if (Program.sectMap[".resetVecHandler"] === undefined) {
-        Program.sectMap[".resetVecHandler"] = new Program.SectionSpec();
-        Program.sectMap[".resetVecHandler"].loadAddress =
-            Hwi.resetVectorHandlerAddress;
-    }
-
     /* place .vecs section */
     if (Program.sectMap[".vecs"] === undefined) {
         Program.sectMap[".vecs"] = new Program.SectionSpec();
-        if (!Hwi.lockstepDevice) {
-            if (Core.id == 0) {
-                Program.sectMap[".vecs"].loadAddress =
-                    Hwi.core0VectorTableAddress;
-            }
-            else {
-                Program.sectMap[".vecs"].loadAddress =
-                    Hwi.core1VectorTableAddress;
-            }
-        }
-        else {
-            Program.sectMap[".vecs"].loadAddress =
-                    device.resetVectorAddress;
-        }
+        Program.sectMap[".vecs"].loadAddress =
+            device.resetVectorAddress;
     }
 }
 
@@ -377,27 +326,6 @@ function instance$static$init(obj, intNum, fxn, params)
     }
 
     obj.hookEnv.length = Hwi.hooks.length;
-
-    /* Quietly allow any maskSetting to go through */
-    /*switch (params.maskSetting) {
-        case Hwi.MaskingOption_LOWER:
-            break;
-        case Hwi.MaskingOption_ALL:
-        case Hwi.MaskingOption_BITMASK:
-        case Hwi.MaskingOption_NONE:
-        case Hwi.MaskingOption_SELF:
-        default:
-            Hwi.$logError("Hwi MaskingOption not supported.", this,
-                "maskSetting");
-    }*/
-}
-
-/*
- *  ======== inUseMeta ========
- */
-function inUseMeta(intNum)
-{
-    return Hwi.interrupt[intNum].used;
 }
 
 /*

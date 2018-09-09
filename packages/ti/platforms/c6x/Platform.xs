@@ -184,10 +184,15 @@ function instance$meta$init(name)
             this.CPU.catalogName = "ti.catalog.c6000";
             this.CPU.deviceName = "C674";
         }
+        else if (this.deviceName.match(/^J7/)) {
+            this.CPU.catalogName = "ti.catalog.c6000";
+            this.CPU.deviceName = "C66";
+        }
         else if (this.deviceName.match(/^AWR16/) ||
-                 this.deviceName.match(/^IWR16/) ||
                  this.deviceName.match(/^AWR18/) ||
-                 this.deviceName.match(/^IWR18/)) {
+                 this.deviceName.match(/^IWR16/) ||
+                 this.deviceName.match(/^IWR18/) ||
+                 this.deviceName.match(/^IWR68/)) {
             this.CPU.catalogName = "ti.catalog.c6000";
             this.CPU.deviceName = "C674";
             this.CPU.clockRate = 600;

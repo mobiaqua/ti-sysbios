@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ function getAsmFiles(targetName)
         case "ti.targets.arm.elf.M3":
         case "ti.targets.arm.elf.M4":
         case "ti.targets.arm.elf.M4F":
+        case "ti.targets.arm.clang.M33F":
             return (["Clobber_asm.sv7M"]);
             break;
 

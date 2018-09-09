@@ -86,6 +86,19 @@ Void ti_sysbios_knl_Task_enable_SVC()
 }
 
 /*
+ *  ======== ti_sysbios_knl_Task_getPri_SVC ========
+ */
+Int ti_sysbios_knl_Task_getPri_SVC(Task_Object *tsk)
+{
+    Int ret;
+
+    SysCall_enterPrivMode();
+    ret = Task_getPri(tsk);
+    SysCall_enterUnprivMode();
+    return (ret);
+}
+
+/*
  *  ======== ti_sysbios_knl_Task_getPrivileged_SVC ========
  */
 Bool ti_sysbios_knl_Task_getPrivileged_SVC(Task_Object *tsk)
@@ -114,6 +127,29 @@ Void ti_sysbios_knl_Task_restore_SVC(UInt tskKey)
 {
     SysCall_enterPrivMode();
     Task_restore(tskKey);
+    SysCall_enterUnprivMode();
+}
+
+/*
+ *  ======== ti_sysbios_knl_Task_setPri_SVC ========
+ */
+UInt ti_sysbios_knl_Task_setPri_SVC(Task_Object *tsk, Int priority)
+{
+    UInt ret;
+
+    SysCall_enterPrivMode();
+    ret = Task_setPri(tsk, priority);
+    SysCall_enterUnprivMode();
+    return (ret);
+}
+
+/*
+ *  ======== ti_sysbios_knl_Task_sleep_SVC ========
+ */
+Void ti_sysbios_knl_Task_sleep_SVC(UInt32 period)
+{
+    SysCall_enterPrivMode();
+    Task_sleep(period);
     SysCall_enterUnprivMode();
 }
 

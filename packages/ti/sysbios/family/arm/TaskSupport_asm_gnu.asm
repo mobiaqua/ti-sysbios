@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014-2016, Texas Instruments Incorporated
+@  Copyright (c) 2014-2018, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -136,6 +136,8 @@ NEW     .req    r1                      @ 2nd argument
         .func ti_sysbios_family_arm_TaskSupport_swap__E
 
 ti_sysbios_family_arm_TaskSupport_swap__E:
+
+        clrex
 
         push    {r4-r11, lr}
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))

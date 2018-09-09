@@ -38,7 +38,7 @@
 #define ti_posix_ccs_time__include
 
 /* compiler vendor check */
-#ifndef __TI_COMPILER_VERSION__
+#if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
 #endif
@@ -47,7 +47,12 @@ with a Texas Instruments compiler. You appear to be using a different compiler.
 #include <stdint.h>
 
 /* include compiler time.h */
+#if defined(__clang__)
+/* TI ARM CLang Compiler */
+#include <../../include/c/time.h>
+#else
 #include <../include/time.h>
+#endif
 
 #include "signal.h"
 #include "sys/types.h"

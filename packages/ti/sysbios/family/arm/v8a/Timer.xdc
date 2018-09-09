@@ -216,7 +216,7 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      *
      *  Generic Timer Interrupts are forwarded to GIC's private peripheral
      *  interrupts and have a architecture defined fixed mapping that should
-     *  be same across A53 variants.
+     *  be same across ARMv8A device variants.
      *
      *  Non-secure physical timer -> PPI2 or Interrupt #30
      *  Virtual timer             -> PPI4 or Interrupt #27

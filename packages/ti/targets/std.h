@@ -181,6 +181,13 @@ typedef uintptr_t       xdc_UArg;
 #define xdc__META(n,s)                               \
     ti_targets_mkPragma(DATA_SECTION(n, "xdc.meta")) \
     const char (n)[] = {s}
+
+#elif defined(__clang__)
+
+#define xdc__META(n,s) \
+    __attribute__ ((section ("xdc.meta"))) \
+    const char (n)[] = {(s)}
+
 #else
 
 #define xdc__META(n,s)                               \
@@ -211,7 +218,7 @@ static inline xdc_Fxn xdc_uargToFxn(xdc_UArg a) { return ((xdc_Fxn)(int)a); }
 
 #endif /* ti_targets_STD_ */
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 4-19-2018 16:54:12; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,0; 7-20-2018 13:58:59; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

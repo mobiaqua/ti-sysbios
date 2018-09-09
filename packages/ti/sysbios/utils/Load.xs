@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -289,6 +289,14 @@ function module$validate()
     if ((Load.taskEnabled == true) && (BIOS.taskEnabled == false)) {
         Load.$logWarning("Load has task monitoring enabled, but BIOS has task"
             + " disabled.", Load, "taskEnabled");
+    }
+
+    if ((Load.taskEnabled == true) && (BIOS.taskEnabled == true)) {
+        if (Task.enableIdleTask == false) {
+            Load.$logError("Load has task monitoring enabled, but the Idle "
+                + "task is disabled. The Idle task must be enabled to perform "
+                + "task monitoring. " + Load, "taskEnabled");
+        }
     }
 
     if ((Load.taskEnabled == false) && (Load.autoAddTasks == true)) {

@@ -17,20 +17,15 @@
                        tooltip="value:this.configureClock.$summary"/></td>
         </tr>
         <tr>
-          <td><control type="checkbox" 
-                       label="Device Supports Advanced Clock Configuration" 
-                       value="value:this.enhancedClockMode"
-                       tooltip="value:this.enhancedClockMode.$summary"
-                       enabled="value:this.configureClock"/></td>
           <td><control type="label" label="Desired CPU clock frequency (Hz)" align="left"
-                       visible="value:this.configureClock &amp;&amp; this.enhancedClockMode"/></td>
+                       visible="value:this.configureClock"/></td>
           <td><control type="editbox" 
                        value="value:this.cpuFrequency" 
                        tooltip="value:this.cpufrequency.$summary"
                        width="60"
                        align="left"
                        bold="true" 
-                       visible="value:this.configureClock &amp;&amp; this.enhancedClockMode"/></td>
+                       visible="value:this.configureClock"/></td>
         </tr>
         </table>
         <table>
@@ -58,24 +53,6 @@
                        tooltip="value:this.xtal.$summary"
                        enabled="value:this.configureClock"/></td>
         </tr>        
-        <tr>
-          <td><control type="label" 
-                       label="SYS clock divisor" 
-                       align="left"/></td>
-          <td><control type="droplist"
-                       value="value:this.sysClockDiv" 
-                       tooltip="value:this.sysClockDiv.$summary"
-                       enabled="value:this.configureClock &amp;&amp; !this.enhancedClockMode"/></td>
-        </tr>
-        <tr>
-          <td><control type="label" 
-                       label="PWM clock divisor" 
-                       align="left"/></td>
-          <td><control type="droplist"
-                       value="value:this.pwmClockDiv" 
-                       tooltip="value:this.pwmClockDiv.$summary"
-                       enabled="value:this.configureClock"/></td>
-        </tr>
         <tr>
           <td><control type="label" 
                        label="VCO Frequency" 

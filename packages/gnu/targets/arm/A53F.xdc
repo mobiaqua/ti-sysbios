@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,8 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     override config string platform     = "ti.platforms.cortexA:SIMMAXWELL";
 
     override config string GCCTARG = "aarch64-elf";
+
+    override config String binaryParser = "ti.targets.omf.elf.Elf";
 
     override readonly config String stdInclude = "gnu/targets/arm/std.h";
 
@@ -163,7 +165,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-19-2018 16:53:38; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 7-20-2018 13:58:33; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

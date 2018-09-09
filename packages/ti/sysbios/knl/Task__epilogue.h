@@ -64,6 +64,11 @@ extern xdc_UInt ti_sysbios_knl_Task_disable_SVC(void);
 #define ti_sysbios_knl_Task_enable ti_sysbios_knl_Task_enable_SVC
 extern xdc_Void ti_sysbios_knl_Task_enable_SVC(void);
 
+#undef ti_sysbios_knl_Task_getPri
+#define ti_sysbios_knl_Task_getPri ti_sysbios_knl_Task_getPri_SVC
+extern xdc_Int ti_sysbios_knl_Task_getPri_SVC(
+    ti_sysbios_knl_Task_Handle handle);
+
 #undef ti_sysbios_knl_Task_getPrivileged
 #define ti_sysbios_knl_Task_getPrivileged ti_sysbios_knl_Task_getPrivileged_SVC
 extern xdc_Bool ti_sysbios_knl_Task_getPrivileged_SVC(
@@ -77,6 +82,15 @@ extern xdc_Void ti_sysbios_knl_Task_Params_init_SVC(
 #undef ti_sysbios_knl_Task_restore
 #define ti_sysbios_knl_Task_restore ti_sysbios_knl_Task_restore_SVC
 extern xdc_Void ti_sysbios_knl_Task_restore_SVC(xdc_UInt key);
+
+#undef ti_sysbios_knl_Task_setPri
+#define ti_sysbios_knl_Task_setPri ti_sysbios_knl_Task_setPri_SVC
+extern xdc_UInt ti_sysbios_knl_Task_setPri_SVC(
+    ti_sysbios_knl_Task_Handle handle, xdc_Int priority);
+
+#undef ti_sysbios_knl_Task_sleep
+#define ti_sysbios_knl_Task_sleep ti_sysbios_knl_Task_sleep_SVC
+extern xdc_Void ti_sysbios_knl_Task_sleep_SVC(xdc_UInt32 timeout);
 
 #undef ti_sysbios_knl_Task_yield
 #define ti_sysbios_knl_Task_yield ti_sysbios_knl_Task_yield_SVC

@@ -190,7 +190,6 @@ Void Task_schedule()
     Task_Object *prevTask;
     Task_Object *curTask;
     Task_Object *readyQTask;
-    Int i;
     Int newPri;
     UInt coreId;
     UInt curSetPriX;
@@ -198,6 +197,9 @@ Void Task_schedule()
     UInt curSetPriLocal;
     Task_RunQEntry *lowestPriRunQ;
     Bool earlyExit;
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
+    Int i;
+#endif
 
     coreId = Core_getId();
 
@@ -320,12 +322,12 @@ readyTasksLoop:
                 Task_checkStacks(prevTask, curTask);
             }
 
-#if !defined(ti_sysbios_knl_Task_DISABLE_ALL_HOOKS) \
+#if defined(ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS) \
     || (xdc_runtime_Log_DISABLE_ALL == 0)
             /* It's safe to enable intrs here */
             Core_hwiEnable();
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
             for (i = 0; i < Task_hooks.length; i++) {
                 if (Task_hooks.elem[i].switchFxn != NULL) {
                     Task_hooks.elem[i].switchFxn(prevTask, curTask);
@@ -735,7 +737,9 @@ Void Task_blockI(Task_Object *tsk)
  */
 Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
 {
+#ifdef ti_sysbios_knl_Task_ENABLE_READY_HOOKS
     Int i;
+#endif
     UInt coreId;
     UInt tskAffinity = tsk->affinity;
     volatile UInt *cursetp = &Task_module->smpCurSet[tskAffinity];
@@ -772,7 +776,7 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
     /* It's safe to enable intrs here */
     Hwi_restore(hwiKey);
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_READY_HOOKS
     for (i = 0; i < Task_hooks.length; i++) {
         if (Task_hooks.elem[i].readyFxn != NULL) {
             Task_hooks.elem[i].readyFxn(tsk);
@@ -947,7 +951,9 @@ Void Task_startCore(UInt coreId)
     Task_Struct dummyTask;
     UInt curSetPriLocal, curSetPriX, curPriLocal;
     Int newPri;
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     Int i;
+#endif
 
     Hwi_disable();      /* re-enabled in Task_enter of first task */
 
@@ -1006,7 +1012,7 @@ Void Task_startCore(UInt coreId)
         Hwi_enable();
     }
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     /* Run switch hooks for first real Task */
     for (i = 0; i < Task_hooks.length; i++) {
         if (Task_hooks.elem[i].switchFxn != NULL) {
@@ -1180,7 +1186,7 @@ Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
     /* check sp's for being in bounds */
     if (((UArg)&oldTaskStack < (UArg)oldTask->stack) ||
         ((UArg)&oldTaskStack > (UArg)(oldTask->stack+oldTask->stackSize))) {
-        Error_raise(NULL, Task_E_spOutOfBounds, oldTask, oldTask->context);
+        Error_raise(NULL, Task_E_spOutOfBounds, oldTask, &oldTaskStack);
     }
 
     if ((newTask->context < (Ptr)newTask->stack) ||

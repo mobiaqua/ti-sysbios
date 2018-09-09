@@ -41,4 +41,5 @@ requires ti.sysbios.interfaces;
  */
 package ti.sysbios.family.arm.v7m.keystone3 [2,0,0,0] {
     module MemProtect;
+    module TimerSupport;
 }

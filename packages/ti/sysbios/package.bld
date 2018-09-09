@@ -47,6 +47,7 @@ Pkg.otherFiles = [
     "package.bld",
     "libFilter.xs",
     "makefile.xdt",
+    "makefile_clang.xdt",
     "debugMakefile.xdt",
     "makefile_IAR.xdt",
     "makefile_gccArmLto.xdt",

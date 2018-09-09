@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,6 +126,50 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
             }
         },
         "ti.catalog.c6000": {
+            "J7ES": {
+                timer: [
+                    {
+                        name: "GPTimer0",
+                        baseAddr: 0x02400000,
+                        intNum:  14,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer1",
+                        baseAddr: 0x02410000,
+                        intNum:  15,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer2",
+                        baseAddr: 0x02420000,
+                        intNum:  14,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer3",
+                        baseAddr: 0x02430000,
+                        intNum:  15,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                ]
+            },
             "TDA3XX": {
                 timer: [
                     {
@@ -1482,7 +1526,7 @@ used by linux */
                         intNum:  256,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1492,7 +1536,7 @@ used by linux */
                         intNum:  257,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1502,7 +1546,7 @@ used by linux */
                         intNum:  258,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1512,7 +1556,7 @@ used by linux */
                         intNum:  259,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1522,7 +1566,7 @@ used by linux */
                         intNum:  260,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1532,7 +1576,7 @@ used by linux */
                         intNum:  261,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1542,7 +1586,7 @@ used by linux */
                         intNum:  262,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1552,7 +1596,7 @@ used by linux */
                         intNum:  263,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1562,7 +1606,7 @@ used by linux */
                         intNum:  264,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1572,7 +1616,7 @@ used by linux */
                         intNum:  265,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1582,7 +1626,7 @@ used by linux */
                         intNum:  266,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1592,7 +1636,7 @@ used by linux */
                         intNum:  267,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1652,7 +1696,7 @@ used by linux */
                         intNum:  38,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1662,7 +1706,7 @@ used by linux */
                         intNum:  39,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1672,7 +1716,7 @@ used by linux */
                         intNum:  40,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -1682,7 +1726,7 @@ used by linux */
                         intNum:  41,
                         eventId: -1,
                         intFreq: {
-                            lo: 19200000,
+                            lo: 25000000,
                             hi: 0,
                         },
                     },
@@ -2539,7 +2583,20 @@ used by DSP */
 
     deviceTable["ti.catalog.arp32"]["Vayu"] =
         deviceTable["ti.catalog.arp32"]["DRA7XX"];
+
+    deviceTable["ti.catalog.arm.cortexr5"]["AM65X"] =
+        deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
+
+    deviceTable["ti.catalog.arm.cortexa53"]["AM65X"] =
+        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+
+    deviceTable["ti.catalog.arm.cortexr5"]["J7"] =
+        deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
+
+    deviceTable["ti.catalog.arm.cortexr5"]["J7ES"] =
+        deviceTable["ti.catalog.arm.cortexr5"]["J7"];
 }
+
 
 /*
  *  ======== module$meta$init ========

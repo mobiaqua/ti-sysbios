@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ Void ti_sysbios_hal_Hwi_initStack(Void)
 {
     Hwi_StackInfo stkInfo;
     SizeT curStack;
-    register SizeT stackTop asm ("sp");
+    register SizeT stackTop __asm__ ("sp");
 
     /* Get stack base and size */
     if (BIOS_smpEnabled) {

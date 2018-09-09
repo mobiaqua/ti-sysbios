@@ -251,6 +251,12 @@ Void MPU_setRegion(UInt8 regionId, Ptr regionBaseAddr,
     Assert_isTrue(regionBaseAddr ==
         (Ptr)((UInt32)regionBaseAddr & (~0 << ((regionSize >> 1) + 1))),
         MPU_A_unalignedBaseAddr);
+    Assert_isTrue(!(
+        (attrs->tex == 1 &&
+         attrs->cacheable == FALSE && attrs->bufferable == TRUE) ||
+        (attrs->tex == 1 &&
+         attrs->cacheable == TRUE && attrs->bufferable == FALSE)),
+        MPU_A_reservedAttrs);
 
     enabled = MPU_isEnabled();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,10 +172,11 @@ function instance$meta$init(name)
         this.CPU.revision = this.deviceName;
 
         /* figure out the clock configuration */
-        if (this.deviceName.match(/^SIMMAXWELL/)) {
+        if (this.deviceName.match(/^SIMMAXWELL/) ||
+            this.deviceName.match(/^AM65X/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexa53";
             this.CPU.deviceName = "CortexA";
-            this.CPU.clockRate = 1;
+            this.CPU.clockRate = 800;
         }
     }
 }

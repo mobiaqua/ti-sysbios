@@ -162,7 +162,7 @@
 #elif defined(__clang__)
 #  if defined(__ARM_ARCH_8M_MAIN__)
 #    define xdc_target_name__ M33F
-#    define xdc_target_types__ ti/targets/arm/elf/llvm/std.h
+#    define xdc_target_types__ ti/targets/arm/clang/std.h
 #  endif
 
 /*
@@ -211,7 +211,7 @@
 #  endif
 #endif
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 4-19-2018 16:54:12; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,0; 7-20-2018 13:58:59; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

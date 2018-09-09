@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,25 +44,10 @@ extern Void `String(Hwi.undefinedInstFunc).substr(1)`();
 extern Void `String(Hwi.swiFunc).substr(1)`();
 extern Void `String(Hwi.prefetchAbortFunc).substr(1)`();
 extern Void `String(Hwi.dataAbortFunc).substr(1)`();
+extern Void `String(Hwi.reservedFunc).substr(1)`();
+extern Void `String(Hwi.irqFunc).substr(1)`();
+extern Void `String(Hwi.fiqFunc).substr(1)`();
 
-%if (!Hwi.lockstepDevice) {
-const UInt32 ti_sysbios_family_arm_v7r_keystone3_Hwi_vectors[] = {
-    (UInt32)(`String(Hwi.resetFunc)`),              /* resetFunc             */
-    (UInt32)(`String(Hwi.undefinedInstFunc)`),      /* undefInstFunc         */
-    (UInt32)(`String(Hwi.swiFunc)`),                /* swiFunc               */
-    (UInt32)(`String(Hwi.prefetchAbortFunc)`),      /* prefetchAbortFunc     */
-    (UInt32)(`String(Hwi.dataAbortFunc)`),          /* dataAbortFunc         */
-    (UInt32)(`String(Hwi.reservedFunc)`),           /* reservedFunc          */
-    (UInt32)(`String(Hwi.irqFunc)`),                /* irqFunc               */
-    (UInt32)(`String(Hwi.fiqFunc)`),                /* fiqFunc               */
-};
-%}
-%else {
-/*
- * The FIQ offset register is placed at an offset of #-0x1B0 w.r.t. the FIQ
- * vector table entry such that the vector table entry can directly reference
- * it.
- */
 const UInt32 ti_sysbios_family_arm_v7r_keystone3_Hwi_vectors[] = {
     (UInt32)(0xE59FF018),                       /* ldr  pc, resetFunc         */
     (UInt32)(0xE59FF018),                       /* ldr  pc, undefInstFunc     */
@@ -81,4 +66,3 @@ const UInt32 ti_sysbios_family_arm_v7r_keystone3_Hwi_vectors[] = {
     (UInt32)(`String(Hwi.irqFunc)`),            /* irqFunc                    */
     (UInt32)(`String(Hwi.fiqFunc)`)             /* fiqFunc                    */
 };
-%}

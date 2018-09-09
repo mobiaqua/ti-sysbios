@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,9 @@
 #if defined(__430_CORE__) || defined(__430X_CORE__)
 #include <../inc/dlib/c/time.h>
 #else
+
+/* disable IAR inline definition of time() */
+#define _NO_DEFINITIONS_IN_HEADER_FILES 1
 #include <../inc/c/time.h>
 #endif
 

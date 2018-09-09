@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ extern int _norm(int);
 /*
  *  ======== Intrinsics_maxbit ========
  */
-#if defined(__ti__)
+#if defined(__ti__) && !defined(__clang__)
 extern int _norm(int val);
 #define ti_sysbios_knl_Intrinsics_maxbit(bits) ((UInt)(Int)(31 - _norm((Int)(bits))))
 #else

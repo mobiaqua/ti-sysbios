@@ -101,12 +101,10 @@ Int Timer_Module_startup(Int status)
 {
     Timer_Object *obj;
 
-    if (Timer_startupNeeded) { 
-        obj = Timer_module->handle;
-        /* if timer was statically created/constructed */
-        if ((obj != NULL) && (obj->staticInst)) {
-            Timer_postInit(obj, NULL);
-        }
+    obj = Timer_module->handle;
+    /* if timer was statically created/constructed */
+    if ((obj != NULL) && (obj->staticInst)) {
+        Timer_postInit(obj, NULL);
     }
     return (Startup_DONE);
 }
@@ -119,6 +117,7 @@ Void Timer_startup()
 {
     Timer_Object *obj;
 
+    /* If TimestampProvider is used, it's Module_startup will start the Timer */
     if (Timer_startupNeeded) { 
         obj = Timer_module->handle;
         /* if timer was statically created/constructed */

@@ -50,18 +50,20 @@
  */
 Int TimestampProvider_Module_startup( Int phase )
 {
-    if (TimestampProvider_configTimer == FALSE) {
+    /* Make sure Timer has been initialized */
+    if (!Timer_Module_startupDone()) {
+        return (Startup_NOTDONE);
+    }
+
+    /* If we are not the creator of the Timer instance */
+    if (MOD->timer == NULL) {
         MOD->timer = Timer_getHandle(0);
     }
-    return Startup_DONE;
-}
 
-/*
- *  ======== TimestampProvider_startTimer ========
- */
-Void TimestampProvider_startTimer()
-{
+    /* We start the timer if we're used */
     Timer_start(MOD->timer);
+
+    return Startup_DONE;
 }
 
 /*

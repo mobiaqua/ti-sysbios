@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     };
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
 /*

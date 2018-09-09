@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,11 +195,11 @@ Void MPU_setRegion(UInt8 regionId, Ptr regionBaseAddr,
 
     Assert_isTrue(attrs != NULL, MPU_A_nullPointer);
     Assert_isTrue(regionId < MPU_numRegions, MPU_A_invalidRegionId);
-    Assert_isTrue((UInt32)regionBaseAddr & 0x1F == 0, MPU_A_unalignedBaseAddr);
-    Assert_isTrue((UInt32)regionEndAddr & 0x1F == 0, MPU_A_unalignedEndAddr);
+    Assert_isTrue(((UInt32)regionBaseAddr & 0x1F) == 0, MPU_A_unalignedBaseAddr);
+    Assert_isTrue(((UInt32)regionEndAddr & 0x1F) == 0, MPU_A_unalignedEndAddr);
 
     rbar = (UInt32)regionBaseAddr | (UInt32)(attrs->shareable << 3) |
-        (UInt32)(attrs->accessPerm << 1) | (UInt32)(!(attrs->executable) & 0x1);
+        (UInt32)(attrs->accessPerm << 1) | (UInt32)((!(attrs->executable)) & 0x1);
 
     rlar = (UInt32)regionEndAddr | (UInt32)(attrs->attrIndx << 1) |
         (UInt32)(attrs->enable);

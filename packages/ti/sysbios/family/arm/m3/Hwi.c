@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -491,7 +491,7 @@ Void Hwi_startup()
     Hwi_enable();
 }
 
-#ifdef __ti__
+#if defined(__ti__) && !defined(__clang__)
 
 /*
  *  ======== Hwi_disableFxn ========

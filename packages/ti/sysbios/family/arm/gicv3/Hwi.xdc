@@ -686,6 +686,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     };
 
     /*!
+     *  Error raised when an exception occurs.
+     */
+    config Error.Id E_exception = {
+        msg: "E_exception: A hardware exception has occurred."
+    };
+
+    /*!
      *  Issued just prior to Hwi function invocation (with interrupts disabled)
      */
     config Log.Event LM_begin = {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,8 @@ if (xdc.om.$name == "cfg") {
     };
 
     deviceTable["ti.catalog.arm.cortexa53"]["SIMFLEMING"] =
+        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+    deviceTable["ti.catalog.arm.cortexa53"]["AM65X"] =
         deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
 }
 

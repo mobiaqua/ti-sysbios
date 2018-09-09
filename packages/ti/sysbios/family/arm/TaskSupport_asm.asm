@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2014, Texas Instruments Incorporated
+;  Copyright (c) 2014-2018, Texas Instruments Incorporated
 ;  All rights reserved.
 ; 
 ;  Redistribution and use in source and binary forms, with or without
@@ -149,7 +149,9 @@ NEW     .set    r1                      ; 2nd argument
 
 _ti_sysbios_family_arm_TaskSupport_swap__E:
         .asmfunc
-
+    .if  __TI_ARM_V7__
+        clrex
+    .endif
         push    {r4-r11, lr}
     .if __TI_VFP_SUPPORT__ | __TI_NEON_SUPPORT__
         vstmdb  {D8-D15}, r13!          ; push vfp caller regs

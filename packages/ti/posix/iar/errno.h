@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,6 +91,10 @@ extern "C" {
 #define EMSGSIZE                122
 #endif
 
+#ifndef ENFILE
+#define ENFILE                  23
+#endif
+
 #ifndef ENOMEM
 #define ENOMEM                  12
 #endif
@@ -143,6 +147,10 @@ extern "C" {
 #define EISCONN                 127
 #endif
 
+#ifndef ENETDOWN
+#define ENETDOWN                115
+#endif
+
 #ifndef ENETUNREACH
 #define ENETUNREACH             114
 #endif
@@ -174,6 +182,11 @@ extern "C" {
 #ifndef EPROTOTYPE
 #define EPROTOTYPE              107
 #endif
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK             EAGAIN
+#endif
+
 /* custom error codes */
 #define EFREERTOS    2001       /* FreeRTOS function failure */
 

@@ -38,7 +38,7 @@
 #define ti_posix_ccs_errno__include
 
 /* compiler vendor check */
-#ifndef __TI_COMPILER_VERSION__
+#if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
 #endif
@@ -118,6 +118,10 @@ extern "C" {
 #define EMSGSIZE        122
 #endif
 
+#ifndef ENFILE
+#define ENFILE          23
+#endif
+
 #ifndef ENOMEM
 #define ENOMEM          12
 #endif
@@ -175,6 +179,10 @@ extern "C" {
 #define EISCONN                 127
 #endif
 
+#ifndef ENETDOWN
+#define ENETDOWN                115
+#endif
+
 #ifndef ENETUNREACH
 #define ENETUNREACH             114
 #endif
@@ -207,11 +215,91 @@ extern "C" {
 #define EPROTOTYPE              107
 #endif
 
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK             EAGAIN
+#endif
+
 /* custom error codes */
 #define EFREERTOS    2001       /* FreeRTOS function failure */
 
 #ifdef __cplusplus
 }
+#endif
+
+
+/*  TI toolchain check
+ *
+ *  TI ARM CLang Compiler
+ */
+#elif defined(__clang__)
+
+/* include toolchain's header file */
+#include <../../include/c/errno.h>
+
+/* These are in errno.h but commented out. Values match GNU ARM compiler. */
+
+#ifndef EADDRINUSE
+#define EADDRINUSE              112
+#endif
+
+#ifndef EADDRNOTAVAIL
+#define EADDRNOTAVAIL           125
+#endif
+
+#ifndef EAFNOSUPPORT
+#define EAFNOSUPPORT            106
+#endif
+
+#ifndef ECONNREFUSED
+#define ECONNREFUSED            111
+#endif
+
+#ifndef EDESTADDRREQ
+#define EDESTADDRREQ            121
+#endif
+
+#ifndef EISCONN
+#define EISCONN                 127
+#endif
+
+#ifndef ENETDOWN
+#define ENETDOWN                115
+#endif
+
+#ifndef ENETUNREACH
+#define ENETUNREACH             114
+#endif
+
+#ifndef ENOBUFS
+#define ENOBUFS                 105
+#endif
+
+#ifndef ENOPROTOOPT
+#define ENOPROTOOPT             109
+#endif
+
+#ifndef ENOTCONN
+#define ENOTCONN                128
+#endif
+
+#ifndef EOPNOTSUPP
+#define EOPNOTSUPP              95
+#endif
+
+#ifndef EOVERFLOW
+#define EOVERFLOW               139
+#endif
+
+#ifndef EPROTONOSUPPORT
+#define EPROTONOSUPPORT         123
+#endif
+
+#ifndef EPROTOTYPE
+#define EPROTOTYPE              107
+#endif
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK             EAGAIN
 #endif
 
 
@@ -278,6 +366,10 @@ extern "C" {
 #define EMSGSIZE                122
 #endif
 
+#ifndef ENFILE
+#define ENFILE                  23
+#endif
+
 #ifndef ENOMEM
 #define ENOMEM                  12
 #endif
@@ -330,6 +422,10 @@ extern "C" {
 #define EISCONN                 127
 #endif
 
+#ifndef ENETDOWN
+#define ENETDOWN                115
+#endif
+
 #ifndef ENETUNREACH
 #define ENETUNREACH             114
 #endif
@@ -360,6 +456,10 @@ extern "C" {
 
 #ifndef EPROTOTYPE
 #define EPROTOTYPE              107
+#endif
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK             EAGAIN
 #endif
 
 #ifdef __cplusplus
@@ -422,6 +522,14 @@ extern "C" {
 #define EMSGSIZE                122
 #endif
 
+#ifndef ENETDOWN
+#define ENETDOWN                115
+#endif
+
+#ifndef ENFILE
+#define ENFILE                  23
+#endif
+
 #ifndef ENOMEM
 #define ENOMEM                  12
 #endif
@@ -504,6 +612,10 @@ extern "C" {
 
 #ifndef EPROTOTYPE
 #define EPROTOTYPE              107
+#endif
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK             EAGAIN
 #endif
 
 #ifdef __cplusplus

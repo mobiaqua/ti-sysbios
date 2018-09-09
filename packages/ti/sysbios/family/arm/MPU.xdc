@@ -333,6 +333,14 @@ module MPU
     };
 
     /*!
+     *  ======== A_reservedAttrs ========
+     *  Assert raised when region's attributes set to a reserved set
+     */
+    config xdc.runtime.Assert.Id A_reservedAttrs = {
+        msg: "A_reservedAttrs: MPU region attributes set to reserved value."
+    };
+
+    /*!
      *  ======== enableMPU ========
      *  Configuration parameter to enable MPU. Disabled by default.
      */

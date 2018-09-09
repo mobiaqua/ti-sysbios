@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,13 @@
 #include <xdc/runtime/Types.h>
 
 #include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/family/arm/v7a/Pmu.h>
 #include <ti/sysbios/hal/Hwi.h>
+
+#ifdef __aarch64__
+#include <ti/sysbios/family/arm/v8a/Pmu.h>
+#else
+#include <ti/sysbios/family/arm/v7a/Pmu.h>
+#endif
 
 #include "package/internal/Timer.xdc.h"
 

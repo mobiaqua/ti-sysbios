@@ -165,7 +165,7 @@ metaonly module MSP430X_small inherits ITarget {
     override config String binaryParser = "ti.targets.omf.elf.Elf32";
 };
 /*
- *  @(#) ti.targets.msp430.elf; 1, 0, 0,0; 4-19-2018 16:55:02; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.msp430.elf; 1, 0, 0,0; 7-20-2018 13:59:30; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

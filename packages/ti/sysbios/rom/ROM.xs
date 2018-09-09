@@ -45,6 +45,6 @@ function module$meta$init()
     }
 
 	this.$logFatal("ROM support has been deprecated in SYS/BIOS 6.70.00 and " +
-        "newer releases. Please use SYS/BIOS 6.53 or older release for ROM " +
+        "newer releases. Please use SYS/BIOS 6.55 or older release for ROM " +
         "support.", this);
 }

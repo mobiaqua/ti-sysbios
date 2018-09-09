@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,8 +64,8 @@ Int EventCombiner_Module_startup(Int phase)
 #ifdef ti_sysbios_BIOS_useSK__D
     UInt regIndex;
 #else
-    UInt *evtMaskReg = (UInt *)EVTMASKREG;
-    UInt *evtClrReg = (UInt *)EVTCLRREG;
+    UInt *evtMaskReg = EventCombiner_EVTRegs->EVTMASK;
+    UInt *evtClrReg = EventCombiner_EVTRegs->EVTCLR;
 #endif
 
     /* okay to proceed with initialization */
@@ -99,7 +99,7 @@ Void EventCombiner_disableEvent(UInt eventId)
     UInt hwiKey;
     UInt index;
     UInt bitpos;
-    volatile UInt *evtMask = (volatile UInt *)EVTMASKREG;
+    volatile UInt *evtMask = EventCombiner_EVTRegs->EVTMASK;
 
     Assert_isTrue(eventId < EventCombiner_NUM_EVENTS,
         EventCombiner_A_invalidEventId);
@@ -135,7 +135,7 @@ Void EventCombiner_enableEvent(UInt eventId)
     UInt hwiKey;
     UInt index;
     UInt bitpos;
-    volatile UInt *evtMask = (volatile UInt *)EVTMASKREG;
+    volatile UInt *evtMask = EventCombiner_EVTRegs->EVTMASK;
 
     Assert_isTrue(eventId < EventCombiner_NUM_EVENTS,
         EventCombiner_A_invalidEventId);
@@ -180,9 +180,9 @@ Void EventCombiner_dispatch(UInt eventId)
     UInt index;
     UInt offset;
     volatile UInt eventRcv;
-    volatile UInt *mevtFlag = (volatile UInt *)MEVTFLAGREG;
+    volatile UInt *mevtFlag = EventCombiner_EVTRegs->MEVTFLAG;
 #ifndef ti_sysbios_BIOS_useSK__D
-    volatile UInt *evtClr = (volatile UInt *)EVTCLRREG;
+    volatile UInt *evtClr = EventCombiner_EVTRegs->EVTCLR;
 #endif
 
     Assert_isTrue(eventId < EventCombiner_NUM_EVENTS,

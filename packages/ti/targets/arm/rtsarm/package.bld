@@ -7,7 +7,7 @@ var RtsBuild = xdc.loadCapsule('xdc/runtime/build.xs');
 var KnlBuild = xdc.loadCapsule('xdc/runtime/knl/build.xs');
 
 Pkg.makePrologue = RtsBuild.makePrologue;
-Pkg.otherFiles = ['boot.asm', 'auto_init.asm', 'llvm_startup.c'];
+Pkg.otherFiles = ['boot.asm', 'auto_init.asm', 'clang_startup.c'];
 Pkg.otherSrcs = Pkg.otherFiles;
 
 var attrs = {
@@ -19,10 +19,10 @@ var cobjs = RtsBuild.c_objs.concat(KnlBuild.c_objs);
 for (var i = 0; i < Build.targets.length; i++) {
     var targ = Build.targets[i];
     if (targ.rts == Pkg.name) {
-        if (targ.$name == "ti.targets.arm.elf.llvm.M33F") {
+        if (targ.$name == "ti.targets.arm.clang.M33F") {
             attrs.copts = "";
             Pkg.addLibrary("lib/" + Pkg.name, targ, attrs).addObjects(cobjs);
-            Pkg.addLibrary("lib/startup", targ).addObjects(["llvm_startup"]);
+            Pkg.addLibrary("lib/startup", targ).addObjects(["clang_startup", "boot_cortex_m"]);
         }
         else {
             Pkg.addLibrary("lib/" + Pkg.name, targ, attrs).addObjects(cobjs);
@@ -32,7 +32,7 @@ for (var i = 0; i < Build.targets.length; i++) {
     }
 }
 /*
- *  @(#) ti.targets.arm.rtsarm; 1, 0, 0,0; 4-20-2018 17:26:51; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.arm.rtsarm; 1, 0, 0,0; 7-20-2018 14:27:53; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

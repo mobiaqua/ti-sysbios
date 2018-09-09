@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -286,13 +286,13 @@ function viewInitBasic(view, obj)
         }
 
 
-        if (pendElem.tpElem.clock != 0) {
+        if (pendElem.tpElem.clockHandle != 0) {
             try {
-                var clockView = Program.scanHandleView('ti.sysbios.knl.Clock', pendElem.tpElem.clock, 'Basic');
+                var clockView = Program.scanHandleView('ti.sysbios.knl.Clock', pendElem.tpElem.clockHandle, 'Basic');
             }
             catch (e) {
                 view.$status["timeout"] = "Problem scanning pending Clock 0x" +
-                                        Number(pendElem.tpElem.clock).toString(16) + 
+                                        Number(pendElem.tpElem.clockHandle).toString(16) + 
                                         ": " + e.toString();
                 return;
             }
@@ -319,11 +319,11 @@ function viewInitBasic(view, obj)
          * Scan the handle. 
          */
         try {
-            var taskView = Program.scanHandleView('ti.sysbios.knl.Task', pendElem.tpElem.task, 'Basic');
+            var taskView = Program.scanHandleView('ti.sysbios.knl.Task', pendElem.tpElem.taskHandle, 'Basic');
         }
         catch (e) {
             view.$status["pendElems"] = "Problem scanning pending Task 0x" +
-                                        Number(pendElem.tpElem.task).toString(16) + 
+                                        Number(pendElem.tpElem.taskHandle).toString(16) + 
                                         ": " + e.toString();
             return;
         }

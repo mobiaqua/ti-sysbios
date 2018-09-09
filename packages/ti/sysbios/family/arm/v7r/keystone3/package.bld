@@ -41,7 +41,6 @@ var objList = [
     "Hwi",
     "Hwi_asm",
     "Hwi_asm_switch",
-    "Hwi_asm_vecs",
     "TimerSupport"
 ];
 

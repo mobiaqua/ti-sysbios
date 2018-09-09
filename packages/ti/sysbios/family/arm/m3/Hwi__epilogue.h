@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ extern "C" {
 
 /* Use macro/inline implementations */
 
-#if defined(__ti__)
+#if defined(__ti__) && !defined(__clang__)
 
 /* declare compiler intrinsic function since compiler doesn't have prototype */
 extern unsigned int _set_interrupt_priority(unsigned int);
@@ -118,7 +118,7 @@ static inline Void ti_sysbios_family_arm_m3_Hwi_restore(UInt key)
      __set_BASEPRI(key);
 }
 
-#else  /* GNU */
+#else  /* clang or GNU */
 
 /*
  *  ======== Hwi_disable ========

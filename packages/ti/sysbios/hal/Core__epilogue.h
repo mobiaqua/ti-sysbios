@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@ extern "C" {
 
 #include "ti/sysbios/family/arm/m3/Hwi.h"
 
-#if defined(__ti__)
+#if defined(__ti__) && !defined(__clang__)
 
 /*
  *  ======== Core_hwiDisable ========
@@ -138,7 +138,7 @@ static inline Void ti_sysbios_hal_Core_hwiRestore(UInt key)
      __set_BASEPRI(key);
 }
 
-#else /* GNU */
+#else /* clang or GNU */
 
 /*
  *  ======== Core_hwiDisable ========

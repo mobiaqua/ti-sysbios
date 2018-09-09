@@ -159,6 +159,8 @@ Ptr TaskSupport_buildTaskStack(Ptr stackBase, SizeT stackSize, Task_FuncPtr fxn,
 #if (defined(__ti__) && defined(__TI_VFP_SUPPORT__)) || \
     (defined(__IAR_SYSTEMS_ICC__) && defined(__ARMVFP__)) || \
     (defined(__GNUC__) && !defined(__ti__) && \
+     defined(__VFP_FP__) && !defined(__SOFTFP__)) || \
+    (defined(__clang__) && \
      defined(__VFP_FP__) && !defined(__SOFTFP__))
     /* Make room for 8 VFP saved by parent regs D8-D15 */
     stack[--idx] = (~0);
@@ -181,7 +183,8 @@ Ptr TaskSupport_buildTaskStack(Ptr stackBase, SizeT stackSize, Task_FuncPtr fxn,
 
 #if (defined(__IAR_SYSTEMS_ICC__) && (__CORE__ == __ARM8M_MAINLINE__)) || \
     (defined(__GNUC__) && !defined(__ti__) && \
-     defined(__ARM_ARCH_8M_MAIN__))
+     defined(__ARM_ARCH_8M_MAIN__)) || \
+    (defined(__clang__) && defined(__ARM_ARCH_8M_MAIN__))
     /*
      * Store task stack base address in initial stack frame. Task swap function
      * will read this and program the hardware stack limit register.

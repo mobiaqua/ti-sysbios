@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 
 MEMORY
 {
-    SRAM  (RWX) : ORIGIN = 0x2C000000, LENGTH = 0x00400000 /* 4MB */
+    SRAM  (RWX) : ORIGIN = 0x2C400000, LENGTH = 0x00040000 /* 256K */
 }
 
 REGION_ALIAS("REGION_TEXT", SRAM);

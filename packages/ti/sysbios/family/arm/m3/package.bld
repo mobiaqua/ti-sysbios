@@ -83,7 +83,6 @@ var trgFilter = {
     list: [ "gnu.targets.arm.M3",
             "gnu.targets.arm.M4",
             "gnu.targets.arm.M4F",
-            "gnu.targets.arm.M33F",
           ]
 };
 
@@ -109,7 +108,6 @@ var trgFilter = {
     list: [ "iar.targets.arm.M3",
             "iar.targets.arm.M4",
             "iar.targets.arm.M4F",
-            "iar.targets.arm.M33",
           ]
 };
 

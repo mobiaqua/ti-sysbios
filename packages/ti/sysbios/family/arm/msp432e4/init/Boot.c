@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,6 @@
 #include "sysctl.h"
 
 #include "package/internal/Boot.xdc.h"
-
-/*
- *  ======== Boot_sysCtlClockSet ========
- */
-Void Boot_sysCtlClockSet(ULong ulConfig)
-{
-    Boot_sysCtlClockSetI(ulConfig);
-}
-
 
 /*
  *  ======== Boot_sysCtlClockFreqSet ========

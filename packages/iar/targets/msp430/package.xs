@@ -37,7 +37,7 @@ function init()
     }
 }
 /*
- *  @(#) iar.targets.msp430; 1, 0, 0,0; 4-19-2018 16:53:57; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) iar.targets.msp430; 1, 0, 0,0; 7-20-2018 13:58:48; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

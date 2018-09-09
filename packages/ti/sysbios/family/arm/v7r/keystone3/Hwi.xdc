@@ -47,11 +47,11 @@ import ti.sysbios.interfaces.IHwi;
  *
  *  //TODO Note: FIQ interrupt handler must save FIQ context before using FPU
  *
- *  This Hwi module provides PL192 Vectored Interrupt Controller (VIC)
+ *  This Hwi module provides Keystone3 Vectored Interrupt Manager (VIM)
  *  specific implementations of the APIs defined in
  *  {@link ti.sysbios.interfaces.IHwi IHwi}.
  *
- *  Additional ARM device-specific APIs are also provided.
+ *  Additional device-specific APIs are also provided.
  *
  *  @a(Minimal Latency Interrupts)
  *  For applications requiring extremely low interrupt latency, this Hwi module
@@ -62,10 +62,10 @@ import ti.sysbios.interfaces.IHwi;
  *  "FIQ" aka "Zero latency" interrupts can be created by setting the Hwi_Param
  *  {@link #type} to Hwi_Type_FIQ. FIQ interrupts offer low interrupt latency
  *  as they do not have to pass through the regular SYS/BIOS interrupt
- *  dispatcher and are always enabled. When auto nesting is enabled and masking
- *  option ALL or LOWER is used, some or all of the VIC interrupts will
- *  be disabled while the interrupt is being serviced. However, none of the
- *  "Zero latency" interrupts are disabled (masked).
+ *  dispatcher and are always enabled. When auto nesting is enabled, all
+ *  VIM interrupts of equal or lower priority will be disabled while the
+ *  interrupt is being serviced. However, none of the "Zero latency" interrupts
+ *  are disabled (masked).
  *
  *  Unlike regular IRQ interrupts, FIQ interrupts do not run on the System stack
  *  but on their own FIQ stack. The stack pointer, size and section name for the
@@ -88,7 +88,7 @@ import ti.sysbios.interfaces.IHwi;
  *
  *  @p(code)
  *  *.cfg:
- *  var Hwi = xdc.useModule('ti.sysbios.family.arm.pl192.Hwi');
+ *  var Hwi = xdc.useModule('ti.sysbios.family.arm.v7r.keystone3.Hwi');
  *  Hwi.fiqStackSize = 2048;
  *  Hwi.fiqStackSection = ".myFiqStack"
  *  Program.sectMap[".myFiqStack"] = "RAM";
@@ -98,7 +98,7 @@ import ti.sysbios.interfaces.IHwi;
  *  #include <xdc/runtime/System.h>
  *
  *  #include <ti/sysbios/BIOS.h>
- *  #include <ti/sysbios/family/arm/pl192/Hwi.h>
+ *  #include <ti/sysbios/family/arm/v7r/keystone3/Hwi.h>
  *
  *  #include <xdc/cfg/global.h>
  *
@@ -120,38 +120,28 @@ import ti.sysbios.interfaces.IHwi;
  *  }
  *  @p
  *
- *  @a(Interrupt Latency)
- *  This module supports daisy-chained Vectored Interrupt Controllers (VICs).
- *  In a daisy-chained configuration, the VIC closest to the core has the lowest
- *  interrupt latency. In other words, lower interrupt numbers have lower
- *  latency.
- *
  *  @a(Interrupt Priorities)
  *  FIQ interrupts have the highest priority i.e. any interrupt of FIQ type will
  *  have a higher priority than any other interrupt of IRQ type.
  *
- *  IRQ interrupts (or vectored interrupts in PL192 VIC terminology) can be
- *  assigned different priority levels, ranging from 0-15. Lower priority levels
- *  imply a higher effective interrupt priority. Priority level can be set by
- *  writing to the {@link #priority} Hwi param. By default, all interrupts are
- *  set to the lowest priority level.
+ *  IRQ interrupts (or vectored interrupts) can be assigned different priority
+ *  levels, ranging from 0-15. Lower priority levels imply a higher effective
+ *  interrupt priority. Priority level can be set by writing to the
+ *  {@link #priority} Hwi param. By default, all interrupts are set to the
+ *  lowest priority (highest priority value).
  *
- *  If multiple interrupts that are at the same priority level and belong to
- *  the same VIC, occur at the time, the fixed hardware priority levels are
- *  used to determine the order in which the interrupts are serviced. In this
- *  case, lower interrupts have a higher priority i.e. interrupt 0 will have
- *  a higher priority than interrupt 31.
+ *  If multiple interrupts that are at the same priority level occur at the
+ *  same time, the smaller lower interrupt number wins arbitration.
  *
  *  @a(Interrupt Masking Options)
- *  In this Hwi module, the {@link #maskSetting} instance configuration
- *  parameter is ignored.
- *  Effectively, only the {@link #MaskingOption_LOWER} is supported.
+ *  In this Hwi module, the maskSetting instance configuration parameter is
+ *  ignored. Effectively, only the {@link #MaskingOption_LOWER} is supported.
  *
  *  @a(More Hwi examples)
  *  Here's an example showing how to construct a Hwi at runtime:
  *  @p(code)
  *  *.c:
- *  #include <ti/sysbios/family/arm/pl192/Hwi.h>
+ *  #include <ti/sysbios/family/arm/v7r/keystone3/Hwi.h>
  *
  *  Hwi_Struct hwiStruct;
  *
@@ -291,97 +281,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
 
     // -------- Module Parameters --------
 
-    /*!
-     *  ======== core0VectorTableAddress ========
-     *  Determines the location of Core0's Interrupt Vector Table on a
-     *  Dual-Core device. Default is device dependent.
-     *
-     *  On Dual-Core devices, both Cortex-R5 cores share a common reset
-     *  vector table. In order to allow the 2 cores to register their own
-     *  exception handlers, each core generates its own clone of the reset
-     *  vector table and initializes it with its own exception handler
-     *  addresses. The core specific vector tables are placed at fixed
-     *  addresses so that the exception handler functions called by the
-     *  common reset vector table known each core's vector table address
-     *  and are able to reference it once they detect which core the
-     *  application is currently running on.
-     *
-     *  The address of Core0's vector table is determined by this parameter.
-     *
-     *  Here are the default Core0 vector table addresses for all supported
-     *  Dual-Core devices:
-     *  @p(code)
-     *   ----------------------------------------------------
-     *  | Device name | Core0's default vector table address |
-     *   ----------------------------------------------------
-     *  | RM57D8xx    | 0x100                                |
-     *   ----------------------------------------------------
-     *  @p
-     *
-     *  @a(Note)
-     *  If changing Core0's vector table address, it is not necessary to
-     *  rebuild Core1's application as it does not need to know the location
-     *  of Core0's vector table.
-     */
-    metaonly config Ptr core0VectorTableAddress;
-
-    /*!
-     *  ======== core1VectorTableAddress ========
-     *  Determines the location of Core1's Interrupt Vector Table on a
-     *  Dual-Core device. Default is device dependent.
-     *
-     *  On Dual-Core devices, both Cortex-R5 cores share a common reset
-     *  vector table. In order to allow the 2 cores to register their own
-     *  exception handlers, each core generates its own clone of the reset
-     *  vector table and initializes it with its own exception handler
-     *  addresses. The core specific vector tables are placed at fixed
-     *  addresses so that the exception handler functions called by the
-     *  common reset vector table known each core's vector table address
-     *  and are able to reference it once they detect which core the
-     *  application is currently running on.
-     *
-     *  Core0's vector table is always placed at 0x100 while the address of
-     *  Core1's vector table is determined by this parameter.
-     *
-     *  Here are the default Core1 vector table addresses for all supported
-     *  Dual-Core devices:
-     *  @p(code)
-     *   ----------------------------------------------------
-     *  | Device name | Core1's default vector table address |
-     *   ----------------------------------------------------
-     *  | RM57D8xx    | 0x200000                             |
-     *   ----------------------------------------------------
-     *  @p
-     *
-     *  @a(Note)
-     *  If changing Core1's vector table address, it is important to rebuild
-     *  Core0's application with the same change as Core0 owns the common
-     *  reset vector table and the common exception handler functions need
-     *  to know Core1's vector table address so they can determine the
-     *  address of the handler function they need to jump to.
-     */
-    metaonly config Ptr core1VectorTableAddress;
-
-    /*!
-     *  ======== resetVectorHandlerAddress ========
-     *  Determines the location of the common reset vector handlers on a
-     *  Dual-Core device. Default is device dependent.
-     *
-     *  On Dual-Core devices, both Cortex-R5 cores share a common reset
-     *  vector table which points to a set of common vector handler
-     *  functions. These vector handler functions are placed at a fixed
-     *  address determined by this parameter.
-     *
-     *  @p(code)
-     *   ----------------------------------------------------
-     *  | Device name | Default reset vector handler address |
-     *   ----------------------------------------------------
-     *  | KEYSTONE3   | 0x00550000                           |
-     *   ----------------------------------------------------
-     *  @p
-     */
-    config Ptr resetVectorHandlerAddress;
-
     /*! Reset Handler. Default is c_int00 */
     metaonly config VectorFuncPtr resetFunc;
 
@@ -470,15 +369,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     metaonly config Ptr vimBaseAddress;
 
     /*!
-     *  ======== A_badChannelId ========
-     *  Assert raised when an invalid channelId is passed to Hwi_mapChannel()
-     *  function.
-     */
-    config xdc.runtime.Assert.Id A_badChannelId  = {
-        msg: "A_badChannelId: ChannelId is either not re-mappable or invalid."
-    };
-
-    /*!
      *  Error raised when Hwi is already defined
      */
     config Error.Id E_alreadyDefined = {
@@ -498,13 +388,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     config Error.Id E_undefined = {
         msg: "E_undefined: Hwi undefined, intNum: %d"
-    };
-
-    /*!
-     *  Error raised when an unsupported Hwi.MaskingOption used.
-     */
-    config Error.Id E_unsupportedMaskingOption = {
-        msg: "E_unsupportedMaskingOption: Unsupported masking option passed."
     };
 
     /*!
@@ -586,17 +469,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     @Macro
     override Void restore(UInt key);
-
-    /*!
-     *  @_nodoc
-     *  ======== inUseMeta ========
-     *  Check for Hwi already in use.
-     *  For internal SYS/BIOS use only.
-     *  Should be called prior to any internal Hwi.create().
-     *
-     *  @param(intNum)  interrupt number
-     */
-    metaonly Bool inUseMeta(UInt intNum);
 
     /*!
      *  ======== getHandle ========
@@ -697,19 +569,10 @@ instance:
     /*!
      *  Interrupt priority.
      *
-     *  The Vectored Interrupt Controllers (VIC) on Keystone3 are
-     *  connected in a daisy-chain configuration (i.e. VIC1's output
-     *  line is connected to VIC0's input line and so on) with each VIC
-     *  having its own priority hardware.
-     *
-     *  On each VIC, FIQ interrupts have the highest priority, followed by
-     *  the IRQ interrupts and the daisy-chained interrupt.
-     *  The daisy-chained interrupt has the lowest priority.
-     *
      *  There are a total of 16 different priority levels and therefore
-     *  the priority field can take a value from 0-15.
+     *  the priority field can take a value from 0-15. Lower numeric
+     *  value means a higher effective interrupt priority.
      *
-     *  Each vectored interrupt source can
      *  The default value of -1 is used as a flag to indicate
      *  the lowest (logical) device-specific priority value.
      *
@@ -723,11 +586,6 @@ instance:
 
     /*! Interrupt trigger type (Pulse/Level). Default is Level triggered. */
     config TriggerType triggerType = TriggerType_LEVEL;
-
-    /*!
-     *  Default setting for this Hwi module is IHwi.MaskingOption_LOWER
-     */
-    override config IHwi.MaskingOption maskSetting = IHwi.MaskingOption_LOWER;
 
     /*!
      *  ======== reconfig ========
@@ -770,8 +628,6 @@ internal:   /* not for client use */
         UInt32 PRIORITY[1024];    /*! 0x1000-0x1FFF Interrupt N Priority Reg */
         UInt32 VECTOR[1024];      /*! 0x2000-0x2FFF Vector Register */
     };
-
-    metaonly config Bool lockstepDevice;
 
     /*
      *  ======== vim ========

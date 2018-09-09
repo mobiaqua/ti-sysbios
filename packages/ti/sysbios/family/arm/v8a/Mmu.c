@@ -506,7 +506,7 @@ Bool Mmu_tableWalk(UInt8 level, UInt64 *tablePtr, UInt64 *vaddr, UInt64 *paddr,
     tableIdx = (*vaddr >> Mmu_configInfo.tableOffset[level]) &
         Mmu_configInfo.indexMask;
 
-    while (*size != 0) {
+    while ((*size != 0) && (tableIdx < Mmu_configInfo.tableLength)) {
         desc = tablePtr[tableIdx];
 
         if (((desc & 0x3) == Mmu_DescriptorType_TABLE) && (level != 3)) {
@@ -530,12 +530,8 @@ Bool Mmu_tableWalk(UInt8 level, UInt64 *tablePtr, UInt64 *vaddr, UInt64 *paddr,
             }
         }
         else if (((desc & 0x3) != Mmu_DescriptorType_TABLE) || (level == 3)) {
-            /*
-             * TODO If old entry is a block entry and adding a new table
-             *      entry, need to merge the old and new entry.
-             */
             if ((level == 0) || ((level < 3) && (*size < blockSize)) ||
-               ((*size >= blockSize) && (*vaddr & (blockSize - 1) != 0))) {
+               ((*size >= blockSize) && ((*vaddr & (blockSize - 1)) != 0))) {
                 UInt64 vaddrCopy = (*vaddr & (~(blockSize - 1)));
                 UInt64 paddrCopy;
                 Mmu_MapAttrs mapAttrsCopy;

@@ -95,10 +95,16 @@ const intvec_elem __vector_table[] =
 
 %}
 %else {
+%    if (Program.build.target.$name.match(/clang/)) {
+/* const because it is meant to be placed in ROM */
+const UInt32 ti_sysbios_family_arm_m3_Hwi_resetVectors[] __attribute__ ((section (".resetVecs"))) = {
+%    }
+%    else {
 #pragma DATA_SECTION(ti_sysbios_family_arm_m3_Hwi_resetVectors, ".resetVecs");
 
 /* const because it is meant to be placed in ROM */
 const UInt32 ti_sysbios_family_arm_m3_Hwi_resetVectors[] = {
+%    }
     (UInt32)(&__TI_STACK_BASE),
 %}
     (UInt32)(`String(Hwi.resetFunc)`),
@@ -161,10 +167,16 @@ UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute
 __root __no_init UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`];
 %}
 % else {
+%    if (Program.build.target.$name.match(/clang/)) {
+/* place holder for RAM vector table */
+UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vecs")));
+%    }
+%    else {
 #pragma DATA_SECTION(ti_sysbios_family_arm_m3_Hwi_ramVectors, ".vecs");
 
 /* place holder for RAM vector table */
 UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`];
+%    }
 % }
 %}
 

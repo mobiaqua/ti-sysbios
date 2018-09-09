@@ -126,10 +126,14 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
         deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
     deviceTable["ti.catalog.arm.cortexr4"]["IWR1.*"] =
         deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
+    deviceTable["ti.catalog.arm.cortexr4"]["IWR6.*"] =
+        deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
 
     deviceTable["ti.catalog.c6000"]["AWR1.XX"] =
         deviceTable["ti.catalog.c6000"]["AWR16XX"];
     deviceTable["ti.catalog.c6000"]["IWR1.XX"] =
+        deviceTable["ti.catalog.c6000"]["AWR16XX"];
+    deviceTable["ti.catalog.c6000"]["IWR6.XX"] =
         deviceTable["ti.catalog.c6000"]["AWR16XX"];
 }
 

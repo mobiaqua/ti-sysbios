@@ -43,6 +43,7 @@ var customIar430xOpts = " --silent --diag_suppress=Pa050,Go005,Pe1053 -D_DLIB_FI
 var custom6xOpts = " -q -mi10 -mo -pdr -pden -pds=238 -pds=880 -pds1110 ";
 var customARP32xOpts = " -q --gen_func_subsections ";
 var customArmOpts = " -q -ms --opt_for_speed=2 ";
+var customArmM33FOpts = " -Os ";
 var customGnuArmM3Opts = " ";
 var customGnuArmM4Opts = " ";
 var customGnuArmM4FOpts = " ";
@@ -79,6 +80,7 @@ var ccOptsList = {
     "ti.targets.arm.elf.R4Ft"                   : customArmOpts,
     "ti.targets.arm.elf.R5F"                    : customArmOpts,
     "ti.targets.arm.elf.R5F_big_endian"         : customArmOpts,
+    "ti.targets.arm.clang.M33F"                 : customArmM33FOpts,
     "gnu.targets.arm.M3"                        : customGnuArmM3Opts,
     "gnu.targets.arm.M4"                        : customGnuArmM4Opts,
     "gnu.targets.arm.M4F"                       : customGnuArmM4FOpts,
@@ -307,6 +309,8 @@ var biosPackages = [
     "ti.sysbios.family.arm.v7m.keystone3",
     "ti.sysbios.family.arm.v8",
     "ti.sysbios.family.arm.v8a",
+    "ti.sysbios.family.arm.v8m",
+    "ti.sysbios.family.arm.v8m.mtl",
     "ti.sysbios.family.c28",
     "ti.sysbios.family.c28.f28m35x",
     "ti.sysbios.family.c28.f2837x",
@@ -395,6 +399,15 @@ function getDefaultCustomCCOpts()
             customCCOpts += " --mfc -Ohs ";
         }
     }
+    else if (Program.build.target.$name.match(/clang/)) {
+        /*
+         * Do not produce debug information to avoid a known issues with
+         * TI LLVM tools. See https://jira.itg.ti.com/browse/CODEGEN-4691
+         * for more info.
+         */
+        customCCOpts += " -O3 ";
+        //customCCOpts += " -O3 -g ";
+    }
     else {
         /* ti targets do program level compile */
         customCCOpts += " --program_level_compile -o3 -g ";
@@ -409,12 +422,17 @@ function getDefaultCustomCCOpts()
     if (BIOS.libType == BIOS.LibType_Debug) {
         if (Program.build.target.$name.match(/gnu/)) {
             customCCOpts = customCCOpts.replace("-O3","");
-            /* add in stack frames for stack back trace */
-            customCCOpts += " -mapcs ";
+            if (Program.build.target.$name != "gnu.targets.arm.A53F") {
+                /* add in stack frames for stack back trace */
+                customCCOpts += " -mapcs ";
+            }
         }
         else if (Program.build.target.$name.match(/iar/)) {
             customCCOpts = customCCOpts.replace("-Ohs","--debug");
             customCCOpts = customCCOpts.replace("-Ohz","--debug");
+        }
+        else if (Program.build.target.$name.match(/clang/)) {
+            customCCOpts = customCCOpts.replace(" -O3","");
         }
         else {
             customCCOpts = customCCOpts.replace(" -o3","");
@@ -1074,6 +1092,7 @@ function buildLibs(objList, relList, filter, xdcArgs, incs)
         asmopts += " -Dti_sysbios_hal_Core_numCores__D=1";
         asmopts += " -Dti_sysbios_family_arm_v7r_vim_Hwi_lockstepDevice__D=FALSE";
         asmopts += " -Dti_sysbios_family_arm_a8_intcps_Hwi_enableAsidTagging__D=FALSE";
+        asmopts += " -Dti_sysbios_family_arm_m3_TaskSupport_usesMonitors__D=0";
 
         var lib = Pkg.addLibrary(libPath + Pkg.name,
                             targ, {

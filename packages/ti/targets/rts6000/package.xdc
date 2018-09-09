@@ -27,7 +27,7 @@ package ti.targets.rts6000 [1,0,0] {
 }
 
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-20-2018 17:28:25; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.rts6000; 1, 0, 0,0; 7-20-2018 14:29:11; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

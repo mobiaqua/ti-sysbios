@@ -1,22 +1,22 @@
 @
-@  Copyright (c) 2013-2017, Texas Instruments Incorporated
+@  Copyright (c) 2013-2018, Texas Instruments Incorporated
 @  All rights reserved.
-@ 
+@
 @  Redistribution and use in source and binary forms, with or without
 @  modification, are permitted provided that the following conditions
 @  are met:
-@ 
+@
 @  *  Redistributions of source code must retain the above copyright
 @     notice, this list of conditions and the following disclaimer.
-@ 
+@
 @  *  Redistributions in binary form must reproduce the above copyright
 @     notice, this list of conditions and the following disclaimer in the
 @     documentation and/or other materials provided with the distribution.
-@ 
+@
 @  *  Neither the name of Texas Instruments Incorporated nor the names of
 @     its contributors may be used to endorse or promote products derived
 @     from this software without specific prior written permission.
-@ 
+@
 @  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 @  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 @  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -30,8 +30,7 @@
 @  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @
 @
-@ ======== Hwi_asm_switch_gnu.sv7M ========
-@
+@ ======== Hwi_asm_switch_gnu.S ========
 @
 
         .syntax unified
@@ -54,7 +53,6 @@
 @
 
         .section .text.ti_sysbios_family_xxx_Hwi_switchToIsrStack
-        .func ti_sysbios_family_xxx_Hwi_switchToIsrStack
         .thumb_func
 
 ti_sysbios_family_xxx_Hwi_switchToIsrStack:
@@ -64,7 +62,6 @@ ti_sysbios_family_xxx_Hwi_switchToIsrStack:
         movne   r1, #0          @ no,
         msrne   control, r1     @ force thread mode to use MSP
         bx      lr
-        .endfunc
 
 @
 @  ======== ti_sysbios_family_xxx_Hwi_switchToTaskStack ========
@@ -72,14 +69,13 @@ ti_sysbios_family_xxx_Hwi_switchToIsrStack:
 @
 @  If at bottom of ISR stack, switch to Task stack.
 @
-@  If passed control register token is not zero, then this is 
-@  the thread that switched to the ISR stack first and therefore 
+@  If passed control register token is not zero, then this is
+@  the thread that switched to the ISR stack first and therefore
 @  it is safe to switch back to the task stack (PSP)
 @
 @
 
         .section .text.ti_sysbios_family_xxx_Hwi_switchToTaskStack
-        .func ti_sysbios_family_xxx_Hwi_switchToTaskStack
         .thumb_func
 
 ti_sysbios_family_xxx_Hwi_switchToTaskStack:
@@ -88,7 +84,6 @@ ti_sysbios_family_xxx_Hwi_switchToTaskStack:
         movne   r1, #2          @ yes
         msrne   control, r1     @ force thread mode to use PSP
         bx      lr
-        .endfunc
 
 @
 @  ======== ti_sysbios_family_xxx_Hwi_switchAndRunFunc ========
@@ -99,7 +94,6 @@ ti_sysbios_family_xxx_Hwi_switchToTaskStack:
 @
 
         .section .text.ti_sysbios_family_xxx_Hwi_switchAndRunFunc
-        .func ti_sysbios_family_xxx_Hwi_switchAndRunFunc
         .thumb_func
 
 ti_sysbios_family_xxx_Hwi_switchAndRunFunc:
@@ -118,16 +112,13 @@ ti_sysbios_family_xxx_Hwi_switchAndRunFunc:
         msrne   control, r1     @ force thread mode to use PSP
 
         pop     {r4, pc}        @ return
-        .endfunc
 
         .section .text.ti_sysbios_family_arm_m3_Hwi_getTaskSP__E
-        .func ti_sysbios_family_arm_m3_Hwi_getTaskSP__E
         .thumb_func
 
 ti_sysbios_family_arm_m3_Hwi_getTaskSP__E:
         mrs     r0, psp         @ psp = interrupt task stack
         bx      lr
-        .endfunc
 
 @
 @  ======== ti_sysbios_family_arm_m3_Hwi_initStacks__E ========
@@ -139,7 +130,6 @@ ti_sysbios_family_arm_m3_Hwi_getTaskSP__E:
 @
 
         .section .text.ti_sysbios_family_arm_m3_Hwi_initStacks__E
-        .func ti_sysbios_family_arm_m3_Hwi_initStacks__E
         .thumb_func
 
 ti_sysbios_family_arm_m3_Hwi_initStacks__E:
@@ -160,7 +150,7 @@ ti_sysbios_family_arm_m3_Hwi_initStacks__E:
         mvn     lr, #2
         str     r0, [r2, #0]    @ save passed R0 on ISR stack
         mov     r1, #0x01000000 @ dummy xPSR with T bit set
-        str     r1, [r2, #28] 
+        str     r1, [r2, #28]
         ldr     r1, lab$1Addr
         str     r1, [r2, #24]   @ return PC to $1 below
         bx      lr              @ "return" from ISR
@@ -192,14 +182,12 @@ lab$1Addr:
 fpccr:
         .word   0xe000ef34
 #endif
-        .endfunc
 
 @
 @  ======== ti_sysbios_family_arm_m3_Hwi_setStackLimit__I ========
 @
 
         .section .text.ti_sysbios_family_arm_m3_Hwi_setStackLimit__I
-        .func ti_sysbios_family_arm_m3_Hwi_setStackLimit__I
         .thumb_func
 
 ti_sysbios_family_arm_m3_Hwi_setStackLimit__I:
@@ -207,5 +195,5 @@ ti_sysbios_family_arm_m3_Hwi_setStackLimit__I:
         msr    msplim, r0
 #endif
         bx     lr
-        .endfunc
+
         .end

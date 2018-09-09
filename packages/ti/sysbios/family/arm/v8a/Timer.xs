@@ -61,11 +61,12 @@ function getAsmFiles(targetName)
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "SIMFLEMING": {
-            timerFrequency     : 1000000
+            timerFrequency     : 200000000
         }
     };
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
 }
 
 /*

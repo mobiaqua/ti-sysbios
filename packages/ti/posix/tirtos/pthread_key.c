@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -139,6 +139,10 @@ int pthread_key_delete(pthread_key_t key)
 {
     pthread_key_Obj    *keyObj = (pthread_key_Obj *)key;
     pthread_KeyData    *keyData;
+    int                 oldState;
+
+    /* prevent thread cancellation while holding the mutex */
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldState);
 
     Semaphore_pend(Semaphore_handle(&sem), BIOS_WAIT_FOREVER);
 
@@ -156,6 +160,9 @@ int pthread_key_delete(pthread_key_t key)
 
     Semaphore_post(Semaphore_handle(&sem));
 
+    /* restore previous cancelability state, this may never return */
+    pthread_setcancelstate(oldState, &oldState);
+
     return (0);
 }
 
@@ -168,9 +175,12 @@ void *pthread_getspecific(pthread_key_t key)
     pthread_ThreadData *threadSpec;
     pthread_Obj        *thread = (pthread_Obj *)pthread_self();
     void               *threadData = NULL;
+    int                 oldState;
 
-    /*
-     *  Traverse the list of keys set by the thread, looking for key.
+    /* prevent thread cancellation while holding the mutex */
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldState);
+
+    /*  Traverse the list of keys set by the thread, looking for key.
      *  This list could be modified while we are traversing it, if
      *  another thread calls pthread_key_delete() for a different key and
      *  this thread has specific data for the key being deleted.
@@ -192,6 +202,9 @@ void *pthread_getspecific(pthread_key_t key)
 
     Semaphore_post(Semaphore_handle(&sem));
 
+    /* restore previous cancelability state, this may never return */
+    pthread_setcancelstate(oldState, &oldState);
+
     return (threadData);
 }
 
@@ -208,11 +221,14 @@ int pthread_setspecific(pthread_key_t key, const void *value)
     Bool                 found = FALSE;
     int                  retVal = 0;
     pthread_Obj         *thread = (pthread_Obj *)pthread_self();
+    int                 oldState;
 
     Error_init(&eb);
 
-    /*
-     *  Traverse the list of keys set by the thread, looking for key.  If
+    /* prevent thread cancellation while holding the mutex */
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldState);
+
+    /*  Traverse the list of keys set by the thread, looking for key.  If
      *  the key is already in the list, re-assign its value.  Otherwise
      *  add the key to the thread's list.
      */
@@ -254,6 +270,9 @@ int pthread_setspecific(pthread_key_t key, const void *value)
     }
 
     Semaphore_post(Semaphore_handle(&sem));
+
+    /* restore previous cancelability state, this may never return */
+    pthread_setcancelstate(oldState, &oldState);
 
     return (retVal);
 }

@@ -83,7 +83,7 @@ Void Task_schedule(Void)
     Queue_Handle maxQ;
     Task_Object *prevTask;
     Task_Object *curTask;
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     Int i;
 #endif
 
@@ -115,12 +115,12 @@ Void Task_schedule(Void)
                 Task_checkStacks(prevTask, curTask);
             }
 
-#if !defined(ti_sysbios_knl_Task_DISABLE_ALL_HOOKS) \
+#if defined(ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS) \
     || (xdc_runtime_Log_DISABLE_ALL == 0)
             /* It's safe to enable intrs here */
             (Void)Hwi_enable();
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
             for (i = 0; i < Task_hooks.length; i++) {
                 if (Task_hooks.elem[i].switchFxn != NULL) {
                     Task_hooks.elem[i].switchFxn(prevTask, curTask);
@@ -246,7 +246,7 @@ Void Task_startCore(UInt coreId)
     Queue_Handle maxQ;
     Task_Object *prevTask;
     Task_Struct dummyTask;
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     Int i;
 #endif
 
@@ -285,7 +285,7 @@ Void Task_startCore(UInt coreId)
     /* should be safe to enable intrs here */
     (Void)Hwi_enable();
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     /* Run switch hooks for first real Task */
     for (i = 0; i < Task_hooks.length; i++) {
         if (Task_hooks.elem[i].switchFxn != NULL) {
@@ -453,7 +453,7 @@ Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
     if (((UArg)&oldTaskStack < (UArg)oldTask->stack) ||
         ((UArg)&oldTaskStack > (UArg)(oldTask->stack+oldTask->stackSize))) {
         /* MISRA.CAST.VOID_PTR_TO_INT.2012 */
-        Error_raise(NULL, Task_E_spOutOfBounds, (UArg)oldTask, (UArg)oldTask->context);
+        Error_raise(NULL, Task_E_spOutOfBounds, (UArg)oldTask, (UArg)&oldTaskStack);
     }
 
     if ((newTask->context < (Ptr)newTask->stack) ||
@@ -895,7 +895,12 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
 
     if (Task_objectCheckFlag) {
         /* UNREACH.GEN */
-        tsk->checkValue = Task_objectCheckValueFxn(tsk);
+        if (Task_objectCheckValueFxn == Task_getObjectCheckValue) {
+            tsk->checkValue = Task_getObjectCheckValue(tsk);
+        }
+        else {
+            tsk->checkValue = Task_objectCheckValueFxn(tsk);
+        }
     }
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
@@ -1351,7 +1356,7 @@ Void Task_unblock(Task_Object *tsk)
  */
 Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
 {
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_READY_HOOKS
     Int i;
 #endif
     UInt curset = Task_module->curSet;
@@ -1373,7 +1378,7 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
     /* It's safe to enable intrs here */
     Hwi_restore(hwiKey);
 
-#ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
+#ifdef ti_sysbios_knl_Task_ENABLE_READY_HOOKS
     for (i = 0; i < Task_hooks.length; i++) {
         if (Task_hooks.elem[i].readyFxn != NULL) {
             Task_hooks.elem[i].readyFxn(tsk);

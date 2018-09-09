@@ -1,30 +1,30 @@
 /*----------------------------------------------------------------------------*/
 /* SIMMAXWELL.lds                                                             */
 /*                                                                            */
-/* (c) Texas Instruments 2016, All rights reserved.                           */
+/* (c) Texas Instruments 2018, All rights reserved.                           */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
 MEMORY
 {
-    BOOTVECTOR (RX)  : ORIGIN =  0x00000000, LENGTH = 0x00100000
+    MSMC       (RWX) : ORIGIN =  0x70000000, LENGTH = 0x00200000
     DDR        (RWX) : ORIGIN =  0x80000000, LENGTH = 0x80000000
 /*  DDR        (RWX) : ORIGIN = 0x800000000, LENGTH = 0x80000000 */
 }
 
-REGION_ALIAS("REGION_TEXT", DDR);
-REGION_ALIAS("REGION_BSS", DDR);
-REGION_ALIAS("REGION_DATA", DDR);
-REGION_ALIAS("REGION_STACK", DDR);
-REGION_ALIAS("REGION_HEAP", DDR);
-REGION_ALIAS("REGION_ARM_EXIDX", DDR);
-REGION_ALIAS("REGION_ARM_EXTAB", DDR);
+REGION_ALIAS("REGION_TEXT", MSMC);
+REGION_ALIAS("REGION_BSS", MSMC);
+REGION_ALIAS("REGION_DATA", MSMC);
+REGION_ALIAS("REGION_STACK", MSMC);
+REGION_ALIAS("REGION_HEAP", MSMC);
+REGION_ALIAS("REGION_ARM_EXIDX", MSMC);
+REGION_ALIAS("REGION_ARM_EXTAB", MSMC);
 
 SECTIONS {
 
     .c_int00 : {
         *(.c_int00)
-    } > BOOTVECTOR AT> BOOTVECTOR
+    } > REGION_TEXT AT> REGION_TEXT
 
     .vecs : {
         *(.vecs)

@@ -61,8 +61,6 @@ extern Void ti_sysbios_family_xxx_Hwi_switchAndRunFunc(Void (*func)());
 extern char Hwi_vectorsBase[];
 extern char *__bss__;
 
-#define INTRMUXREG1 0x01800104      /* interrupt mux register on GEM */
-
 extern cregister volatile unsigned int IRP;
 extern cregister volatile unsigned int IER;
 extern cregister volatile unsigned int ISR;
@@ -340,7 +338,7 @@ Void Hwi_eventMap(Int vectId, Int eventId)
     Int muxnum;         /* Interrupt mux register number */
     Int bitpos;         /* The bit position of the interrupt select */
     UInt mask;          /* Interrupt mask value */
-    volatile Bits32 *muxReg = (volatile Bits32 *)INTRMUXREG1;
+    volatile Bits32 *muxReg = (volatile Bits32 *)Hwi_INTRMUX1Address;
 
     if (vectId < 4 || vectId > 15) {
         return;
@@ -367,7 +365,7 @@ Int Hwi_getEventId(UInt vectId)
 {
     Int muxnum;         /* Interrupt mux register number */
     Int bitpos;         /* The bit position of the interrupt select */
-    volatile Bits32 *muxReg = (volatile Bits32 *)INTRMUXREG1;
+    volatile Bits32 *muxReg = (volatile Bits32 *)Hwi_INTRMUX1Address;
 
     if (vectId < 4 || vectId > 15) {
         return -1;

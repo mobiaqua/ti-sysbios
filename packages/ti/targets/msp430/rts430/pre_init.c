@@ -4,9 +4,9 @@
  */
 
 /*****************************************************************************/
-/* _SYSTEM_PRE_INIT.C   v4.0.0 - Perform any application-specific inits      */
+/* _SYSTEM_PRE_INIT.C          - Perform any application-specific inits      */
 /*                                                                           */
-/* Copyright (c) 2003-2011 Texas Instruments Incorporated                    */
+/* Copyright (c) 2015 Texas Instruments Incorporated                         */
 /* http://www.ti.com/                                                        */
 /*                                                                           */
 /*  Redistribution and  use in source  and binary forms, with  or without    */
@@ -44,7 +44,7 @@
 
 /*****************************************************************************/
 /* _SYSTEM_PRE_INIT() - _system_pre_init() is called in the C/C++ startup    */
-/* routine (_c_int100() in boot.c) and provides a mechanism for the user to  */
+/* routine (_c_int00()) and provides a mechanism for the user to             */
 /* insert application specific low level initialization instructions prior   */
 /* to calling main().  The return value of _system_pre_init() is used to     */
 /* determine whether or not C/C++ global data initialization will be         */
@@ -57,7 +57,7 @@
 /* illustrate the interface and provide default behavior.  To replace this   */
 /* version rewrite the routine and include it as part of the current project.*/
 /* The linker will include the updated version if it is linked in prior to   */
-/* linking with the C/C++ runtime library (rts430.lib).                      */
+/* linking with the C/C++ runtime library.                                   */
 /*****************************************************************************/
 
 extern int  __cinit__;  /* define by TI linker == -1 if .cinit isn't loaded */
@@ -93,7 +93,7 @@ int _system_pre_init(void)
 
 #endif
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 4-20-2018 17:27:24; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-20-2018 14:28:20; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

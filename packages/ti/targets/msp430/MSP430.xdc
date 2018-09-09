@@ -164,7 +164,7 @@ metaonly module MSP430 inherits ti.targets.ITarget {
     };
 };
 /*
- *  @(#) ti.targets.msp430; 1, 0, 0,0; 4-19-2018 16:54:56; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.msp430; 1, 0, 0,0; 7-20-2018 13:59:25; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

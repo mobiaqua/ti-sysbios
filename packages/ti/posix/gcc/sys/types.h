@@ -57,13 +57,19 @@ extern "C" {
  *  defined by GCC, the user must define -std=c99 (or c++98), which will
  *  omit the GCC defines and avoid type collisions with TI-POSIX. This
  *  is new with GCC v7. In GCC v6, the compiler omitted the POSIX types
- *  by default. This check is to inform the user of this requirement.
+ *  by default.
+ *
+ *  In addition, both _POSIX_SOURCE and _POSIX_C_SOURCE must be undefined.
+ *  Previous versions of SDK examples were defining these macros. If you
+ *  are migrating an old example, make sure to remove these macros.
+ *
+ *  This check is to inform the user of these requirements.
  */
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE)
 #ifdef __cplusplus
-#error "When compiling with TI-POSIX you must define -std=c++98 (or later)"
+#error "When compiling with TI-POSIX, you must define -std=c++98 (or later). You must not define _POSIX_SOURCE or _POSIX_C_SOURCE."
 #else
-#error "When compiling with TI-POSIX you must define -std=c99 (or later)"
+#error "When compiling with TI-POSIX, you must define -std=c99 (or later). You must not define _POSIX_SOURCE or _POSIX_C_SOURCE."
 #endif
 #endif
 

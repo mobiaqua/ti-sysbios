@@ -293,8 +293,8 @@ internal:
     Bits32 getCacheLevelInfo(UInt level);
 
     struct Module_State {
-        UInt8   l1dCacheLineSize;   // Size of L1D cache line in bytes
-        UInt8   l1pCacheLineSize;   // Size of L1P cache line in bytes
+        UInt32  l1dCacheLineSize;   // Size of L1D cache line in bytes
+        UInt32  l1pCacheLineSize;   // Size of L1P cache line in bytes
         Bits32  l1dInfo;
         Bits32  l1pInfo;
     }

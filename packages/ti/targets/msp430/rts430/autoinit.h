@@ -4,9 +4,9 @@
  */
 
 /*****************************************************************************/
-/* _AUTO_INIT()   v4.4.2 - Perform initialization of C variables.            */
+/* _AUTO_INIT()          - Perform initialization of C variables.            */
 /*                                                                           */
-/* Copyright (c) 1993-2014 Texas Instruments Incorporated                    */
+/* Copyright (c) 1993 Texas Instruments Incorporated                         */
 /* http://www.ti.com/                                                        */
 /*                                                                           */
 /*  Redistribution and  use in source  and binary forms, with  or without    */
@@ -42,14 +42,14 @@
 #ifndef _TI_AUTO_INIT_H
 #define _TI_AUTO_INIT_H
 
-#include <linkage.h>
+#include <_ti_config.h>
 #include <cpy_tbl.h>
 #include <inttypes.h>
 #include <string.h>
 
 typedef void (*pinit_fn_t)(void);
 
-#ifdef __TI_EABI__
+#if defined(__TI_EABI__) || defined(__ARM_EABI__)
 
 /*****************************************************************************/
 /* EABI declarations                                                         */
@@ -70,12 +70,28 @@ extern __attribute__((weak)) _DATA_ACCESS
 extern __attribute__((weak)) _DATA_ACCESS char *const __TI_CINIT_Base[];
 extern __attribute__((weak)) _DATA_ACCESS char *const __TI_CINIT_Limit[];
 
+#if defined(_TMS320C6X)
+    extern void  __TI_tls_init(void *TLS_block_addr);
+#endif
 
+#if defined(__ARM_ARCH)
+    #define PINIT_BASE SHT$$INIT_ARRAY$$Base
+    #define PINIT_LIMIT SHT$$INIT_ARRAY$$Limit
+#else
     #define PINIT_BASE __TI_INITARRAY_Base
     #define PINIT_LIMIT __TI_INITARRAY_Limit
+#endif
 
 extern __attribute__((weak)) _DATA_ACCESS pinit_fn_t const PINIT_BASE[];
 extern __attribute__((weak)) _DATA_ACCESS pinit_fn_t const PINIT_LIMIT[];
+
+#if !defined(_TMS320C6X) && !defined(__ARM_ARCH)
+extern __attribute__((weak)) _DATA_ACCESS COPY_TABLE const __TI_BINIT_Base[];
+extern __attribute__((weak)) _DATA_ACCESS COPY_TABLE const __TI_BINIT_Limit[];
+#else
+/* C6000 and ARM still use old-style binit symbol to preserve compatibility */
+extern _DATA_ACCESS COPY_TABLE const __binit__[];
+#endif
 
 #else
 
@@ -85,6 +101,7 @@ extern __attribute__((weak)) _DATA_ACCESS pinit_fn_t const PINIT_LIMIT[];
 
 extern _DATA_ACCESS char *const __cinit__[];
 extern _DATA_ACCESS pinit_fn_t const __pinit__[];
+extern _DATA_ACCESS COPY_TABLE const __binit__[];
 
 #endif
 
@@ -92,9 +109,13 @@ extern _DATA_ACCESS pinit_fn_t const __pinit__[];
 /* Common declarations                                                       */
 /*****************************************************************************/
 
-
-
+#ifdef _TMS320C6X
+    #define AUTO_INIT _auto_init_elf
+#elif defined(__MSP430__)
     #define AUTO_INIT _auto_init
+#else
+    #define AUTO_INIT __TI_auto_init
+#endif
 
 void AUTO_INIT(void);
 
@@ -106,18 +127,32 @@ void AUTO_INIT(void);
 #define AUTO_INIT_HOLD_WDT_CONCAT(NAME) AUTO_INIT_HOLD_WDT_CONCAT2(NAME)
 #define AUTO_INIT_HOLD_WDT AUTO_INIT_HOLD_WDT_CONCAT(AUTO_INIT)
 
-#pragma FUNC_ALWAYS_INLINE(run_binit)
-static __inline void run_binit(void)
+static __inline __attribute__((always_inline)) void run_binit(void)
 {
-#ifdef HAS_BINIT
+#if defined(__TI_EABI__) && !defined(_TMS320C6X) && !defined(__ARM_ARCH)
    /*------------------------------------------------------------------------*/
-   /* Process Binit table                                                    */
+   /* Process binit table                                                    */
+   /*------------------------------------------------------------------------*/
+
+#ifndef __FROZEN__
+   if(__TI_BINIT_Base != __TI_BINIT_Limit)
+      copy_in((COPY_TABLE *)__TI_BINIT_Base);
+#else
+   /* temporary C7x special case to work around relocation problem until a
+      general solution is implemented */
+   if(_symval(__TI_BINIT_Base) != _symval(__TI_BINIT_Limit))
+      copy_in((COPY_TABLE *)_symval(__TI_BINIT_Base));
+#endif
+#else
+   /*------------------------------------------------------------------------*/
+   /* Process old-style binit table                                          */
    /*                                                                        */
    /* -1 indicates no table, otherwise just call copy_in(), which handles    */
    /* all the copying even if in compressed format.                          */
    /*------------------------------------------------------------------------*/
 
-    if (__binit__ != (COPY_TABLE *)-1) copy_in((COPY_TABLE *)__binit__);
+    if (__binit__ != (COPY_TABLE *)-1)
+       copy_in((COPY_TABLE *)__binit__);
 #endif
 }
 
@@ -125,8 +160,7 @@ static __inline void run_binit(void)
 /* cinit */
 /*****************************************************************************/
 
-#pragma FUNC_ALWAYS_INLINE(run_cinit)
-static __inline void run_cinit(void)
+static __inline __attribute__((always_inline)) void run_cinit(void)
 {
 #if defined(__TI_EABI__) && \
     defined(__MSP430__) && \
@@ -157,7 +191,7 @@ static __inline void run_cinit(void)
         handler(load_addr, run_addr);
       }
    }
-#elif defined(__TI_EABI__)
+#elif defined(__TI_EABI__) || defined(__ARM_EABI__)
    /*------------------------------------------------------------------------*/
    /* Process the compressed ELF cinit table. The format is as follows:      */
    /* |4-byte load addr|4-byte run addr|                                     */
@@ -169,10 +203,23 @@ static __inline void run_cinit(void)
    /*   3. Get pointer to handler at handler_start[idx]                      */
    /*   4. call handler(load_addr + 1, run_addr)                             */
    /*------------------------------------------------------------------------*/
+#if defined(__FROZEN__)
+   /*------------------------------------------------------------------------*/
+   /* For C7X, use _symval() to force absolute addressing on these symbols,  */
+   /* otherwise we will end up with an incorrect value if we rely on         */
+   /* position-independent, PC-relative addressing.  This is a temporary     */
+   /* workaround. See Jira COMPILE-362 for more information.                 */
+   /*------------------------------------------------------------------------*/
+   if (_symval(__TI_Handler_Table_Base) != _symval(__TI_Handler_Table_Limit))
+   {
+      char *const *table_ptr   = (char *const *)_symval(__TI_CINIT_Base);
+      char *const *table_limit = (char *const *)_symval(__TI_CINIT_Limit);
+#else
    if (__TI_Handler_Table_Base != __TI_Handler_Table_Limit)
    {
       char *const *table_ptr   = __TI_CINIT_Base;
       char *const *table_limit = __TI_CINIT_Limit;
+#endif
 
       while (table_ptr != table_limit)
       {
@@ -189,12 +236,20 @@ static __inline void run_cinit(void)
    /* Process Cinit table for COFF.                                          */
    /*------------------------------------------------------------------------*/
 
+    #ifdef _TMS320C6X
+        #define ALIGN_TYPE uintptr_t
+        #define ALIGN_MASK 0x7
+    #elif defined(__MSP430__)
         #ifdef __LARGE_DATA_MODEL__
             #define ALIGN_TYPE unsigned long
         #else
             #define ALIGN_TYPE unsigned
         #endif
         #define ALIGN_MASK 0x1
+    #else
+        #define ALIGN_TYPE uintptr_t
+        #define ALIGN_MASK 0x3
+    #endif
 
     #define ALIGN_PTR(ptr) \
        ((unsigned const *)(((ALIGN_TYPE)ptr + ALIGN_MASK) & ~ALIGN_MASK))
@@ -225,17 +280,25 @@ static __inline void run_cinit(void)
 /*****************************************************************************/
 /* pinit */
 /*****************************************************************************/
-
-#pragma FUNC_ALWAYS_INLINE(run_pinit)
-static __inline void run_pinit(void)
+static __inline __attribute__((always_inline)) void run_pinit(void)
 {
-#ifdef __TI_EABI__
+#if defined(__TI_EABI__) || defined(__ARM_EABI__)
    /*------------------------------------------------------------------------*/
    /* Process Pinit table for ELF.                                           */
    /* The section is not NULL terminated, but can be accessed by pointers    */
    /* which point to the beginning and end of the section.                   */
    /*------------------------------------------------------------------------*/
+#if defined(__FROZEN__)
+   /*------------------------------------------------------------------------*/
+   /* For C7X, use _symval() to force absolute addressing on these symbols,  */
+   /* otherwise we will end up with an incorrect value if we rely on         */
+   /* position-independent, PC-relative addressing.  This is a temporary     */
+   /* workaround. See Jira COMPILE-362 for more information.                 */
+   /*------------------------------------------------------------------------*/
+   if (_symval(PINIT_BASE) != _symval(PINIT_LIMIT))
+#else
    if (PINIT_BASE != PINIT_LIMIT)
+#endif
    {
       int i = 0;
       while (&(PINIT_BASE[i]) != PINIT_LIMIT)
@@ -259,7 +322,7 @@ static __inline void run_pinit(void)
 
 #endif
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 4-20-2018 17:27:23; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-20-2018 14:28:20; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

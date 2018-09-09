@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,8 @@ var Startup = null;
 var BIOS = null;
 var Build = null;
 var Core = null;
+var deviceTable;
+var deviceName;
 
 /*
  * ======== getAsmFiles ========
@@ -59,6 +61,7 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
         case "gnu.targets.arm.M33F":
+        case "ti.targets.arm.clang.M33F":
             return (["Hwi_asm_gnu.sv7M", "Hwi_asm_switch_gnu.sv7M"]);
             break;
 
@@ -91,7 +94,7 @@ function getCFiles(targetName)
 }
 
 if (xdc.om.$name == "cfg") {
-    var deviceTable = {
+    deviceTable = {
         "CortexM3": {
             numInterrupts : 16 + 64,
             numPriorities : 8,
@@ -203,8 +206,8 @@ if (xdc.om.$name == "cfg") {
         "MTL1_VSOC": {
             numInterrupts : 16 + 55,            /* supports 71 interrupts */
             numPriorities : 8,
-            resetVectorAddress : 0x2C000000,
-            vectorTableAddress : 0x2C000000,
+            resetVectorAddress : 0x2C400000,
+            vectorTableAddress : 0x2C400000,
         },
     }
 
@@ -226,8 +229,10 @@ if (xdc.om.$name == "cfg") {
     deviceTable["DRA7XX"]        = deviceTable["OMAP4430"];
     deviceTable["CC13.2.*"]      = deviceTable["CC26.2.*"];
     deviceTable["CC13.*"]        = deviceTable["CC26.*"];
-    deviceTable["CC3220"]        = deviceTable["CC3200"];
-    deviceTable["CC3220S"]       = deviceTable["CC3200"];
+    deviceTable["CC32.*S"]       = deviceTable["CC3200"];
+    deviceTable["CC32.*SF"]      = deviceTable["CC3220SF"];
+    deviceTable["AM65X"]         = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]          = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -279,7 +284,7 @@ function module$meta$init()
     GetSet.onSet(this, "enableException", _enableExceptionSet);
     GetSet.onSet(this, "excHandlerFunc", _excHandlerFuncSet);
 
-    var deviceName = deviceSupportCheck();
+    deviceName = deviceSupportCheck();
 
     /*
      * Most tiva derivative GNU linker cmd files require definitions for

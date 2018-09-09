@@ -84,6 +84,7 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     /* Cortex-R devices */
     deviceTable["AWR1.*"]        = deviceTable["AWR16XX"];
     deviceTable["IWR1.*"]        = deviceTable["AWR16XX"];
+    deviceTable["IWR6.*"]        = deviceTable["AWR16XX"];
     deviceTable["RM48L.*"]       = deviceTable["AWR16XX"];
     deviceTable["RM57D8.*"]      = deviceTable["RM57D8XX"];
     deviceTable["RM57L8XX"]      = deviceTable["RM57D8XX"];
@@ -102,6 +103,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     /* Keystone3 devices */
     deviceTable["SIMFLEMING"] = deviceTable["RM57D8XX"];
     deviceTable["SIMMAXWELL"] = deviceTable["RM57D8XX"];
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -331,6 +334,14 @@ function setRegionMeta(regionId, regionBaseAddr, regionSize, attrs)
         MPU.regionEntry[regionId].sizeAndEnable =
             ((attrs.subregionDisableMask << 8) | regionSize | attrs.enable);
 
+        if ((attrs.tex == 1 &&
+             attrs.cacheable == false && attrs.bufferable == true) ||
+            (attrs.tex == 1 &&
+             attrs.cacheable == true && attrs.bufferable == false)) {
+
+            MPU.$logError("MPU Region attributes for region number " + regionId + " set to reserved combination: tex = 1, cacheable = " + attrs.cacheable + ", bufferable = " + attrs.bufferable, MPU);
+        }
+
         MPU.regionEntry[regionId].regionAttrs =
             convertToUInt32((attrs.noExecute << 12) | (attrs.accPerm << 8) |
             (attrs.tex << 3) | (attrs.shareable << 2) | (attrs.cacheable << 1) |
@@ -457,8 +468,7 @@ function viewMpuRegionAttrs(view)
         rawView = Program.scanRawView('ti.sysbios.family.arm.MPU');
     }
     catch (e) {
-        this.$logWarning("Caught exception while retrieving raw view: " + e,
-                this);
+        print(e.toString());
     }
 
     /* Get the module state */
@@ -476,9 +486,7 @@ function viewMpuRegionAttrs(view)
             false);
     }
     catch (e) {
-        this.$logWarning(
-            "Caught exception while trying to retrieve descriptor table: " +
-            e, this);
+        print(e.toString());
     }
 
     /* Walk through the level 1 descriptor table */

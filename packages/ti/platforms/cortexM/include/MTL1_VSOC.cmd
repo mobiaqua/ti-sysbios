@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 
 MEMORY
 {
-    SRAM  (RWX) : origin = 0x2C000000, length = 0x00400000
+    SRAM  (RWX) : origin = 0x2C400000, length = 0x00040000
 }
 
 /* Section allocation in memory */
@@ -42,6 +42,7 @@ SECTIONS
     .text   :   > SRAM
     .TI.ramfunc : {} load=SRAM, run=SRAM, table(BINIT)
     .const  :   > SRAM
+    .rodata :   > SRAM
     .cinit  :   > SRAM
     .pinit  :   > SRAM
     .init_array : > SRAM
@@ -50,4 +51,7 @@ SECTIONS
     .bss    :   > SRAM
     .sysmem :   > SRAM
     .stack  :   > SRAM
+
+    .ARM.exidx : > SRAM
+    .ARM.extab : > SRAM
 }

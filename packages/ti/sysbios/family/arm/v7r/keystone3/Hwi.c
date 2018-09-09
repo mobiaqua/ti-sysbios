@@ -156,17 +156,6 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
 
     hwi->intNum = intNum;
 
-    switch (params->maskSetting) {
-        case Hwi_MaskingOption_LOWER:
-            break;
-        case Hwi_MaskingOption_ALL:
-        case Hwi_MaskingOption_BITMASK:
-        case Hwi_MaskingOption_NONE:
-        case Hwi_MaskingOption_SELF:
-        default:
-            Error_raise(eb, Hwi_E_unsupportedMaskingOption, 0, 0);
-    }
-
     Hwi_reconfig(hwi, fxn, params);
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
@@ -339,9 +328,9 @@ Void Hwi_initIntController()
         /* Clear all active interrupts */
         Hwi_vim.GROUP[i].ENABLEDSTATUSCLEAR = 0xFFFFFFFF;
         /* Map all interrupts as IRQ/FIQ */
-        Hwi_vim.GROUP[i].INTERRUPTMAP = 0x0; // TODO
+        Hwi_vim.GROUP[i].INTERRUPTMAP = 0x0;
         /* Set type for all interrupts - pulse or edge triggered */
-        Hwi_vim.GROUP[i].TYPEMAP = 0x0; // TODO
+        Hwi_vim.GROUP[i].TYPEMAP = 0x0;
     }
 
     for (i = 0; i < Hwi_NUM_INTERRUPTS; i++) {
@@ -354,42 +343,11 @@ Void Hwi_initIntController()
  */
 Void Hwi_startup()
 {
-    /*
-     * Enable FIQs. Once enabled, the HW ignores all calls to disable the FIQs.
-     * Therefore, FIQs cannot be disabled again.
-     */
-    _enable_FIQ();
+    /* Enable FIQs */
+    Hwi_enableFIQ();
 
     /* Enable IRQs */
     Hwi_enable();
-}
-
-/*
- *  ======== Hwi_disableFIQ ========
- *  disables only FIQ interrupts
- */
-
-UInt Hwi_disableFIQ()
-{
-    return _disable_FIQ();
-}
-
-/*
- *  ======== Hwi_enableFIQ ========
- *  enables only FIQ interrupts
- */
-UInt Hwi_enableFIQ()
-{
-    return _enable_FIQ();
-}
-
-/*
- *  ======== Hwi_restoreFIQ ========
- *  restores only IRQ interrupts
- */
-Void Hwi_restoreFIQ( UInt key )
-{
-    Hwi_restore(key);
 }
 
 /*
@@ -434,6 +392,13 @@ Hwi_Object *Hwi_getHandle(UInt intNum)
 Void Hwi_post(UInt intNum)
 {
     Hwi_vim.GROUP[intNum >> 5].RAWSTATUSSET = 1 << (intNum & 0x1F);
+
+    /*
+     * Add delay to insure posted interrupt are triggered before function
+     * returns.
+     */
+    asm (" dsb");
+    asm (" isb");
 }
 
 /*
@@ -617,17 +582,6 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
     }
     else {
         hwi->priority = params->priority;
-    }
-
-    switch (params->maskSetting) {
-        case Hwi_MaskingOption_LOWER:
-            break;
-        case Hwi_MaskingOption_ALL:
-        case Hwi_MaskingOption_BITMASK:
-        case Hwi_MaskingOption_NONE:
-        case Hwi_MaskingOption_SELF:
-        default:
-            Error_raise(0, Hwi_E_unsupportedMaskingOption, 0, 0);
     }
 
     if (params->enableInt) {

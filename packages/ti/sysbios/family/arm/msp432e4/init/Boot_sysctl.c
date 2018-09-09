@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,34 +50,12 @@
 
 //*****************************************************************************
 //
-// A macro used to determine whether the target part uses the new SysCtl
-// register layout.
-//
-//*****************************************************************************
-#define NEW_SYSCTL_CONFIGURATION (CLASS_IS_FLURRY || CLASS_IS_SNOWFLAKE)
-
-//*****************************************************************************
-//
 //
 //
 //*****************************************************************************
 #ifndef FLASH_PP_MAINSS_S
 #define FLASH_PP_MAINSS_S       16
 #endif
-
-//*****************************************************************************
-//
-// This macro extracts the array index out of the peripheral number.
-//
-//*****************************************************************************
-#define SYSCTL_PERIPH_INDEX(a)  (((a) >> 28) & 0xf)
-
-//*****************************************************************************
-//
-// This macro constructs the peripheral bit mask from the peripheral number.
-//
-//*****************************************************************************
-#define SYSCTL_PERIPH_MASK(a)   (((a) & 0xffff) << (((a) & 0x001f0000) >> 16))
 
 //*****************************************************************************
 //
@@ -94,29 +72,12 @@
 //*****************************************************************************
 static const uint32_t g_pui32Xtals[] =
 {
-    1000000,
-    1843200,
-    2000000,
-    2457600,
-    3579545,
-    3686400,
-    4000000,
-    4096000,
-    4915200,
     5000000,
-    5120000,
     6000000,
-    6144000,
-    7372800,
     8000000,
-    8192000,
     10000000,
     12000000,
-    12288000,
-    13560000,
-    14318180,
     16000000,
-    16384000,
     18000000,
     20000000,
     24000000,
@@ -142,60 +103,47 @@ static const uint32_t g_pui32Xtals[] =
         ((uint32_t)mi | (uint32_t)(mf << SYSCTL_PLLFREQ0_MFRAC_S))
 #define PLL_N_TO_REG(n)                                                       \
         ((uint32_t)(n - 1) << SYSCTL_PLLFREQ1_N_S)
+#define PLL_Q_TO_REG(q)                                                       \
+        ((uint32_t)(q - 1) << SYSCTL_PLLFREQ1_Q_S)
 
 //*****************************************************************************
 //
 // Look up of the values that go into the PLLFREQ0 and PLLFREQ1 registers.
 //
 //*****************************************************************************
-static const uint32_t g_pppui32XTALtoVCO[MAX_VCO_ENTRIES][MAX_XTAL_ENTRIES][2] =
+
+static const uint32_t g_pppui32XTALtoVCO[MAX_VCO_ENTRIES][MAX_XTAL_ENTRIES][3] =
 {
-    {
-        //
-        // VCO 320 MHz
-        //
-        { PLL_M_TO_REG(64, 0),   PLL_N_TO_REG(1) },     // 5 MHz
-        { PLL_M_TO_REG(62, 512), PLL_N_TO_REG(1) },     // 5.12 MHz
-        { PLL_M_TO_REG(160, 0),  PLL_N_TO_REG(3) },     // 6 MHz
-        { PLL_M_TO_REG(52, 85),  PLL_N_TO_REG(1) },     // 6.144 MHz
-        { PLL_M_TO_REG(43, 412), PLL_N_TO_REG(1) },     // 7.3728 MHz
-        { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(1) },     // 8 MHz
-        { PLL_M_TO_REG(39, 64),  PLL_N_TO_REG(1) },     // 8.192 MHz
-        { PLL_M_TO_REG(32, 0),   PLL_N_TO_REG(1) },     // 10 MHz
-        { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(3) },     // 12 MHz
-        { PLL_M_TO_REG(26, 43),  PLL_N_TO_REG(1) },     // 12.288 MHz
-        { PLL_M_TO_REG(23, 613), PLL_N_TO_REG(1) },     // 13.56 MHz
-        { PLL_M_TO_REG(22, 358), PLL_N_TO_REG(1) },     // 14.318180 MHz
-        { PLL_M_TO_REG(20, 0),   PLL_N_TO_REG(1) },     // 16 MHz
-        { PLL_M_TO_REG(19, 544), PLL_N_TO_REG(1) },     // 16.384 MHz
-        { PLL_M_TO_REG(160, 0),  PLL_N_TO_REG(9) },     // 18 MHz
-        { PLL_M_TO_REG(16, 0),   PLL_N_TO_REG(1) },     // 20 MHz
-        { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(3) },     // 24 MHz
-        { PLL_M_TO_REG(64, 0),   PLL_N_TO_REG(5) },     // 25 MHz
-    },
-    {
-        //
-        // VCO 480 MHz
-        //
-        { PLL_M_TO_REG(96, 0),   PLL_N_TO_REG(1) },     // 5 MHz
-        { PLL_M_TO_REG(93, 768), PLL_N_TO_REG(1) },     // 5.12 MHz
-        { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(1) },     // 6 MHz
-        { PLL_M_TO_REG(78, 128), PLL_N_TO_REG(1) },     // 6.144 MHz
-        { PLL_M_TO_REG(65, 107), PLL_N_TO_REG(1) },     // 7.3728 MHz
-        { PLL_M_TO_REG(60, 0),   PLL_N_TO_REG(1) },     // 8 MHz
-        { PLL_M_TO_REG(58, 608), PLL_N_TO_REG(1) },     // 8.192 MHz
-        { PLL_M_TO_REG(48, 0),   PLL_N_TO_REG(1) },     // 10 MHz
-        { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(1) },     // 12 MHz
-        { PLL_M_TO_REG(39, 64),  PLL_N_TO_REG(1) },     // 12.288 MHz
-        { PLL_M_TO_REG(35, 408), PLL_N_TO_REG(1) },     // 13.56 MHz
-        { PLL_M_TO_REG(33, 536), PLL_N_TO_REG(1) },     // 14.318180 MHz
-        { PLL_M_TO_REG(30, 0),   PLL_N_TO_REG(1) },     // 16 MHz
-        { PLL_M_TO_REG(29, 304), PLL_N_TO_REG(1) },     // 16.384 MHz
-        { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(3) },     // 18 MHz
-        { PLL_M_TO_REG(24, 0),   PLL_N_TO_REG(1) },     // 20 MHz
-        { PLL_M_TO_REG(20, 0),   PLL_N_TO_REG(1) },     // 24 MHz
-        { PLL_M_TO_REG(96, 0),   PLL_N_TO_REG(5) },     // 25 MHz
-    },
+  {
+      //
+      // VCO 320 MHz
+      //
+      { PLL_M_TO_REG(64, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 5 MHz
+      { PLL_M_TO_REG(160, 0),  PLL_N_TO_REG(3), PLL_Q_TO_REG(2) },     // 6 MHz
+      { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 8 MHz
+      { PLL_M_TO_REG(32, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 10 MHz
+      { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(3), PLL_Q_TO_REG(2) },     // 12 MHz
+      { PLL_M_TO_REG(20, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 16 MHz
+      { PLL_M_TO_REG(160, 0),  PLL_N_TO_REG(9), PLL_Q_TO_REG(2) },     // 18 MHz
+      { PLL_M_TO_REG(16, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 20 MHz
+      { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(3), PLL_Q_TO_REG(2) },     // 24 MHz
+      { PLL_M_TO_REG(64, 0),   PLL_N_TO_REG(5), PLL_Q_TO_REG(2) },     // 25 MHz
+  },
+  {
+      //
+      // VCO 480 MHz
+      //
+      { PLL_M_TO_REG(96, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 5 MHz
+      { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 6 MHz
+      { PLL_M_TO_REG(60, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 8 MHz
+      { PLL_M_TO_REG(48, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 10 MHz
+      { PLL_M_TO_REG(40, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 12 MHz
+      { PLL_M_TO_REG(30, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 16 MHz
+      { PLL_M_TO_REG(80, 0),   PLL_N_TO_REG(3), PLL_Q_TO_REG(2) },     // 18 MHz
+      { PLL_M_TO_REG(24, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 20 MHz
+      { PLL_M_TO_REG(20, 0),   PLL_N_TO_REG(1), PLL_Q_TO_REG(2) },     // 24 MHz
+      { PLL_M_TO_REG(96, 0),   PLL_N_TO_REG(5), PLL_Q_TO_REG(2) },     // 25 MHz
+  },
 };
 
 //*****************************************************************************
@@ -216,7 +164,7 @@ g_sXTALtoMEMTIM[] =
                  (0 << SYSCTL_MEMTIM0_EWS_S) |
                  SYSCTL_MEMTIM0_MB1) },
     { 40000000, (SYSCTL_MEMTIM0_FBCHT_1_5 | (1 << SYSCTL_MEMTIM0_FWS_S) |
-                 SYSCTL_MEMTIM0_FBCHT_1_5 | (1 << SYSCTL_MEMTIM0_EWS_S) |
+                 SYSCTL_MEMTIM0_EBCHT_1_5 | (1 << SYSCTL_MEMTIM0_EWS_S) |
                  SYSCTL_MEMTIM0_MB1) },
     { 60000000, (SYSCTL_MEMTIM0_FBCHT_2 | (2 << SYSCTL_MEMTIM0_FWS_S) |
                  SYSCTL_MEMTIM0_EBCHT_2 | (2 << SYSCTL_MEMTIM0_EWS_S) |
@@ -343,8 +291,8 @@ _SysCtlFrequencyGet(uint32_t ui32Xtal)
 //*****************************************************************************
 static const uint32_t g_pui32VCOFrequencies[MAX_VCO_ENTRIES] =
 {
-    320000000,                              // VCO 320
-    480000000,                              // VCO 480
+    160000000,                              // VCO 320
+    240000000,                              // VCO 480
 };
 
 //*****************************************************************************
@@ -383,14 +331,19 @@ static const uint32_t g_pui32VCOFrequencies[MAX_VCO_ENTRIES] =
 //! function returns the current system frequency which may not match the
 //! requested frequency.
 //!
+//! If the application is using an external crystal then the frequency is
+//! set by using one of the following values:
+//! \b SYSCTL_XTAL_5MHZ, \b SYSCTL_XTAL_6MHZ, \b SYSCTL_XTAL_8MHZ,
+//! \b SYSCTL_XTAL_10MHZ, \b SYSCTL_XTAL_12MHZ, \b SYSCTL_XTAL_16MHZ,
+//! \b SYSCTL_XTAL_18MHZ, \b SYSCTL_XTAL_20MHZ, \b SYSCTL_XTAL_24MHZ, or
+//! \b SYSCTL_XTAL_25MHz.
+//!
 //! The oscillator source is chosen with one of the following values:
 //!
 //! - \b SYSCTL_OSC_MAIN to use an external crystal or oscillator.
 //! - \b SYSCTL_OSC_INT to use the 16-MHz precision internal oscillator.
 //! - \b SYSCTL_OSC_INT30 to use the internal low frequency oscillator.
 //! - \b SYSCTL_OSC_EXT32 to use the hibernate modules 32.786-kHz oscillator.
-//! This option is only available on devices that include the hibernation
-//! module.
 //!
 //! The system clock source is chosen with one of the following values:
 //!
@@ -411,9 +364,6 @@ static const uint32_t g_pui32VCOFrequencies[MAX_VCO_ENTRIES] =
 //!                    40000000);
 //! \endverbatim
 //!
-//! \note This function cannot be used with TM4C123 devices.  For TM4C123
-//! devices use the SysCtlClockSet() function.
-//!
 //! \return The actual configured system clock frequency in Hz or zero if the
 //! value could not be changed due to a parameter error or PLL lock failure.
 //
@@ -423,16 +373,8 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
 {
     int32_t i32Timeout, i32VCOIdx, i32XtalIdx;
     uint32_t ui32MOSCCTL;
+    uint32_t ui32Delay;
     uint32_t ui32SysDiv, ui32Osc, ui32OscSelect, ui32RSClkConfig;
-    Bool bNewPLL;
-
-    //
-    // TM4C123 devices should not use this function.
-    //
-    if(CLASS_IS_TM4C123)
-    {
-        return(0);
-    }
 
     //
     // Get the index of the crystal from the ui32Config parameter.
@@ -512,6 +454,32 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
         }
 
         HWREG(SYSCTL_MOSCCTL) = ui32MOSCCTL;
+
+        //
+        // Timeout using the legacy delay value.
+        //
+        ui32Delay = 524288;
+
+        while((HWREG(SYSCTL_RIS) & SYSCTL_RIS_MOSCPUPRIS) == 0)
+        {
+            ui32Delay--;
+
+            if(ui32Delay == 0)
+            {
+                break;
+            }
+        }
+
+        //
+        // If the main oscillator failed to start up then do not switch to
+        // it and return.
+        //
+        if(ui32Delay == 0)
+        {
+            return(0);
+        }
+
+
     }
     else
     {
@@ -578,44 +546,6 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
         i32XtalIdx -= SysCtlXtalCfgToIndex(SYSCTL_XTAL_5MHZ);
 
         //
-        // If there were no changes to the PLL do not force the PLL to lock by
-        // writing the PLL settings.
-        //
-        if((HWREG(SYSCTL_PLLFREQ1) !=
-            g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][1]) ||
-           (HWREG(SYSCTL_PLLFREQ0) !=
-            (g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][0] |
-             SYSCTL_PLLFREQ0_PLLPWR)))
-        {
-            bNewPLL = true;
-        }
-        else
-        {
-            bNewPLL = false;
-        }
-
-        //
-        // If there are new PLL settings write them.
-        //
-        if(bNewPLL)
-        {
-            //
-            // Set the oscillator source.
-            //
-            HWREG(SYSCTL_RSCLKCFG) |= ui32OscSelect;
-
-            //
-            // Set the M, N and Q values provided from the table and preserve
-            // the power state of the main PLL.
-            //
-            HWREG(SYSCTL_PLLFREQ1) =
-                g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][1];
-            HWREG(SYSCTL_PLLFREQ0) =
-                (g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][0] |
-                 (HWREG(SYSCTL_PLLFREQ0) & SYSCTL_PLLFREQ0_PLLPWR));
-        }
-
-        //
         // Calculate the System divider such that we get a frequency that is
         // the closest to the requested frequency without going over.
         //
@@ -623,9 +553,25 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
                      ui32SysClock;
 
         //
-        // Calculate the actual system clock.
+        // Set the oscillator source.
         //
-        ui32SysClock = _SysCtlFrequencyGet(ui32Osc) / ui32SysDiv;
+        HWREG(SYSCTL_RSCLKCFG) |= ui32OscSelect;
+
+        //
+        // Set the M, N and Q values provided from the table and preserve
+        // the power state of the main PLL.
+        //
+        HWREG(SYSCTL_PLLFREQ1) =
+            g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][1];
+        HWREG(SYSCTL_PLLFREQ1) |= PLL_Q_TO_REG(ui32SysDiv);
+        HWREG(SYSCTL_PLLFREQ0) =
+            (g_pppui32XTALtoVCO[i32VCOIdx][i32XtalIdx][0] |
+             (HWREG(SYSCTL_PLLFREQ0) & SYSCTL_PLLFREQ0_PLLPWR));
+
+        //
+        // Calculate the actual system clock as PSYSDIV is always div-by 2.
+        //
+        ui32SysClock = _SysCtlFrequencyGet(ui32Osc) / 2;
 
         //
         // Set the Flash and EEPROM timing values.
@@ -637,13 +583,10 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
         //
         if(HWREG(SYSCTL_PLLFREQ0) & SYSCTL_PLLFREQ0_PLLPWR)
         {
-            if(bNewPLL == true)
-            {
-                //
-                // Trigger the PLL to lock to the new frequency.
-                //
-                HWREG(SYSCTL_RSCLKCFG) |= SYSCTL_RSCLKCFG_NEWFREQ;
-            }
+            //
+            // Trigger the PLL to lock to the new frequency.
+            //
+            HWREG(SYSCTL_RSCLKCFG) |= SYSCTL_RSCLKCFG_NEWFREQ;
         }
         else
         {
@@ -670,9 +613,8 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
         if(i32Timeout)
         {
             ui32RSClkConfig = HWREG(SYSCTL_RSCLKCFG);
-            ui32RSClkConfig |= ((ui32SysDiv - 1) <<
-                                SYSCTL_RSCLKCFG_PSYSDIV_S) | ui32OscSelect |
-                               SYSCTL_RSCLKCFG_USEPLL;
+            ui32RSClkConfig |= (1 << SYSCTL_RSCLKCFG_PSYSDIV_S) |
+                                ui32OscSelect | SYSCTL_RSCLKCFG_USEPLL;
             ui32RSClkConfig |= SYSCTL_RSCLKCFG_MEMTIMU;
 
             //
@@ -769,295 +711,10 @@ Boot_sysCtlClockFreqSetI(ULong ui32Config, ULong ui32SysClock)
         HWREG(SYSCTL_RSCLKCFG) = ui32RSClkConfig;
     }
 
+    //
+    // Finally change the OSCSRC back to PIOSC
+    //
+    HWREG(SYSCTL_RSCLKCFG) &= ~(SYSCTL_RSCLKCFG_OSCSRC_M);
+
     return(ui32SysClock);
 }
-
-//*****************************************************************************
-//
-//! Sets the clocking of the device.
-//!
-//! \param ui32Config is the required configuration of the device clocking.
-//!
-//! This function configures the clocking of the device.  The input crystal
-//! frequency, oscillator to be used, use of the PLL, and the system clock
-//! divider are all configured with this function.
-//!
-//! The \e ui32Config parameter is the logical OR of several different values,
-//! many of which are grouped into sets where only one can be chosen.
-//!
-//! The system clock divider is chosen with one of the following values:
-//! \b SYSCTL_SYSDIV_1, \b SYSCTL_SYSDIV_2, \b SYSCTL_SYSDIV_3, ...
-//! \b SYSCTL_SYSDIV_64.
-//!
-//! The use of the PLL is chosen with either \b SYSCTL_USE_PLL or
-//! \b SYSCTL_USE_OSC.
-//!
-//! The external crystal frequency is chosen with one of the following values:
-//! \b SYSCTL_XTAL_4MHZ, \b SYSCTL_XTAL_4_09MHZ, \b SYSCTL_XTAL_4_91MHZ,
-//! \b SYSCTL_XTAL_5MHZ, \b SYSCTL_XTAL_5_12MHZ, \b SYSCTL_XTAL_6MHZ,
-//! \b SYSCTL_XTAL_6_14MHZ, \b SYSCTL_XTAL_7_37MHZ, \b SYSCTL_XTAL_8MHZ,
-//! \b SYSCTL_XTAL_8_19MHZ, \b SYSCTL_XTAL_10MHZ, \b SYSCTL_XTAL_12MHZ,
-//! \b SYSCTL_XTAL_12_2MHZ, \b SYSCTL_XTAL_13_5MHZ, \b SYSCTL_XTAL_14_3MHZ,
-//! \b SYSCTL_XTAL_16MHZ, \b SYSCTL_XTAL_16_3MHZ, \b SYSCTL_XTAL_18MHZ,
-//! \b SYSCTL_XTAL_20MHZ, \b SYSCTL_XTAL_24MHZ, or \b SYSCTL_XTAL_25MHz.
-//! Values below \b SYSCTL_XTAL_5MHZ are not valid when the PLL is in
-//! operation.
-//!
-//! The oscillator source is chosen with one of the following values:
-//! \b SYSCTL_OSC_MAIN, \b SYSCTL_OSC_INT, \b SYSCTL_OSC_INT4,
-//! \b SYSCTL_OSC_INT30, or \b SYSCTL_OSC_EXT32.  \b SYSCTL_OSC_EXT32 is only
-//! available on devices with the hibernate module, and then only when the
-//! hibernate module has been enabled.
-//!
-//! The internal and main oscillators are disabled with the
-//! \b SYSCTL_INT_OSC_DIS and \b SYSCTL_MAIN_OSC_DIS flags, respectively.
-//! The external oscillator must be enabled in order to use an external clock
-//! source.  Note that attempts to disable the oscillator used to clock the
-//! device is prevented by the hardware.
-//!
-//! To clock the system from an external source (such as an external crystal
-//! oscillator), use \b SYSCTL_USE_OSC \b | \b SYSCTL_OSC_MAIN.  To clock the
-//! system from the main oscillator, use \b SYSCTL_USE_OSC \b |
-//! \b SYSCTL_OSC_MAIN.  To clock the system from the PLL, use
-//! \b SYSCTL_USE_PLL \b | \b SYSCTL_OSC_MAIN, and select the appropriate
-//! crystal with one of the \b SYSCTL_XTAL_xxx values.
-//!
-//! \note This function should only be called on Blizzard-class devices.  For
-//! all other devices use the SysCtlClockFreqSet() function.
-//!
-//!
-//! \note If selecting the PLL as the system clock source (that is, via
-//! \b SYSCTL_USE_PLL), this function polls the PLL lock interrupt to
-//! determine when the PLL has locked.  If an interrupt handler for the
-//! system control interrupt is in place, and it responds to and clears the
-//! PLL lock interrupt, this function delays until its timeout has occurred
-//! instead of completing as soon as PLL lock is achieved.
-//!
-//! \return None.
-//
-//*****************************************************************************
-void
-Boot_sysCtlClockSetI(ULong ui32Config)
-{
-    uint32_t ui32Delay, ui32RCC, ui32RCC2;
-
-    //
-    // Get the current value of the RCC and RCC2 registers.
-    //
-    ui32RCC = HWREG(SYSCTL_RCC);
-    ui32RCC2 = HWREG(SYSCTL_RCC2);
-
-    //
-    // Bypass the PLL and system clock dividers for now.
-    //
-    ui32RCC |= SYSCTL_RCC_BYPASS;
-    ui32RCC &= ~(SYSCTL_RCC_USESYSDIV);
-    ui32RCC2 |= SYSCTL_RCC2_BYPASS2;
-
-    //
-    // Write the new RCC value.
-    //
-    HWREG(SYSCTL_RCC) = ui32RCC;
-    HWREG(SYSCTL_RCC2) = ui32RCC2;
-
-    //
-    // See if the oscillator needs to be enabled.
-    //
-    if((ui32RCC & SYSCTL_RCC_MOSCDIS) && !(ui32Config & SYSCTL_RCC_MOSCDIS))
-    {
-        //
-        // Make sure that the required oscillators are enabled.  For now, the
-        // previously enabled oscillators must be enabled along with the newly
-        // requested oscillators.
-        //
-        ui32RCC &= (~SYSCTL_RCC_MOSCDIS | (ui32Config & SYSCTL_RCC_MOSCDIS));
-
-        //
-        // Write the new RCC value.
-        //
-        HWREG(SYSCTL_RCC) = ui32RCC;
-
-        //
-        // Wait for a bit, giving the oscillator time to stabilize.  The number
-        // of iterations is adjusted based on the current clock source; a
-        // smaller number of iterations is required for slower clock rates.
-        //
-        if(((ui32RCC2 & SYSCTL_RCC2_USERCC2) &&
-            (((ui32RCC2 & SYSCTL_RCC2_OSCSRC2_M) == SYSCTL_RCC2_OSCSRC2_30) ||
-             ((ui32RCC2 & SYSCTL_RCC2_OSCSRC2_M) ==
-              SYSCTL_RCC2_OSCSRC2_32))) ||
-           (!(ui32RCC2 & SYSCTL_RCC2_USERCC2) &&
-            ((ui32RCC & SYSCTL_RCC_OSCSRC_M) == SYSCTL_RCC_OSCSRC_30)))
-        {
-            //
-            // Delay for 4096 iterations.
-            //
-            Boot_sysCtlDelayI(4096);
-        }
-        else
-        {
-            //
-            // Delay for 524,288 iterations.
-            //
-            Boot_sysCtlDelayI(524288);
-        }
-    }
-
-    //
-    // Set the new crystal value and oscillator source.  Because the OSCSRC2
-    // field in RCC2 overlaps the XTAL field in RCC, the OSCSRC field has a
-    // special encoding within ui32Config to avoid the overlap.
-    //
-    ui32RCC &= ~(SYSCTL_RCC_XTAL_M | SYSCTL_RCC_OSCSRC_M);
-    ui32RCC |= ui32Config & (SYSCTL_RCC_XTAL_M | SYSCTL_RCC_OSCSRC_M);
-    ui32RCC2 &= ~(SYSCTL_RCC2_USERCC2 | SYSCTL_RCC2_OSCSRC2_M);
-    ui32RCC2 |= ui32Config & (SYSCTL_RCC2_USERCC2 | SYSCTL_RCC_OSCSRC_M);
-    ui32RCC2 |= (ui32Config & 0x00000008) << 3;
-
-    //
-    // Write the new RCC value.
-    //
-    HWREG(SYSCTL_RCC) = ui32RCC;
-    HWREG(SYSCTL_RCC2) = ui32RCC2;
-
-    //
-    // Wait for a bit so that new crystal value and oscillator source can take
-    // effect.
-    //
-    Boot_sysCtlDelayI(16);
-
-    //
-    // Set the PLL configuration.
-    //
-    ui32RCC &= ~SYSCTL_RCC_PWRDN;
-    ui32RCC |= ui32Config & SYSCTL_RCC_PWRDN;
-    ui32RCC2 &= ~SYSCTL_RCC2_PWRDN2;
-    ui32RCC2 |= ui32Config & SYSCTL_RCC2_PWRDN2;
-
-    //
-    // Clear the PLL lock interrupt.
-    //
-    HWREG(SYSCTL_MISC) = SYSCTL_INT_PLL_LOCK;
-
-    //
-    // Write the new RCC value.
-    //
-    if(ui32RCC2 & SYSCTL_RCC2_USERCC2)
-    {
-        HWREG(SYSCTL_RCC2) = ui32RCC2;
-        HWREG(SYSCTL_RCC) = ui32RCC;
-    }
-    else
-    {
-        HWREG(SYSCTL_RCC) = ui32RCC;
-        HWREG(SYSCTL_RCC2) = ui32RCC2;
-    }
-
-    //
-    // Set the requested system divider and disable the appropriate
-    // oscillators.  This value is not written immediately.
-    //
-    ui32RCC &= ~(SYSCTL_RCC_SYSDIV_M | SYSCTL_RCC_USESYSDIV |
-                 SYSCTL_RCC_MOSCDIS);
-    ui32RCC |= ui32Config & (SYSCTL_RCC_SYSDIV_M | SYSCTL_RCC_USESYSDIV |
-                             SYSCTL_RCC_MOSCDIS);
-    ui32RCC2 &= ~(SYSCTL_RCC2_SYSDIV2_M);
-    ui32RCC2 |= ui32Config & SYSCTL_RCC2_SYSDIV2_M;
-    if(ui32Config & SYSCTL_RCC2_DIV400)
-    {
-        ui32RCC |= SYSCTL_RCC_USESYSDIV;
-        ui32RCC2 &= ~(SYSCTL_RCC_USESYSDIV);
-        ui32RCC2 |= ui32Config & (SYSCTL_RCC2_DIV400 | SYSCTL_RCC2_SYSDIV2LSB);
-    }
-    else
-    {
-        ui32RCC2 &= ~(SYSCTL_RCC2_DIV400);
-    }
-
-    //
-    // See if the PLL output is being used to clock the system.
-    //
-    if(!(ui32Config & SYSCTL_RCC_BYPASS))
-    {
-        //
-        // Wait until the PLL has locked.
-        //
-        for(ui32Delay = 32768; ui32Delay > 0; ui32Delay--)
-        {
-            if(HWREG(SYSCTL_RIS) & SYSCTL_INT_PLL_LOCK)
-            {
-                break;
-            }
-        }
-
-        //
-        // Enable use of the PLL.
-        //
-        ui32RCC &= ~(SYSCTL_RCC_BYPASS);
-        ui32RCC2 &= ~(SYSCTL_RCC2_BYPASS2);
-    }
-
-    //
-    // Write the final RCC value.
-    //
-    HWREG(SYSCTL_RCC) = ui32RCC;
-    HWREG(SYSCTL_RCC2) = ui32RCC2;
-
-    //
-    // Delay for a little bit so that the system divider takes effect.
-    //
-    Boot_sysCtlDelayI(16);
-}
-
-//*****************************************************************************
-//
-//! Provides a small delay.
-//!
-//! \param ulCount is the number of delay loop iterations to perform.
-//!
-//! This function provides a means of generating a constant length delay.  It
-//! is written in assembly to keep the delay consistent across tool chains,
-//! avoiding the need to tune the delay based on the tool chain in use.
-//!
-//! The loop takes 3 cycles/loop.
-//!
-//! \return None.
-//
-//*****************************************************************************
-
-//
-// For CCS implement this function in pure assembly.  This prevents the TI
-// compiler from doing funny things with the optimizer.
-//
-#if defined(__ti__)
-    __asm("    .sect \".text:ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\"\n"
-          "    .clink\n"
-          "    .thumbfunc ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\n"
-          "    .thumb\n"
-          "    .global ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\n"
-          "ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I:\n"
-          "local_ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I:\n"
-          "    subs r0, #1\n"
-          "    bne.n local_ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\n"
-          "    bx lr\n");
-#endif
-
-#if defined(__GNUC__) && !defined(__ti__)
-void __attribute__((naked))
-ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I(unsigned long ulCount)
-{
-    __asm("    subs    r0, #1\n"
-          "    bne     ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\n"
-          "    bx      lr");
-}
-#endif
-
-#if defined(__IAR_SYSTEMS_ICC__)
-void
-ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I(unsigned long ulCount)
-{
-    __asm("    subs    r0, #1\n"
-          "    bne.n   ti_sysbios_family_arm_msp432e4_init_Boot_sysCtlDelayI__I\n"
-          "    bx      lr");
-}
-#endif

@@ -142,6 +142,7 @@ if (xdc.om.$name == "cfg") {
     deviceTable["IWR16XX"]        = deviceTable["AWR16XX"];
     deviceTable["AWR18XX"]        = deviceTable["AWR16XX"];
     deviceTable["IWR18XX"]        = deviceTable["AWR16XX"];
+    deviceTable["IWR68XX"]        = deviceTable["AWR16XX"];
 }
 
 /*

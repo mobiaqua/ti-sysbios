@@ -2193,7 +2193,7 @@ Bool COF_readSect(COF_Handle desc, COF_SectHdr *sectPtr,  void *buf, int nmaus)
 }
 
 /*
- *  @(#) ti.targets.omf.cof; 1,0,0,0; 4-20-2018 17:27:39; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.omf.cof; 1,0,0,0; 7-20-2018 14:28:34; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

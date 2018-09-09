@@ -85,7 +85,7 @@ __asm("__TI_default_auto_init .set 1");
 /* C6x __TI_cpp_init symbol */
 /*****************************************************************************/
 /*
- *  @(#) ti.targets.nda.rts7000; 1, 0, 0,0; 4-20-2018 17:27:32; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.nda.rts7000; 1, 0, 0,0; 7-20-2018 14:28:28; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

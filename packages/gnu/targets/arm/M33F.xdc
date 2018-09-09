@@ -54,12 +54,12 @@ metaonly module M33F inherits IM {
 
     override readonly config ITarget2.Command cc = {
         cmd: "$(rootDir)/bin/$(GCCTARG)-gcc -c -MD -MF $@.dep",
-        opts: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -mabi=aapcs -g"
+        opts: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mabi=aapcs -g"
     };
 
     readonly config ITarget2.Command ccBin = {
         cmd: "bin/arm-none-eabi-gcc -c -MD -MF $@.dep",
-        opts: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -mabi=aapcs -g"
+        opts: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mabi=aapcs -g"
     };
 
     override config ITarget2.Options ccOpts = {
@@ -80,16 +80,16 @@ metaonly module M33F inherits IM {
 
     override readonly config ITarget2.Command asm = {
         cmd: "$(rootDir)/bin/$(GCCTARG)-gcc -c -x assembler-with-cpp",
-        opts: "-Wa,-march=armv8-m.main -Wa,-mthumb -Wa,-mfloat-abi=hard -Wa,-mfpu=fpv5-d16 "
+        opts: "-Wa,-march=armv8-m.main -Wa,-mthumb -Wa,-mfloat-abi=hard -Wa,-mfpu=fpv5-sp-d16 "
     };
 
     readonly config ITarget2.Command asmBin = {
         cmd: "bin/arm-none-eabi-gcc -c -x assembler-with-cpp",
-        opts: "-Wa,-march=armv8-m.main -Wa,-mthumb -Wa,-mfloat-abi=hard -Wa,-mfpu=fpv5-d16 "
+        opts: "-Wa,-march=armv8-m.main -Wa,-mthumb -Wa,-mfloat-abi=hard -Wa,-mfpu=fpv5-sp-d16 "
     };
 
     override config ITarget2.Options lnkOpts = {
-        prefix: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -nostartfiles -Wl,-static -Wl,--gc-sections ",
+        prefix: "-march=armv8-m.main -mtune=cortex-m33 -mthumb -mfloat-abi=hard -mfpu=fpv5-sp-d16 -nostartfiles -Wl,-static -Wl,--gc-sections ",
         suffix: "-Wl,--start-group -lgcc -lc -lm -Wl,--end-group --specs=nano.specs -Wl,-Map=$(XDCCFGDIR)/$@.map"
     };
 
@@ -104,7 +104,7 @@ metaonly module M33F inherits IM {
     override config string bspLib = "nosys";
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-19-2018 16:53:39; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 7-20-2018 13:58:34; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

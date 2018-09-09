@@ -92,7 +92,7 @@ SECTIONS
     .sysmem             : > LS05SARAM | M01SARAM    PAGE = 1
     .data               : > M01SARAM | LS05SARAM | RAMGS03   PAGE = 1
 #else
-    .ebss               : > M01SARAM | LS05SARAM    PAGE = 1
+    .ebss               : > M01SARAM | LS05SARAM | RAMGS03   PAGE = 1
     .esysmem            : > LS05SARAM | M01SARAM    PAGE = 1
 #endif
     .cio                : > LS05SARAM | M01SARAM    PAGE = 1

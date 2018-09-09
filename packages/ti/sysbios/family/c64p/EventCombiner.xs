@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,13 +36,44 @@
 
 var Ecm = null;
 var Hwi = null;
+var EventCombiner = null;
+
+if (xdc.om.$name == "cfg") {
+    var deviceTable = {
+        "J7ES": {
+            EVTRegs : 0x08020000
+        },
+    }
+}
 
 /*
  *  ======== module$use ========
  */
 function module$use()
 {
+    EventCombiner = this;
+
     Hwi = xdc.useModule('ti.sysbios.family.c64p.Hwi');
+
+    var deviceName;
+    var found = false;
+    for (deviceName in deviceTable) {
+        if (deviceName == Program.cpu.deviceName) {
+            /* exact match */
+            found = true;
+            break;
+        }
+        else if (Program.cpu.deviceName.match(deviceName)) {
+            /* wildcard match */
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        /* override default value */
+        EventCombiner.EVTRegs = deviceTable[deviceName].EVTRegs;
+    }
 }
 
 /*

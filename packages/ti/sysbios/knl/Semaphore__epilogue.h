@@ -50,6 +50,11 @@ extern xdc_Void ti_sysbios_knl_Semaphore_construct_SVC(
 extern xdc_Void ti_sysbios_knl_Semaphore_destruct_SVC(
     ti_sysbios_knl_Semaphore_Struct *obj);
 
+#undef ti_sysbios_knl_Semaphore_getCount
+#define ti_sysbios_knl_Semaphore_getCount ti_sysbios_knl_Semaphore_getCount_SVC
+extern xdc_Int ti_sysbios_knl_Semaphore_getCount_SVC(
+    ti_sysbios_knl_Semaphore_Handle sem);
+
 #undef ti_sysbios_knl_Semaphore_Params_init
 #define ti_sysbios_knl_Semaphore_Params_init ti_sysbios_knl_Semaphore_Params_init_SVC
 extern xdc_Void ti_sysbios_knl_Semaphore_Params_init_SVC(

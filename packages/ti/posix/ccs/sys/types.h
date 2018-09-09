@@ -38,7 +38,7 @@
 #define ti_posix_ccs_sys_types__include
 
 /* compiler vendor check */
-#ifndef __TI_COMPILER_VERSION__
+#if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
 #endif
@@ -66,6 +66,11 @@ extern "C" {
 #ifdef __SIZE_T_TYPE__
 #define unsigned signed
 typedef __SIZE_T_TYPE__ ssize_t;
+#undef unsigned
+#define _SSIZE_T_DECLARED
+#elif defined(__SIZE_TYPE__)
+#define unsigned signed
+typedef __SIZE_TYPE__ ssize_t;
 #undef unsigned
 #define _SSIZE_T_DECLARED
 #else
@@ -100,7 +105,12 @@ typedef unsigned short uid_t;
 /*  TI compiler defines time_t in time.h (should be in sys/types.h).
  *  Pull in time.h to get time_t definition.
  */
+#if defined(__clang__)
+/* TI ARM CLang Compiler */
+#include <../../include/c/time.h>
+#else
 #include <../include/time.h>
+#endif
 
 
 /*

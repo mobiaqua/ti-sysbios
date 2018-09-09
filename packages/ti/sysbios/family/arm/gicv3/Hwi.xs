@@ -109,6 +109,9 @@ if (xdc.om.$name == "cfg") {
             enableSecureMode   : false
         }
     };
+
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
 

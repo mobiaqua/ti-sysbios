@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 #define ti_posix_ccs_signal__include
 
 /* compiler vendor check */
-#ifndef __TI_COMPILER_VERSION__
+#if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
 #endif
@@ -46,7 +46,12 @@ with a Texas Instruments compiler. You appear to be using a different compiler.
 #include "sys/types.h"
 
 /* include toolchain's header file */
+#if defined(__clang__)
+/* TI ARM CLang Compiler */
+#include <../../include/c/signal.h>
+#else
 #include <../include/signal.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

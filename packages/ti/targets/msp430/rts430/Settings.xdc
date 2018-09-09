@@ -35,7 +35,7 @@ module Settings {
     metaonly config Bool bootOnly = false;
 }
 /*
- *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 4-20-2018 17:27:23; /db/ztree/library/trees/xdctargets/xdctargets-q01/src/ xlibrary
+ *  @(#) ti.targets.msp430.rts430; 1, 0, 0,0; 7-20-2018 14:28:20; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
 
  */
 

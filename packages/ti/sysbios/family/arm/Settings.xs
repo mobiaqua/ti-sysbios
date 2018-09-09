@@ -321,6 +321,7 @@ var deviceTable = {
         "SIMMAXWELL": {
             hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
             timerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7m.keystone3.TimerSupport",
             clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
             timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
             taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
@@ -450,21 +451,23 @@ var deviceTable = {
     },
     "ti.catalog.arm.cortexm33": {
         "FVP_MPS2": {
-            hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
-            timerDelegate : "ti.sysbios.family.arm.m3.Timer",
-            clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
-            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
-            taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
-            intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
+            hwiDelegate : "ti.sysbios.family.arm.v8m.Hwi",
+            timerDelegate : "ti.sysbios.family.arm.v8m.Timer",
+            clockTimerDelegate : "ti.sysbios.family.arm.v8m.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.v8m.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.v8m.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.v8m.IntrinsicsSupport",
             mmuModule : null,
             cacheDelegate : null,
-            powerDelegate : "ti.sysbios.family.arm.m3.Power",
+            powerDelegate : "ti.sysbios.family.arm.v8m.Power",
             secondsDelegate : null,
             syscallDelegate : null,
             coreDelegate : null,
             bootModule : null,
             clockTickPeriod : 1000,
-            targets : [ "gnu.targets.arm.M33F", "iar.targets.arm.M33" ]
+            targets : [ "ti.targets.arm.clang.M33F",
+                        "gnu.targets.arm.M33F",
+                        "iar.targets.arm.M33" ]
         },
     },
     "ti.catalog.arm.cortexr5": {
@@ -603,6 +606,7 @@ deviceTable["ti.catalog.arm.cortexa15"]["TCI6638K2K"] = deviceTable["ti.catalog.
 deviceTable["ti.catalog.arm.cortexa15"]["TCI66AK2G02"] = deviceTable["ti.catalog.arm.cortexa15"]["TCI6636K2H"];
 
 deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"] = deviceTable["ti.catalog.arm.cortexa53"]["SIMFLEMING"];
+deviceTable["ti.catalog.arm.cortexa53"]["AM65X"] = deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
 
 deviceTable["ti.catalog.arm.cortexa8"]["AM335.*"]  = deviceTable["ti.catalog.arm.cortexa8"]["TI81XX"];
 
@@ -610,15 +614,19 @@ deviceTable["ti.catalog.arm.cortexa8"]["AM335.*"]  = deviceTable["ti.catalog.arm
 delete(deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"]);
 
 deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMFLEMING"];
+deviceTable["ti.catalog.arm.cortexr5"]["AM65X"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
+deviceTable["ti.catalog.arm.cortexr5"]["J7.*"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
 
 deviceTable["ti.catalog.arm.cortexm3"]["CortexM3"] = deviceTable["ti.catalog.arm"]["CortexM3"];
 deviceTable["ti.catalog.arm.cortexm3"]["OMAP5430"]  = deviceTable["ti.catalog.arm.cortexm3"]["OMAP4430"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC2538.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2538SF53"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC26.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2650"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC13.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2650"];
+deviceTable["ti.catalog.arm.cortexm3"]["AM65X"] = deviceTable["ti.catalog.arm.cortexm3"]["SIMMAXWELL"];
+deviceTable["ti.catalog.arm.cortexm3"]["J7.*"] = deviceTable["ti.catalog.arm.cortexm3"]["SIMMAXWELL"];
 
 /* CC3220 M4 devices */
-deviceTable["ti.catalog.arm.cortexm4"]["CC322.*"] = deviceTable["ti.catalog.arm.cortexm4"]["CC3200"];
+deviceTable["ti.catalog.arm.cortexm4"]["CC32.*"] = deviceTable["ti.catalog.arm.cortexm4"]["CC3200"];
 
 /* Tiva devices */
 deviceTable["ti.catalog.arm.cortexm4"]["TM4.*"]     = deviceTable["ti.catalog.arm.cortexm4"]["TM4C129CNCPDT"];
@@ -639,6 +647,7 @@ deviceTable["ti.catalog.arm.cortexr5"]["RM57D8.*"] = deviceTable["ti.catalog.arm
 deviceTable["ti.catalog.arm.cortexr5"]["RM57L8.*"] = deviceTable["ti.catalog.arm.cortexr5"]["RM57D8XX"];
 deviceTable["ti.catalog.arm.cortexr4"]["AWR1.*"]   = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
 deviceTable["ti.catalog.arm.cortexr4"]["IWR1.*"]   = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
+deviceTable["ti.catalog.arm.cortexr4"]["IWR6.*"]   = deviceTable["ti.catalog.arm.cortexr4"]["AWR14XX"];
 
 /* MSP432 devices */
 deviceTable["ti.catalog.arm.cortexm4"]["MSP432E.*"] = deviceTable["ti.catalog.arm.cortexm4"]["MSP432E401Y"];

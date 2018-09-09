@@ -99,8 +99,6 @@ function module$static$init(mod, params)
         mod.timer = Timer.create(Timer.ANY, 
                      TimestampProvider.rolloverFunc,
                      timerParams);
-
-        Startup.lastFxns.$add(TimestampProvider.startTimer);
     }
     else {
         mod.timer = null;

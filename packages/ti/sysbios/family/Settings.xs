@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,7 @@ var family = {
     "ti.targets.arm.elf.R5F" :                  "arm",
     "ti.targets.arm.elf.R4F" :                  "arm",
     "ti.targets.arm.elf.R4Ft" :                 "arm",
+    "ti.targets.arm.clang.M33F" :                "arm",
     "gnu.targets.arm.M3" :                      "arm",
     "gnu.targets.arm.M4" :                      "arm",
     "gnu.targets.arm.M4F" :                     "arm",

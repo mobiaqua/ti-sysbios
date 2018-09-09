@@ -52,12 +52,12 @@ Void Cache_initModuleState()
     /* Read L1D cache info registers for ROV */
     info = Cache_getCacheLevelInfo(0);
     Cache_module->l1dInfo = info;
-    Cache_module->l1dCacheLineSize = 1 << ((info & 0x7) + 2);
+    Cache_module->l1dCacheLineSize = 4 << ((info & 0x7) + 2);
 
     /* Read L1P cache info registers for ROV */
     info = Cache_getCacheLevelInfo(1);
     Cache_module->l1pInfo = info;
-    Cache_module->l1pCacheLineSize = 1 << ((info & 0x7) + 2);
+    Cache_module->l1pCacheLineSize = 4 << ((info & 0x7) + 2);
 }
 
 /*

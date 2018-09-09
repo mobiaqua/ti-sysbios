@@ -62,6 +62,19 @@ Void ti_sysbios_knl_Semaphore_destruct_SVC(Semaphore_Struct *obj)
 }
 
 /*
+ *  ======== ti_sysbios_knl_Semaphore_getCount_SVC ========
+ */
+Int ti_sysbios_knl_Semaphore_getCount_SVC(Semaphore_Object *sem)
+{
+    Int ret;
+
+    SysCall_enterPrivMode();
+    ret = Semaphore_getCount(sem);
+    SysCall_enterUnprivMode();
+    return (ret);
+}
+
+/*
  *  ======== ti_sysbios_knl_Semaphore_Params_init_SVC ========
  */
 Void ti_sysbios_knl_Semaphore_Params_init_SVC(Semaphore_Params *prms)

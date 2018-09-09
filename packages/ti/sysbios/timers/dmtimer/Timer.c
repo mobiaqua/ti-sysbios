@@ -454,6 +454,12 @@ Int Timer_Module_startup(Int status)
     Int i;
     Timer_Object *obj;
 
+    if (Timer_checkFrequency) {
+        if (!Timestamp_SupportProxy_Module_startupDone()) {
+            return (Startup_NOTDONE);
+        }
+    }
+
     if (Timer_TimerSupportProxy_Module_startupDone()) {
         if (Timer_startupNeeded) {
             for (i = 0; i < Timer_numTimerDevices; i++) {
@@ -1076,7 +1082,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
 }
 
 
-#define TIMERCOUNTS 100
+#define TIMERCOUNTS 200
 
 /*
  *  ======== Timer_checkFreq ========
@@ -1084,7 +1090,8 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
 Void Timer_checkFreq(Timer_Object *obj)
 {
     UInt key;
-    UInt32 timerCountStart, timerCountEnd, tsCountStart, tsCountEnd;
+    volatile UInt32 tsCountStart;
+    UInt32 timerCountStart, timerCountEnd, tsCountEnd;
     UInt32 deltaTs, deltaCnt;
     Types_FreqHz timerFreq, timestampFreq;
     UInt freqRatio;
@@ -1124,7 +1131,11 @@ Void Timer_checkFreq(Timer_Object *obj)
      */
     Timer_start(&tempObj);
 
-    /* Record the initial timer & timestamp counts */
+    /*
+     *  Record the initial timer & timestamp counts.  The first call to
+     *  Timestamp_get32() is just to bring it into the cache.
+     */
+    tsCountStart = Timestamp_get32();
     timerCountStart = Timer_getCount(&tempObj);
     tsCountStart = Timestamp_get32();
 

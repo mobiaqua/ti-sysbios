@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,21 +60,19 @@ function module$meta$init()
 }
 
 /*
- *  ======== instance$meta$init ========
- */
-function instance$meta$init(id, tickfxn)
-{
-    Pmu = xdc.module("ti.sysbios.family.arm.v7a.Pmu");
-}
-
-/*
  *  ======== module$use ========
  */
 function module$use()
 {
     BIOS = xdc.useModule('ti.sysbios.BIOS');
-    Pmu = xdc.useModule('ti.sysbios.family.arm.v7a.Pmu');
     Hwi = xdc.useModule('ti.sysbios.hal.Hwi');
+
+    if (Program.build.target.name == "A53F") {
+        Pmu = xdc.useModule("ti.sysbios.family.arm.v8a.Pmu");
+    }
+    else {
+        Pmu = xdc.useModule("ti.sysbios.family.arm.v7a.Pmu");
+    }
 }
 
 /*

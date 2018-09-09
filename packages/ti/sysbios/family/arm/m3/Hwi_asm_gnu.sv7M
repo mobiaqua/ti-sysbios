@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013-2017, Texas Instruments Incorporated
+@  Copyright (c) 2013-2018, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,6 @@
 @
 
         .section .text.ti_sysbios_family_arm_m3_Hwi_dispatch__I
-        .func
         .thumb_func
 ti_sysbios_family_arm_m3_Hwi_dispatch__I:
 
@@ -152,7 +151,7 @@ lab$2:
         ldr     r3, swiTaskKeyAddr
         ldr     r0, [r3]
         str     r0, [r1]        @ tskkey pops into r0
-        movw.w  r0, #0x00000101
+        movw    r0, #0x00000101
         str     r0, [r3]        @ re-init swiTaskKey
 
         bx      lr              @ EXC_RETURN to lab$1 below
@@ -269,8 +268,6 @@ _ti_sysbios_family_arm_m3_Hwi_return:
 
         bx      lr              @ return into task, re-enables ints
 
-        .endfunc
-
         .align 2
 nvic_icsr:
         .word       0xe000ed04
@@ -286,7 +283,6 @@ lab$1Addr:
         .word       lab$1
 
         .section .text.ti_sysbios_family_arm_m3_Hwi_excHandlerAsm__I
-        .func
         .thumb_func
 ti_sysbios_family_arm_m3_Hwi_excHandlerAsm__I:
         tst     lr, #4          @ context on PSP?
@@ -307,7 +303,6 @@ ti_sysbios_family_arm_m3_Hwi_excHandlerAsm__I:
         mov     r1, lr          @ pass lr too
 
         ldr     pc, excHandlerAddr
-        .endfunc
 
         .align 2
 excHandlerAddr:

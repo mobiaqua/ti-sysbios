@@ -37,6 +37,7 @@
 var Program = xdc.module('xdc.cfg.Program');
 
 var Timer = null;
+var TimestampProvier = null;
 var Hwi = null;
 var BIOS = null;
 
@@ -64,6 +65,7 @@ function module$use()
 {
     Hwi = xdc.useModule("ti.sysbios.family.arm.m3.Hwi");
     BIOS = xdc.useModule('ti.sysbios.BIOS');
+    TimestampProvider = xdc.module('ti.sysbios.family.arm.m3.TimestampProvider');
 
     if ((BIOS.smpEnabled == true) && (BIOS.buildingAppLib == true)) {
         Timer.$logError("This Timer module is not supported in SMP mode", this);
@@ -109,8 +111,11 @@ function instance$static$init(obj, id, tickFxn, params)
 {
     var modObj = this.$module.$object;
 
-    /* set flag because static instances need to be started */
-    Timer.startupNeeded = true;
+    /* If TimestampProvider is used, it will start the timer */
+    if (TimestampProvider.$used == false) {
+        /* set flag because static instances need to be started */
+        Timer.startupNeeded = true;
+    }
 
     obj.staticInst = true;
 

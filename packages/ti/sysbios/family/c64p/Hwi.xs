@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,14 @@ function getAsmFiles(targetName)
 function getCFiles(targetName)
 {
     return (["Hwi.c", "Hwi_startup.c"]);
+}
+
+if (xdc.om.$name == "cfg") {
+    var deviceTable = {
+        "J7ES": {
+            INTRMUX1Address : 0x08020104
+        },
+    }
 }
 
 /*
@@ -191,6 +199,26 @@ function module$use()
     if (Hwi.resetVectorAddress !== undefined) {
         Program.sectMap[".resetVector"] = new Program.SectionSpec();
         Program.sectMap[".resetVector"].loadAddress = Hwi.resetVectorAddress;
+    }
+
+    var deviceName;
+    var found = false;
+    for (deviceName in deviceTable) {
+        if (deviceName == Program.cpu.deviceName) {
+            /* exact match */
+            found = true;
+            break;
+        }
+        else if (Program.cpu.deviceName.match(deviceName)) {
+            /* wildcard match */
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        /* override default value */
+        Hwi.INTRMUX1Address = deviceTable[deviceName].INTRMUX1Address;
     }
 }
 

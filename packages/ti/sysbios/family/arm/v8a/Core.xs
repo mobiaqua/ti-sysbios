@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@ if (xdc.om.$name == "cfg") {
             baseClusterId : 0
         }
     };
+
+    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
 }
 
 /*

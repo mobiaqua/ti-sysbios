@@ -72,7 +72,7 @@ var _isaChainMap = {
     isa_v7M: ["v7M"],
     isa_v7M4:["v7M", "v7M4"],
     isa_v7R: ["470", "v4T", "v5T", "v6", "v7R"],
-    isa_v8M: ["v8M"],
+    isa_v8M: ["v8M", "v7M"],
     isa_arp32: ["arp32"]
 };
 
@@ -390,7 +390,7 @@ function link(goal)
 
         var lib = "";
         if (("linkLib" in target) && target.linkLib != null) {
-            if (target.$name.match(/llvm/)) {
+            if (target.$name.match(/clang/)) {
                 lib = " -l $(rootDir)/lib/generic/" + target.linkLib;
             }
             else {
@@ -400,7 +400,7 @@ function link(goal)
 
         var cmd = tool2cmd["link"];
         var pre;
-        if (target.$name.match(/llvm/)) {
+        if (target.$name.match(/clang/)) {
             pre = target.lnkOpts == null ? "" :
                 (goal.dllMode ? "-Wl,-q" : target.lnkOpts.prefix);
         }
@@ -412,7 +412,7 @@ function link(goal)
         var compString = this.getVersion().split('{')[1];
         var compVersion = compString.split(',');
 
-        if (_newLinker(target) && !target.$name.match(/llvm/)) {
+        if (_newLinker(target) && !target.$name.match(/clang/)) {
             var fsopt = "-fs $(XDCCFGDIR)$(dir $@)";
             if (Build.hostOSName == "Windows") {
                 /* This is a workaround for a CodeGen bug when '/' is the
@@ -424,7 +424,7 @@ function link(goal)
         }
 
         var suf = "";
-        if (target.$name.match(/llvm/)) {
+        if (target.$name.match(/clang/)) {
             suf = target.lnkOpts == null ? suf : suf + " " +
                 (goal.dllMode ? "-Wl,-r -Wl,-m,$(XDCCFGDIR)/$@.map" :
                 target.lnkOpts.suffix + lib);
@@ -526,7 +526,7 @@ function _compile(target, goal, asm)
             }
 
             _setEnv(target, result);
-            if (target.$name.match(/llvm/)) {
+            if (target.$name.match(/clang/)) {
                 result.cmds = _bldUtils.expandString(tool2cmd[cmdType], {
                     COPTS_P:    ccoptsPre,
                     COPTS_S:    ccoptsSuf,
@@ -620,16 +620,21 @@ function _mkCmds(target)
             + target.suffix + " $< -C ";
 
     /* define assembly options */
-    cmdOpts = " $(AOPTS_P) " + target.asm.opts + " -eo.o" + target.suffix
+    if (target.$name.match(/clang/)) {
+        cmdOpts = " $(AOPTS_P) " + target.asm.opts 
+          + " $(AOPTS_S) $(defs) $(aopts) $(incs) $(XDCINCS) "
+          + target.includeOpts;
+        /* define assemble command template */
+        cmd = cmdPrefix + target.asm.cmd + cmdOpts
+          + " $(langOpt) -o $@ $<\n";
+    }
+    else {
+        cmdOpts = " $(AOPTS_P) " + target.asm.opts
+          + " -eo.o" + target.suffix
           + " -ea.s" + target.suffix
           + " $(AOPTS_S) $(defs) $(aopts) $(incs) $(XDCINCS) "
           + target.includeOpts;
-
-    /* define assemble command template */
-    if (target.$name.match(/llvm/)) {
-        cmd = cmdPrefix + target.asm.cmd + cmdOpts + " $(langOpt) $<\n";
-    }
-    else {
+        /* define assemble command template */
         cmd = cmdPrefix + target.asm.cmd + cmdOpts
           + " -fr=./$(dstDir) $(langOpt) $<\n";
     }
@@ -644,15 +649,20 @@ function _mkCmds(target)
      * The users who build with XDC still get the extension functionality that
      * allows us to build for multiple targets.
      */
-    if (target.$name.match(/llvm/)) {
+    if (target.$name.match(/clang/)) {
         cmdOpts = " $(ASMONLY) $(COPTS_P) $(COPTS_S) $(defs) $(copts) "
             + "$(incs) $(XDCINCS) " + target.includeOpts;
+        /* define the C compile command template */
+        cmd =  cmdPrefix + target.cc.cmd + " " + target.cc.opts + cmdOpts +
+            " $(langOpt) -o $@ $<\n";
     }
     else {
         cmdOpts = " $(ASMONLY) $(COPTS_P) " + target.cc.opts + " -eo.o"
           + target.suffix + " -ea.s" + target.suffix
           + " $(COPTS_S) $(defs) $(copts) $(incs) $(XDCINCS) "
           + target.includeOpts + " -fs=./$(dstDir) -fr=./$(dstDir)";
+        /* define the C compile command template */
+        cmd =  cmdPrefix + target.cc.cmd + cmdOpts + " $(langOpt) $<\n";
     }
 
     if (0) {
@@ -669,14 +679,6 @@ function _mkCmds(target)
             + "@$(MV) $(patsubst %$(srcExt),%.pp,$<) $@.dep\n#";
     }
 
-    /* define the C compile command template */
-    if (target.$name.match(/llvm/)) {
-        cmd =  cmdPrefix + target.cc.cmd + " " + target.cc.opts + cmdOpts +
-            " $(langOpt) -o $@ $<\n";
-    }
-    else {
-        cmd =  cmdPrefix + target.cc.cmd + cmdOpts + " $(langOpt) $<\n";
-    }
     cmd = cmd.concat(mkdep + cmdOpts);
     tool2cmd["c"] = cmd;
 

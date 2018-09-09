@@ -197,10 +197,19 @@ function instance$meta$init(name)
             this.deviceName.match(/^AWR18/) ||
             this.deviceName.match(/^IWR14/) ||
             this.deviceName.match(/^IWR16/) ||
-            this.deviceName.match(/^IWR18/)) {
+            this.deviceName.match(/^IWR18/) ||
+            this.deviceName.match(/^IWR68/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexr4";
             this.CPU.deviceName = "CortexR";
             this.CPU.clockRate = 200;
+        }
+
+        if (this.deviceName.match(/^SIMMAXWELL/) ||
+            this.deviceName.match(/^J7/) ||
+            this.deviceName.match(/^AM65X/)) {
+            this.CPU.catalogName = "ti.catalog.arm.cortexr5";
+            this.CPU.deviceName = "CortexR";
+            this.CPU.clockRate = 400;
         }
     }
 }

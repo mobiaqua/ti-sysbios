@@ -177,9 +177,6 @@ function module$use()
      */
 
     Task.PARAMS.affinity = Task.defaultAffinity;
-
-    Build.ccArgs.$add("-Dti_sysbios_knl_Task_minimizeLatency__D=" +
-        (Task.minimizeLatency ? "TRUE" : "FALSE"));
 }
 
 /*
@@ -501,6 +498,32 @@ function module$validate()
     for(var i = 0; i < Task.$objects.length; i++) {
         instance_validate(Task.$objects[i]);
     }
+
+    /*
+     * Add -D's now that configuration is settled
+     */
+
+    var noSwitchHooks = true;
+    var noReadyHooks = true;
+
+    for (var i = 0; i < Task.hooks.length; i++) {
+        if (Task.hooks[i].switchFxn != null) {
+            noSwitchHooks = false;
+        }
+        if (Task.hooks[i].readyFxn != null) {
+            noReadyHooks = false;
+        }
+    }
+
+    if (noSwitchHooks == false) {
+        Build.ccArgs.$add("-Dti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS");
+    }
+    if (noReadyHooks == false) {
+        Build.ccArgs.$add("-Dti_sysbios_knl_Task_ENABLE_READY_HOOKS");
+    }
+
+    Build.ccArgs.$add("-Dti_sysbios_knl_Task_minimizeLatency__D=" +
+        (Task.minimizeLatency ? "TRUE" : "FALSE"));
 }
 
 /*
@@ -895,7 +918,7 @@ function checkSemPendQ(sem, task)
         catch (e) {
             return false;
         }
-        if (Number(pendElem.tpElem.task) == Number(task.$addr)) {
+        if (Number(pendElem.tpElem.taskHandle) == Number(task.$addr)) {
             return true;
         }
     }
@@ -976,7 +999,7 @@ function checkEvents(view, obj)
                                      ": " + e.toString());
                 return false;
             }
-            if (Number(pendElem.tpElem.task) == Number(obj.$addr)) {
+            if (Number(pendElem.tpElem.taskHandle) == Number(obj.$addr)) {
                 view.blockedOn = "Event: 0x" +
                     Number(eventRawView.instStates[i].$addr).toString(16);
                 return true;
@@ -1056,8 +1079,8 @@ function checkTaskSleep(view, obj)
         return false;
     }
 
-    /* Check if 'clock' is null. */
-    if (Number(pendElem.clock) == 0) {
+    /* Check if 'clockHandle' is null. */
+    if (Number(pendElem.clockHandle) == 0) {
         return (false);
     }
 
@@ -1065,12 +1088,12 @@ function checkTaskSleep(view, obj)
     try {
         var clockView =
             Program.scanHandleView('ti.sysbios.knl.Clock',
-                                   pendElem.clock, 'Basic');
+                                   pendElem.clockHandle, 'Basic');
     }
     catch (e) {
         Program.displayError(view, "blockedOn",
             "Problem scanning pending Clock 0x" +
-            Number(pendElem.clock).toString(16) + ": " + e.toString());
+            Number(pendElem.clockHandle).toString(16) + ": " + e.toString());
         return false;
     }
 
@@ -1153,7 +1176,7 @@ function checkGateMutexPris(view, obj)
                 return false;
             }
 
-            var currTaskHandle = pendElem.task;
+            var currTaskHandle = pendElem.taskHandle;
 
             if (Number(currTaskHandle.$addr) == Number(obj.$addr)) {
                 view.blockedOn = "GateMutexPri: 0x" + Number(gateRawView.instStates[i].$addr).toString(16);

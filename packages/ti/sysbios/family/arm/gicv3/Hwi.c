@@ -503,10 +503,16 @@ UInt Hwi_disableInterrupt(UInt intNum)
     UInt key, oldEnableState, index, mask;
 
     key = Hwi_disable();
-    index = intNum / 32;
     mask = 1 << (intNum & 0x1f);
-    oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
-    Hwi_gicd.ICENABLER[index] = mask;
+    if (intNum < 32) {
+        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0;
+        Hwi_gicMap[0].gics->ICENABLER0 = mask;
+    }
+    else {
+        index = intNum / 32;
+        oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
+        Hwi_gicd.ICENABLER[index] = mask;
+    }
     Hwi_restore(key);
 
     return oldEnableState;
@@ -520,10 +526,16 @@ UInt Hwi_enableInterrupt(UInt intNum)
     UInt key, oldEnableState, index, mask;
 
     key = Hwi_disable();
-    index = intNum / 32;
     mask = 1 << (intNum & 0x1f);
-    oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
-    Hwi_gicd.ISENABLER[index] = mask;
+    if (intNum < 32) {
+        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0;
+        Hwi_gicMap[0].gics->ISENABLER0 = mask;
+    }
+    else {
+        index = intNum / 32;
+        oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
+        Hwi_gicd.ISENABLER[index] = mask;
+    }
     Hwi_restore(key);
 
     return oldEnableState;
@@ -1100,7 +1112,7 @@ Void Hwi_excHandler(UInt64 *excStack, Hwi_ExcType excType)
         /* Instruction abort */
         case 0x20:
         case 0x21:
-            System_printf ("\nInstrcution Abort: PC = 0x%8.8x%8.8x  LR = 0x%8.8x%8.8x\n",
+            System_printf ("\nInstruction Abort: PC = 0x%8.8x%8.8x  LR = 0x%8.8x%8.8x\n",
                 PRINTF_64BIT_ARG(excContextp->elr),
                 PRINTF_64BIT_ARG(excContextp->x30));
             break;
@@ -1125,8 +1137,7 @@ Void Hwi_excHandler(UInt64 *excStack, Hwi_ExcType excType)
             break;
     }
 
-    /* TODO Add Error_raise call */
-    while (1);
+    Error_raise(0, Hwi_E_exception, 0, 0);
 }
 
 /*
