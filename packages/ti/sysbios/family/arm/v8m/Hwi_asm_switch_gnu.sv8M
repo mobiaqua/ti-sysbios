@@ -99,17 +99,16 @@ ti_sysbios_family_xxx_Hwi_switchToTaskStack:
 ti_sysbios_family_xxx_Hwi_switchAndRunFunc:
         push    {r4, lr}
         mrs     r4, control     @ on ISR stack already?
-        cmp     r4, #0
+        tst     r4, #2
         itt     NE
-        movne   r1, #0          @ no,
+        bicne   r1, r4, #2      @ no,
         msrne   control, r1     @ force thread mode to use MSP
 
         blx     r0              @ Call func
 
-        cmp     r4, #0          @ lowest order ISR?
-        itt     NE
-        movne   r1, #2          @ yes
-        msrne   control, r1     @ force thread mode to use PSP
+        tst     r4, #2          @ lowest order ISR?
+        it      NE
+        msrne   control, r4     @ force thread mode to use PSP
 
         pop     {r4, pc}        @ return
 
@@ -168,6 +167,7 @@ lab$1:
         ldr     r0, fpccr       @ clear APSEN and LSPEN
         ldr     r1, [r0]        @ get current fpccr
         bic     r1, r1, #0xc0000000 @ clear upper 2 bits
+        orr     r1, r1, #0x80000000 @ set ASPEN, always stack FP regs
         str     r1, [r0]        @ save/restore manually
 #endif
 

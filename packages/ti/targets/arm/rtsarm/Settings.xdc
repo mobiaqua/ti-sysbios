@@ -39,7 +39,7 @@ module Settings {
 
 
 /*
- *  @(#) ti.targets.arm.rtsarm; 1, 0, 0,0; 7-20-2018 14:27:53; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets.arm.rtsarm; 1, 0, 0,0; 12-18-2018 16:05:52; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

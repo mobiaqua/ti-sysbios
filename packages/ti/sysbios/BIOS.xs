@@ -68,20 +68,9 @@ function module$meta$init()
      */
     GetSet.init(BIOS.cpuFreq);
 
-    /*
-     * For all targets except MSP430: convert the platform clock rate
-     * in MHz to Hz, and set BIOS.cpuFreq.
-     *
-     * For MSP430: Leave undefined for now, set it later, after application
-     * config script has been processed.
-     *
-     */
-    if (!(Program.build.target.name.match(/430/))) {
-
-        var freq =   Program.cpu.clockRate * 1000000;
-        BIOS.cpuFreq.lo = freq & 0xffffffff;
-        BIOS.cpuFreq.hi =  Number((freq / Math.pow(2,32)).toFixed(0));
-    }
+    var freq =   Program.cpu.clockRate * 1000000;
+    BIOS.cpuFreq.lo = freq & 0xffffffff;
+    BIOS.cpuFreq.hi =  Number((freq / Math.pow(2,32)).toFixed(0));
 
     /*
      * On Concerto devices register BIOS with the M3-side Boot module to listen
@@ -94,6 +83,15 @@ function module$meta$init()
             if ('registerFreqListener' in BootM3) {
                 BootM3.registerFreqListener(this);
             }
+        }
+    }
+    /* On Tenor devices reference the Boot module */
+    if (Program.cpu.deviceName.match(/F2838/)) {
+        if (Program.build.target.name.match(/M4/)) {
+            var Boot =xdc.module('ti.sysbios.family.arm.f2838x.init.Boot');
+        }
+        else {
+            var Boot =xdc.module('ti.sysbios.family.c28.f2838x.init.Boot');
         }
     }
     else if (Program.cpu.deviceName.match(/F2807/) ||
@@ -210,37 +208,6 @@ function module$use()
     /* If app config has not specified an argSize, set it to zero */
     if (Program.$written("argSize") == false) {
         Program.argSize = 0x0;
-    }
-
-    /*
-     * For MSP430: Check if app config has explicitly defined BIOS.cpuFreq.
-     * If yes, use it; else, use defaults.
-     *
-     */
-    if (Program.build.target.name.match(/430/)) {
-        if (BIOS.cpuFreq.lo === undefined) {
-
-            /* set default based upon whether Boot is doing boost or not ... */
-            var Boot = xdc.module('ti.catalog.msp430.init.Boot');
-
-            if (Boot.configureDCO == true) {
-                if ((Program.cpu.attrs.peripherals["clock"] != null) &&
-                    (Program.cpu.attrs.peripherals["clock"].$module.$name ==
-                    "ti.catalog.msp430.peripherals.clock.CS_A")) {
-                    BIOS.cpuFreq.lo = 8000000;
-                }
-                else {
-                    BIOS.cpuFreq.lo = 8192000;
-                }
-            }
-            else {
-                    BIOS.cpuFreq.lo = 1000000;
-            }
-        }
-
-        if (BIOS.cpuFreq.hi === undefined) {
-            BIOS.cpuFreq.hi = 0;
-        }
     }
 
     /*

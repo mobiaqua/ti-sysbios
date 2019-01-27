@@ -72,16 +72,12 @@ extern UInt32 ti_sysbios_family_arm_v8m_Hwi_dispatchTable[];
 %if (Program.build.target.$name.match(/iar/)) {
     extern Void *CSTACK$$Base;
     extern Void *CSTACK$$Limit;
-%}
 
+%}
 %if (Program.build.target.$name.match(/gnu/)) {
-%   if (Hwi.isTiva == true) {
 Ptr _intvecs_base_address;
+
 const UInt32 ti_sysbios_family_arm_v8m_Hwi_resetVectors[] __attribute__ ((section (".intvecs"))) = {
-%   }
-%   else {
-const UInt32 ti_sysbios_family_arm_v8m_Hwi_resetVectors[] __attribute__ ((section (".resetVecs"))) = {
-%   }
     (UInt32)(&__TI_STACK_BASE),
 %}
 %else if (Program.build.target.$name.match(/iar/)) {
@@ -96,16 +92,19 @@ const intvec_elem __vector_table[] =
 %}
 %else {
 %    if (Program.build.target.$name.match(/clang/)) {
+extern int __STACK_END;
+
 /* const because it is meant to be placed in ROM */
 const UInt32 ti_sysbios_family_arm_v8m_Hwi_resetVectors[] __attribute__ ((section (".resetVecs"))) = {
+    (UInt32)(&__STACK_END),
 %    }
 %    else {
 #pragma DATA_SECTION(ti_sysbios_family_arm_v8m_Hwi_resetVectors, ".resetVecs");
 
 /* const because it is meant to be placed in ROM */
 const UInt32 ti_sysbios_family_arm_v8m_Hwi_resetVectors[] = {
-%    }
     (UInt32)(&__TI_STACK_BASE),
+%    }
 %}
     (UInt32)(`String(Hwi.resetFunc)`),
     (UInt32)(`String(Hwi.nmiFunc)`),            /* NMI */
@@ -150,15 +149,9 @@ const UInt32 ti_sysbios_family_arm_v8m_Hwi_resetVectors[] = {
 
 %if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
 % if (Program.build.target.$name.match(/gnu/)) {
-%     if (Hwi.isTiva == true) {
 Ptr _vtable_base_address;
 /* place holder for RAM vector table */
 UInt32 ti_sysbios_family_arm_v8m_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vtable")));
-%     }
-%     else {
-/* place holder for RAM vector table */
-UInt32 ti_sysbios_family_arm_v8m_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vecs")));
-%     }
 % }
 %else if (Program.build.target.$name.match(/iar/)) {
 
@@ -193,8 +186,8 @@ UInt32 ti_sysbios_family_arm_v8m_Hwi_dispatchTable[] = {
 %else {
 UInt32 ti_sysbios_family_arm_v8m_Hwi_dispatchTable[`Hwi.NUM_INTERRUPTS`];
 %}
+%if (Program.build.target.$name.match(/iar/)) {
 
-#if defined(__IAR_SYSTEMS_ICC__)
 Void ti_sysbios_family_arm_v8m_Hwi_initIsrStackSize()
 {
     #pragma section = "CSTACK"
@@ -202,4 +195,4 @@ Void ti_sysbios_family_arm_v8m_Hwi_initIsrStackSize()
     size_t size = (uint8_t *)__section_end("CSTACK") - (uint8_t *)__section_begin("CSTACK");
     ti_sysbios_family_arm_v8m_Hwi_Module__state__V.isrStackSize = (Void *)size;
 }
-#endif
+%}

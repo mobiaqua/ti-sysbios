@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,7 +58,7 @@ requires ti.sysbios.interfaces;
  *  (MAUs) of memory. An MAU is the smallest unit of data storage that can 
  *  be read or written by the CPU. For the C5000, this is a 16-bit word. 
  *  For the C28x, this is an 16-bit word. For the all other currently 
- *  supported target families—including C6000, ARM, and MSP430—this is an 
+ *  supported target families—including C6000 and ARM—this is an
  *  8-bit byte.
  *
  */

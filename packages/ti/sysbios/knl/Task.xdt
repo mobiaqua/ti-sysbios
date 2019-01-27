@@ -121,12 +121,12 @@ ti_sysbios_knl_Task_Module_StateSmp ti_sysbios_knl_Task_Module__stateSmp__V = {
 %    else {
         ".bss:ti_sysbios_knl_Task_moduleStateCheckValue");
 %    }
-#elif defined(__IAR_SYSTEMS_ICC__) && !defined(__ICC430__)
+#elif defined(__IAR_SYSTEMS_ICC__)
 #pragma location = ".bss:ti_sysbios_knl_Task_moduleStateCheckValue"
 #elif defined(__GNUC__) || defined(__clang__)
 UInt32 ti_sysbios_knl_Task_moduleStateCheckValue
     __attribute__ ((section(".bss.ti_sysbios_knl_Task_moduleStateCheckValue")));
-#elif !defined(__ICC430__)
+#elif
 #error "Unsupported compiler"
 #endif
 

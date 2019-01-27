@@ -112,10 +112,10 @@ instance:
      */
     config xdc.platform.IPlatform.Memory memMap[string]  = [
         ["L2SRAM", {
-            comment:    "256KB L2 SRAM/CACHE",
+            comment:    "288KB L2 SRAM/CACHE",
             name:       "L2SRAM",
             base:       0x00800000,
-            len:        0x00040000,
+            len:        0x00048000,
             space:      "code/data",
             access:     "RWX"
         }],

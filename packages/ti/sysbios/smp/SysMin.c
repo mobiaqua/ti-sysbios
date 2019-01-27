@@ -48,6 +48,9 @@
 #if defined xdc_target__isaCompatible_v7A15
 extern Void ti_sysbios_family_arm_a15_smp_Core_atexit__I(Int);
 #define Core_atexit(a)  ti_sysbios_family_arm_a15_smp_Core_atexit__I(a)
+#elif defined xdc_target__isaCompatible_v8A
+extern Void ti_sysbios_family_arm_v8a_smp_Core_atexit__I(Int);
+#define Core_atexit(a)  ti_sysbios_family_arm_v8a_smp_Core_atexit__I(a)
 #else
 extern Void ti_sysbios_family_arm_ducati_Core_atexit__I(Int);
 #define Core_atexit(a)  ti_sysbios_family_arm_ducati_Core_atexit__I(a)

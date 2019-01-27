@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2017 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2018 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -79,14 +79,6 @@
     #define xdc__BITS64__
     #define xdc__INT64__
 
-#elif defined(__MSP430__)                       /* MSP430 */
-    #define xdc__LONGLONG__
-    #define xdc__BITS8__
-    #define xdc__BITS16__
-    #define xdc__BITS32__
-    #define xdc__BITS64__
-    #define xdc__INT64__
-
 #elif defined(__C7100__)
     #define xdc__LONGLONG__
     #define xdc__BITS8__
@@ -97,6 +89,16 @@
     #define xdc__INT64__
 
     #define __FAR__
+
+#elif defined(ti_targets_arm_clang_M4F) || \
+      defined(ti_targets_arm_clang_M4) || \
+      defined(ti_targets_arm_clang_M3)
+    #define xdc__LONGLONG__
+    #define xdc__BITS8__
+    #define xdc__BITS16__
+    #define xdc__BITS32__
+    #define xdc__BITS64__
+    #define xdc__INT64__
 
 #elif defined(__ARM_ARCH_8M_MAIN__)
     #define xdc__LONGLONG__
@@ -218,7 +220,7 @@ static inline xdc_Fxn xdc_uargToFxn(xdc_UArg a) { return ((xdc_Fxn)(int)a); }
 
 #endif /* ti_targets_STD_ */
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 7-20-2018 13:58:59; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,2; 12-17-2018 15:56:59; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

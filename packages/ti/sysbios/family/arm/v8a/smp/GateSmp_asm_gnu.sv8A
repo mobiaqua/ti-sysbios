@@ -1,0 +1,95 @@
+/*
+ *  Copyright (c) 2018, Texas Instruments Incorporated
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *  *  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *  *  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ *  *  Neither the name of Texas Instruments Incorporated nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ *  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/*
+ * ======== GateSmp_asm_gnu.sv8a ========
+ */
+
+        .global ti_sysbios_family_arm_v8a_smp_GateSmp_startup__I
+        .global ti_sysbios_family_arm_v8a_smp_GateSmp_tryLock__I
+        .global ti_sysbios_family_arm_v8a_smp_GateSmp_unlock__I
+
+        .align  2
+
+/*
+ * ======== GateSmp_startup ========
+ */
+        .section .text.ti_sysbios_family_arm_v8a_smp_GateSmp_startup__I
+        .func ti_sysbios_family_arm_v8a_smp_GateSmp_startup__I
+
+ti_sysbios_family_arm_v8a_smp_GateSmp_startup__I:
+        clrex
+        ret
+        .endfunc
+
+
+/*
+ * ======== GateSmp_tryLock ========
+ */
+        .section .text.ti_sysbios_family_arm_v8a_smp_GateSmp_tryLock__I
+        .func ti_sysbios_family_arm_v8a_smp_GateSmp_tryLock__I
+
+ti_sysbios_family_arm_v8a_smp_GateSmp_tryLock__I:
+        ldxr    w1, [x0]
+        cmp     w1, #1  /* is locked already? */
+        beq     1f      /* if so, leave with fail */
+
+        mov     w2, #1  /* locked = 1 */
+        stxr    w1, w2, [x0] /* if so attempt to grab it */
+        cmp     w1, #0       /* did we get it? zero is yes */
+        /* if not, loop while in contention */
+        bne     ti_sysbios_family_arm_v8a_smp_GateSmp_tryLock__I
+1:
+        mov     w0, w1
+        dmb     sy
+        ret
+        .endfunc
+
+/*
+ * ======== GateSmp_unlock ========
+ */
+        .section .text.ti_sysbios_family_arm_v8a_smp_GateSmp_unlock__I
+        .func ti_sysbios_family_arm_v8a_smp_GateSmp_unlock__I
+
+ti_sysbios_family_arm_v8a_smp_GateSmp_unlock__I:
+        dmb     sy
+
+        mov     w1, #0
+        str     w1, [x0]
+
+        dsb     sy
+        sev         /* let everyone know */
+        ret
+        .endfunc
+
+        .end

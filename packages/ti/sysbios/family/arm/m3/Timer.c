@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -431,6 +431,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     Hwi_nvic.STCSR = 0;                 /* stop the timer */
     Hwi_clearInterrupt(obj->intNum);    /* clear any pending interrupts */
     Hwi_nvic.STRVR = insts;             /* set the period */
+    Hwi_nvic.STCVR = 0; /* reset counter, forces reload of period value */
     if (obj->extFreq.lo) {
         Hwi_nvic.STCSR = 0x3;   /* start timer, select ext clock */
     }

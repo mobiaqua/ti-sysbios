@@ -37,6 +37,7 @@
 var BiosBuild = xdc.loadCapsule("ti/sysbios/Build.xs");
 
 var objList = [
+    "EvtMan",
     "Timer.c",
 ];
 

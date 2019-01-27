@@ -494,6 +494,22 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     };
 
     /*! @_nodoc */
+    metaonly struct VectorTableView {
+        UInt        vectorNum;
+        Ptr         vector;
+        String      vectorLabel;
+        String      type;
+        String      priority;
+        Int         preemptPriority;
+        Int         subPriority;
+        String      status;
+        String      hwiHandle;
+        String      hwiFxn;
+        UArg        hwiArg;
+        Ptr         hwiIrp;
+    };
+
+    /*! @_nodoc */
     @Facet
     metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
@@ -524,6 +540,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
                         type: ViewInfo.TREE,
                         viewInitFxn: 'viewInitException',
                         structName: 'ExcContext'
+                    }
+                ],
+                ['Vector Table',
+                    {
+                        type: ViewInfo.MODULE_DATA,
+                        viewInitFxn: 'viewInitVectorTable',
+                        structName: 'VectorTableView'
                     }
                 ]
             ]

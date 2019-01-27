@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@ SECTIONS
 #endif
 #endif
     .const  :   > FLASH
+    .rodata :   > FLASH
     .cinit  :   > FLASH
     .pinit  :   > FLASH
     .init_array : > FLASH
@@ -55,4 +56,7 @@ SECTIONS
     .bss    :   > SRAM
     .sysmem :   > SRAM
     .stack  :   > SRAM
+
+    .ARM.exidx : > FLASH
+    .ARM.extab : > FLASH
 }

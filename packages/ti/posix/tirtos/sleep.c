@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,8 @@ int usleep(useconds_t usec)
     /* Clock_tickPeriod is the Clock period in microseconds */
     timeout = (UInt32)((usec + Clock_tickPeriod - 1) / Clock_tickPeriod);
 
-    Task_sleep(timeout);
+    /* must add one tick to ensure a full duration of timeout ticks */
+    Task_sleep(timeout + 1);
 
     return (0);
 }

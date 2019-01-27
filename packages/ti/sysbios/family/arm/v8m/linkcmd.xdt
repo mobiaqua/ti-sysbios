@@ -31,5 +31,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 %%}
-%var Temp = xdc.loadTemplate("Hwi_link.xdt");
-%Temp.genStream($out, this, $args);
+%var HwiTemp = xdc.loadTemplate("Hwi_link.xdt");
+%HwiTemp.genStream($out, this, $args);
+%var SAUTemplate = xdc.loadTemplate("SAU_link.xdt");
+%SAUTemplate.genStream($out, this, $args);

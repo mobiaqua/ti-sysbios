@@ -36,7 +36,7 @@
 Pkg.otherFiles = [ 
     "package.bld", 
     "makefile.defs", "makefile.libs",
-    "msp430", "c28", "generic"
+    "c28", "generic"
 ];
 
 /* include source files in the release package */

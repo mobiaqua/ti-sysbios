@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -428,21 +428,3 @@ Void HeapMultiBuf_getStats(HeapMultiBuf_Object *obj, Memory_Stats *stats)
         }
     }
 }
-
-/*
- *  ======== HeapMultiBuf_moveToEnd ========
- */
-Void HeapMultiBuf_moveToEnd(HeapBuf_Handle *heapBufs, UInt length, UInt index)
-{
-    UInt i;
-    HeapBuf_Handle heapBuf;
-
-    heapBuf = heapBufs[index];
-
-    for (i = index + 1; i < length; i++) {
-        heapBufs[i - 1] = heapBufs[i];
-    }
-
-    heapBufs[length - 1] = heapBuf;
-}
-

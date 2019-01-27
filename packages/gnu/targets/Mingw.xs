@@ -53,7 +53,7 @@ function scompile(goal) {
 
 
 /*
- *  @(#) gnu.targets; 1, 0, 1,0; 7-20-2018 13:58:28; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) gnu.targets; 1, 0, 1,3; 12-17-2018 15:56:40; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

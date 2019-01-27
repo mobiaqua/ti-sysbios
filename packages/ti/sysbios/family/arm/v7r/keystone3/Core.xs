@@ -67,8 +67,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     };
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"]     = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]       = deviceTable["SIMMAXWELL"];
 }
 
 /*

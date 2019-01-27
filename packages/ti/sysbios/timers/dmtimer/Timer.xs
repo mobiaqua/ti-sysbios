@@ -39,6 +39,7 @@ var TimerSupport = null;
 var Hwi = null;
 var catalogName;
 var BIOS = null;
+var deviceTableName = null;
 
 /*
  * ======== getAsmFiles ========
@@ -114,9 +115,53 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                 timer: [
                     {
                         name: "GPTimer1",
-                        baseAddr: 0x4AE18000,
+                        baseAddr: 0x02400000,
                         intNum:  14,
                         eventId: 63,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                ],
+            },
+            "J7ES": {
+                timer: [
+                    {
+                        name: "GPTimer1",
+                        baseAddr: 0x02400000,
+                        intNum:  14,
+                        eventId: 1248,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer2",
+                        baseAddr: 0x02410000,
+                        intNum:  15,
+                        eventId: 1249,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer3",
+                        baseAddr: 0x02420000,
+                        intNum:  16,
+                        eventId: 1250,
+                        intFreq: {
+                            lo: 19200000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "GPTimer3",
+                        baseAddr: 0x02430000,
+                        intNum:  17,
+                        eventId: 1251,
                         intFreq: {
                             lo: 19200000,
                             hi: 0,
@@ -1732,6 +1777,50 @@ used by linux */
                     },
                 ]
             },
+            "J7ES_MAIN": {
+                timer: [
+                    {
+                        name: "DMTimer12",
+                        baseAddr: 0x024c0000,
+                        intNum:  168,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer13",
+                        baseAddr: 0x024d0000,
+                        intNum:  169,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer14",
+                        baseAddr: 0x024e0000,
+                        intNum:  170,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer15",
+                        baseAddr: 0x024f0000,
+                        intNum:  171,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                ]
+            },
         },
         "ti.catalog.arm.cortexm3": {
             "TMS320TI816X": {
@@ -2584,11 +2673,14 @@ used by DSP */
     deviceTable["ti.catalog.arp32"]["Vayu"] =
         deviceTable["ti.catalog.arp32"]["DRA7XX"];
 
-    deviceTable["ti.catalog.arm.cortexr5"]["AM65X"] =
-        deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
-
-    deviceTable["ti.catalog.arm.cortexa53"]["AM65X"] =
+    deviceTable["ti.catalog.arm.cortexa53"]["AM65.*"] =
         deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+
+    deviceTable["ti.catalog.arm.cortexa53"]["J7ES"] =
+        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+
+    deviceTable["ti.catalog.arm.cortexr5"]["AM65.*"] =
+        deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
 
     deviceTable["ti.catalog.arm.cortexr5"]["J7"] =
         deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
@@ -2619,7 +2711,9 @@ function module$meta$init()
 
     /* loop through the device table */
     for (deviceName in deviceTable[catalogName]) {
-        if (deviceName == Program.cpu.deviceName) {
+        if (deviceName == Program.cpu.deviceName ||
+            Program.cpu.deviceName.match(deviceName)) {
+            deviceTableName = deviceName;
             var device = deviceTable[catalogName][deviceName].timer;
 
             /* initialize timer fields */
@@ -2728,7 +2822,7 @@ function module$use()
  */
 function module$static$init(mod, params)
 {
-    var device = deviceTable[catalogName][Program.cpu.deviceName].timer;
+    var device = deviceTable[catalogName][deviceTableName].timer;
 
     mod.device.length = device.length;
     mod.intFreqs.length = device.length;
@@ -2802,7 +2896,7 @@ function module$static$init(mod, params)
 function instance$static$init(obj, id, tickFxn, params)
 {
     var modObj = this.$module.$object;
-    var device = deviceTable[catalogName][Program.cpu.deviceName];
+    var device = deviceTable[catalogName][deviceTableName];
  
     /* set flag because static instances need to be started */
     Timer.startupNeeded = true;
@@ -2900,6 +2994,9 @@ function instance$static$init(obj, id, tickFxn, params)
         var hwiPrms = params.hwiParams;
         hwiPrms.eventId = obj.eventId;
         hwiPrms.arg = this;
+        if (Program.build.target.name == "C71") {
+            hwiPrms.priority = 1;
+        }
         if (params.runMode == Timer.RunMode_DYNAMIC) {
             if (Program.build.target.name == "M3") {
                 var m3Hwi = xdc.module ('ti.sysbios.family.arm.m3.Hwi');
@@ -3167,7 +3264,7 @@ function viewInitModule(view, obj)
  */
 function getFreqMeta(id)
 {
-    var device = deviceTable[catalogName][Program.cpu.deviceName].timer;
+    var device = deviceTable[catalogName][deviceTableName].timer;
     var modObj = this.$object;
     var timerId = 0;
 

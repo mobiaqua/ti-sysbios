@@ -50,9 +50,12 @@ requires ti.targets.arm.elf;
  */
 package ti.targets.arm.clang [1,0,0] {
     module M33F;
+    module M4F;
+    module M4;
+    module M3;
 }
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 7-20-2018 13:59:43; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets.arm.clang; 1, 0, 0,2; 12-17-2018 15:57:21; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

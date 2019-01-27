@@ -38,12 +38,13 @@ var BIOS = null;
 var Build = null;
 
 var custom28xOpts = " -q -mo ";
-var custom430xOpts = " -q --advice:power=1 ";
-var customIar430xOpts = " --silent --diag_suppress=Pa050,Go005,Pe1053 -D_DLIB_FILE_DESCRIPTOR=1";
 var custom6xOpts = " -q -mi10 -mo -pdr -pden -pds=238 -pds=880 -pds1110 ";
 var customARP32xOpts = " -q --gen_func_subsections ";
 var customArmOpts = " -q -ms --opt_for_speed=2 ";
-var customArmM33FOpts = " -Os ";
+var customArmClangM33FOpts = " ";
+var customArmClangM3Opts = " ";
+var customArmClangM4Opts = " ";
+var customArmClangM4FOpts = " ";
 var customGnuArmM3Opts = " ";
 var customGnuArmM4Opts = " ";
 var customGnuArmM4FOpts = " ";
@@ -58,12 +59,6 @@ var ccOptsList = {
     "ti.targets.C28_large"                      : custom28xOpts,
     "ti.targets.C28_float"                      : custom28xOpts,
     "ti.targets.elf.C28_float"                  : custom28xOpts,
-    "ti.targets.msp430.elf.MSP430"              : custom430xOpts,
-    "ti.targets.msp430.elf.MSP430X"             : custom430xOpts,
-    "ti.targets.msp430.elf.MSP430X_small"       : custom430xOpts,
-    "iar.targets.msp430.MSP430"                 : customIar430xOpts,
-    "iar.targets.msp430.MSP430X_small"          : customIar430xOpts,
-    "iar.targets.msp430.MSP430X_large"          : customIar430xOpts,
     "ti.targets.elf.C674"                       : custom6xOpts,
     "ti.targets.elf.C67P"                       : custom6xOpts,
     "ti.targets.elf.C66"                        : custom6xOpts,
@@ -80,7 +75,10 @@ var ccOptsList = {
     "ti.targets.arm.elf.R4Ft"                   : customArmOpts,
     "ti.targets.arm.elf.R5F"                    : customArmOpts,
     "ti.targets.arm.elf.R5F_big_endian"         : customArmOpts,
-    "ti.targets.arm.clang.M33F"                 : customArmM33FOpts,
+    "ti.targets.arm.clang.M33F"                 : customArmClangM33FOpts,
+    "ti.targets.arm.clang.M3"                   : customArmClangM3Opts,
+    "ti.targets.arm.clang.M4"                   : customArmClangM4Opts,
+    "ti.targets.arm.clang.M4F"                  : customArmClangM4FOpts,
     "gnu.targets.arm.M3"                        : customGnuArmM3Opts,
     "gnu.targets.arm.M4"                        : customGnuArmM4Opts,
     "gnu.targets.arm.M4F"                       : customGnuArmM4FOpts,
@@ -290,6 +288,8 @@ var biosPackages = [
     "ti.sysbios.family.arm.ducati.smp",
     "ti.sysbios.family.arm.exc",
     "ti.sysbios.family.arm.f28m35x",
+    "ti.sysbios.family.arm.f2838x",
+    "ti.sysbios.family.arm.f2838x.init",
     "ti.sysbios.family.arm.lm4",
     "ti.sysbios.family.arm.lm4.rtc",
     "ti.sysbios.family.arm.lm3",
@@ -309,11 +309,14 @@ var biosPackages = [
     "ti.sysbios.family.arm.v7m.keystone3",
     "ti.sysbios.family.arm.v8",
     "ti.sysbios.family.arm.v8a",
+    "ti.sysbios.family.arm.v8a.smp",
     "ti.sysbios.family.arm.v8m",
     "ti.sysbios.family.arm.v8m.mtl",
     "ti.sysbios.family.c28",
     "ti.sysbios.family.c28.f28m35x",
     "ti.sysbios.family.c28.f2837x",
+    "ti.sysbios.family.c28.f2838x",
+    "ti.sysbios.family.c28.f2838x.init",
     "ti.sysbios.family.c62",
     "ti.sysbios.family.c64",
     "ti.sysbios.family.c64p",
@@ -327,7 +330,6 @@ var biosPackages = [
     "ti.sysbios.family.c67p",
     "ti.sysbios.family.c674",
     "ti.sysbios.family.c7x",
-    "ti.sysbios.family.msp430",
     "ti.sysbios.family.arp32",
     "ti.sysbios.family.shared.fvp_mps2",
     "ti.sysbios.family.shared.keystone3",
@@ -717,10 +719,6 @@ function getCFiles(target)
         }
     }
     
-    if (Program.build.target.name.match(/430/)) {
-        biosSources += "./HwiFuncs.c ";
-    }
-
     if (BIOS.includeXdcRuntime == true) {
         biosSources += "xdc/runtime/xdc_noinit.c ";
         for each (var mod in Program.targetModules()) {

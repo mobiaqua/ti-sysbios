@@ -37,6 +37,12 @@
 var Build = xdc.useModule('xdc.bld.BuildEnvironment');
 var Pkg = xdc.useModule('xdc.bld.PackageContents');
 
+Pkg.makePrologue =
+    "%/Users_Guide.html: %/Users_Guide.md\n\t$(SWTOOLS)/bin/doc_mdhtml " +
+    "--title \"TI-POSIX User\'s Guide\" -t 3 -o $@ $<\n";
+
+Pkg.makeEpilogue = "clean::\n\trm -rf docs/tiposix/Users_Guide.html\n";
+
 Pkg.otherFiles = [
 
     "ccs/errno.h",
@@ -74,5 +80,6 @@ Pkg.otherFiles = [
     "iar/sys/time.h",
     "iar/sys/types.h",
 
+    "docs/tiposix/Users_Guide.html",
     "package.bld"
 ];

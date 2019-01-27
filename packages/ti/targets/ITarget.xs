@@ -259,9 +259,9 @@ function getVersion()
                         cver = va[0];
                     }
                     else {
-                        va = status.output.match(/Texas\sInstruments\sclang\sversion\s[0-9]+\.[0-9]+\.[0-9]+/g);
+                        va = status.output.match(/clang\sversion\s[0-9]+\.[0-9]+\.[0-9]+/g);
                         if (va != null) {
-                            cver = va[0].replace(/[Texas\sInstruments\sclang\sversion\s]/g, "");
+                            cver = va[0].replace(/[clang\sversion\s]/g, "");
                         }
                         else {
                             print(target.$name

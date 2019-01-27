@@ -310,7 +310,11 @@ extern "C" {
 #elif defined(__TMS320C6X__)
 
 /* include toolchain's header file */
+#if __TI_COMPILER_VERSION__ >= 8003000
+#include_next <errno.h>
+#else
 #include <../include/errno.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

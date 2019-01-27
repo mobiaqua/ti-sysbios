@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ import ti.sysbios.knl.Task;
  *  The maximum number of eventIds supported is target specific and depends
  *  on the number of bits in a UInt data type.
  *  For 6x and ARM devices the maximum number of eventIds is therefore 32.
- *  For 28x and MSP430 devices, the maximum number of eventIds is 16.
+ *  For 28x the maximum number of eventIds is 16.
  *
  *  @p(html)
  *  <h3> Calling Context </h3>

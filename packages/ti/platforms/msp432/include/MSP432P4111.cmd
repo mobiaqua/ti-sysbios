@@ -1,6 +1,6 @@
 /******************************************************************************
 *
-* Copyright (C) 2012 - 2017 Texas Instruments Incorporated - http://www.ti.com/
+* Copyright (C) 2012 - 2018 Texas Instruments Incorporated - http://www.ti.com/
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -79,6 +79,7 @@ SECTIONS
     .intvecs:   > 0x00000000
     .text   :   > MAIN
     .const  :   > MAIN
+    .rodata :   > MAIN
     .cinit  :   > MAIN
     .pinit  :   > MAIN
     .init_array   :     > MAIN
@@ -105,6 +106,9 @@ SECTIONS
     .TI.ramfunc : {} load=MAIN, run=SRAM_CODE, table(BINIT)
 #endif
 #endif
+
+    .ARM.exidx : > MAIN
+    .ARM.extab : > MAIN
 }
 
 /* Symbolic definition of the WDTCTL register for RTS */

@@ -169,7 +169,7 @@ __root __no_init UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRU
 % else {
 %    if (Program.build.target.$name.match(/clang/)) {
 /* place holder for RAM vector table */
-UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vecs")));
+UInt32 ti_sysbios_family_arm_m3_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vecs"), used));
 %    }
 %    else {
 #pragma DATA_SECTION(ti_sysbios_family_arm_m3_Hwi_ramVectors, ".vecs");

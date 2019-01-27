@@ -39,5 +39,6 @@ requires ti.sysbios.interfaces;
  *  ======== ti.sysbios.family.arm.v8m.mtl ========
  */
 package ti.sysbios.family.arm.v8m.mtl [2,0,0,0] {
+    module EvtMan;
     module Timer;
 }

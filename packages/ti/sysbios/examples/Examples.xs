@@ -47,9 +47,6 @@ function module$meta$init()
 {
     var Examples = this;
 
-    /* Generate MSP430 deviceId */
-    TargetCapsule.populateDeviceIdMSP430();
-
     /* Read env variables */
     var productGroup = environment["productGroup"];
     var tirtosSupport = environment["tirtosSupport"];
@@ -111,13 +108,6 @@ function module$meta$init()
                       " optimized for code and data memory usage and may" +
                       " not build on platforms with memory constraints.",
         groups      : [rootString + ".targetsGNU"],
-    });
-
-    Examples.templateGroupArr.$add({
-        id          : rootString + ".targetsTI.msp430",
-        name        : "MSP430 Specific Examples",
-        description : "MSP430 specific SYS/BIOS Examples",
-        groups      : [rootString + ".targetsTI"],
     });
 
     Examples.templateGroupArr.$add({
@@ -267,6 +257,7 @@ function generateExampleTemplates(examples, targetOptions,
                             linkerCommandFile: opts.linkerCommandFile,
                             compilerBuildOptions: opts.compilerBuildOptions,
                             linkerBuildOptions: opts.linkerBuildOptions,
+                            endianness: opts.endianness,
                             title: exampleList[j].title,
                             name: exampleList[j].name,
                             description: exampleList[j].description,
@@ -414,5 +405,9 @@ function getTargetOptions(opts, deviceOpts)
 
     if ('cmdFile' in deviceOpts) {
         opts.cmdFile = deviceOpts.cmdFile;
+    }
+
+    if ('endianness' in deviceOpts) {
+        opts.endianness = deviceOpts.endianness;
     }
 }

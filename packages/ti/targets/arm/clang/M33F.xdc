@@ -36,7 +36,7 @@
  */
 
 /*!
- *  ======== IM33.xdc ========
+ *  ======== M33F.xdc ========
  *  Cortex M33 with floating point unit, little endian thumb2 (ELF)
  */
 metaonly module M33F inherits ti.targets.arm.elf.IArm {
@@ -59,13 +59,18 @@ metaonly module M33F inherits ti.targets.arm.elf.IArm {
     };
 
     override readonly config xdc.bld.ITarget2.Command asm = {
-        cmd:  "tiarmclang -c -x assembler-with-cpp -mno-default-build-attributes",
+        cmd:  "tiarmclang -c -x assembler-with-cpp",
         opts: "-mcpu=cortex-m33 -mfloat-abi=hard -mfpu=fpv5-sp-d16"
     };
 
     override readonly config xdc.bld.ITarget2.Command lnk = {
         cmd:  "tiarmclang",
         opts: "-mcpu=cortex-m33 -mfloat-abi=hard -mfpu=fpv5-sp-d16"
+    };
+
+    override readonly config xdc.bld.ITarget2.Command ar = {
+        cmd:  "tiarmar",
+        opts: "q"
     };
 
     /*!
@@ -137,7 +142,7 @@ metaonly module M33F inherits ti.targets.arm.elf.IArm {
     ];
 }
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 7-20-2018 13:59:43; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets.arm.clang; 1, 0, 0,2; 12-17-2018 15:57:21; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

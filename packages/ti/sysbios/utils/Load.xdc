@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -121,10 +121,7 @@ import xdc.runtime.Error;
  *
  *  This method works fairly well if the timestamp frequency is
  *  sufficiently high (for example, if it's equal to the CPU frequency).
- *  For the MSP430, however, with the CPU running at 8MHz, when the 32KHz
- *  ACLK is used for the timestamp counter, the CPU load is only a very
- *  rough approximation, due to the courseness of the timestamp.  The CPU load
- *  accuracy can also be affected by caching and user idle functions.
+ *  The CPU load accuracy can also be affected by caching and user idle functions.
  *
  *  @p(html)
  *  <B>Task Load Enabled and No Power Management</B>
@@ -148,7 +145,7 @@ import xdc.runtime.Error;
  *  @p
  *
  *  This method applies to targets that have a SYS/BIOS Power
- *  module, for example, MSP430.  It does not apply to targets
+ *  module.  It does not apply to targets
  *  where Power management is part of TI-RTOS (e.g., CC3200).
  *
  *  The third method of calculating CPU load is used when Power

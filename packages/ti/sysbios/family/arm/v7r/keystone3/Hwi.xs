@@ -45,12 +45,23 @@ if (xdc.om.$name == "cfg") {
             vimBaseAddress              : 0x40F80000,
             resetVectorAddress          : 0x00000000,
             numInterrupts               : 512
-        }
+        },
+        "J7ES_MCU": {
+            vimBaseAddress              : 0x40F80000,
+            resetVectorAddress          : 0x00000000,
+            numInterrupts               : 512
+        },
+        "J7ES_MAIN": {
+            vimBaseAddress              : 0x0FF80000,
+            resetVectorAddress          : 0x00000000,
+            numInterrupts               : 512
+        },
     }
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"]     = deviceTable["SIMMAXWELL"];
+    deviceTable["J7ES"]       = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]       = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -89,23 +100,33 @@ function module$meta$init()
 
     Exception = xdc.module('ti.sysbios.family.arm.exc.Exception');
 
-    /* loop through the device table */
+    /* loop through the device table looking for exact match */
     for (deviceName in deviceTable) {
-        if (Program.cpu.deviceName.match(deviceName)) {
+        if (deviceName == Program.cpu.deviceName) {
             device = deviceTable[deviceName];
             break;
         }
     }
 
     if (device == null) {
-        print("The " + Program.cpu.deviceName +
-              " device is not currently supported.");
-        print("The following devices are supported for the " +
-              Program.build.target.name + " target:");
-        for (device in deviceTable) {
-            print("\t" + device);
+        /* loop through the device table looking for wildcard match */
+        for (deviceName in deviceTable) {
+            if (Program.cpu.deviceName.match(deviceName)) {
+                device = deviceTable[deviceName];
+                break;
+            }
         }
-        throw new Error ("Unsupported device!");
+
+        if (device == null) {
+            print("The " + Program.cpu.deviceName +
+                  " device is not currently supported.");
+            print("The following devices are supported for the " +
+                  Program.build.target.name + " target:");
+            for (device in deviceTable) {
+                print("\t" + device);
+            }
+            throw new Error ("Unsupported device!");
+        }
     }
 
     Hwi.vimBaseAddress = device.vimBaseAddress;
@@ -507,8 +528,8 @@ function viewInitBasic(view, obj)
     viewVimFetch(this);
     var regIdx = obj.intNum >>> 5;
     var regOffset = obj.intNum & 0x1F;
-    var enabled = this.VIMREGS.REQENASET[regIdx] & (1 << regOffset);
-    var pending = this.VIMREGS.INTREQ[regIdx] & (1 << regOffset);
+    var enabled = this.VIMREGS.GROUP[regIdx].ENABLEDSET & (1 << regOffset);
+    var pending = this.VIMREGS.GROUP[regIdx].RAWSTATUSSET & (1 << regOffset);
 
     if (enabled) {
         view.status = "enabled";
@@ -562,26 +583,6 @@ function viewGetStackInfo()
     stackInfo.hwiStackBase = stackBase;
 
     return (stackInfo);
-}
-
-/*
- *  ======== viewChannelMap ========
- *  Initialize the channel map view
- */
-function viewChannelMap(view)
-{
-    var hwiModCfg = Program.getModuleConfig('ti.sysbios.family.arm.v7r.keystone3.Hwi');
-
-    for (var i = 0; i < hwiModCfg.NUM_INTERRUPTS; i++) {
-        var elem = Program.newViewStruct('ti.sysbios.family.arm.v7r.keystone3.Hwi',
-            'ChannelMap');
-
-        elem.channelId = i;
-        elem.interruptRequestId = hwiModCfg.channelMap[i];
-
-        /* Add the element to the list. */
-        view.elements.$add(elem);
-    }
 }
 
 /*

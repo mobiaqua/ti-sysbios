@@ -44,7 +44,7 @@
 #include <ti/sysbios/family/arm/gicv3/Hwi.h>
 
 #if (ti_sysbios_BIOS_smpEnabled__D)
-#include <ti/sysbios/family/arm/a15/smp/Core.h>
+#include <ti/sysbios/family/arm/v8a/smp/Core.h>
 #endif
 
 #include "package/internal/Timer.xdc.h"

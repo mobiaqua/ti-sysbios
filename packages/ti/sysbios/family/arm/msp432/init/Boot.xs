@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 var Boot = null;
 var Program = null;
 var Build = null;
+var BIOS = null;
 
 /*
  *  ======== module$meta$init ========
@@ -179,14 +180,36 @@ function registerFreqListener(listener)
 /*
  *  ======== updateFrequency ========
  *  Update all of the listeners whenever the clock configuration changes
- *  (assuming configureClocks is true).
  */
 function updateFrequency(field, val)
 {
-    Boot.computedCpuFrequency = getFrequency();;
+    if (Boot.configureClocks == true) {
+        Boot.computedCpuFrequency = getFrequency();;
 
-    /* Notify each of the listeners of the new frequency value. */
-    for each (var listener in listeners) {
-        listener.fireFrequencyUpdate(Boot.computedCpuFrequency);
+        /* Notify each of the listeners of the new frequency value. */
+        for each (var listener in listeners) {
+            listener.fireFrequencyUpdate(Boot.computedCpuFrequency);
+        }
+    }
+}
+
+/*
+ *  ======== module$validate ========
+ */
+function module$validate()
+{
+    BIOS = xdc.module('ti.sysbios.BIOS');
+
+    /* check for mismatch between BIOS.cpuFreq and that set by Boot */
+    if (Boot.configureClocks &&
+           (BIOS.cpuFreq.$written("lo") || BIOS.cpuFreq.$written("hi")) &&
+           (BIOS.cpuFreq.lo != getFrequency())) {
+
+        BIOS.$logWarning("BIOS.cpuFreq is set to a value different " +
+            "than that being established by " +
+            "ti.sysbios.family.arm.msp432.init.Boot. " +
+            "Verify that the BIOS and Boot module settings are " +
+            "correct in your application configuration file.",
+                         BIOS, "cpuFreq");
     }
 }

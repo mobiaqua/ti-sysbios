@@ -452,6 +452,15 @@ Void Load_idleFxn(Void)
 }
 
 /*
+ *  ======== Load_logCPULoad ========
+ */
+Void Load_logCPULoad(Void)
+{
+    /* Log global CPU load */
+    Log_write1(Load_LS_cpuLoad, (IArg)Load_getCPULoad());
+}
+
+/*
  *  ======== Load_logLoads ========
  */
 Void Load_logLoads(Void)

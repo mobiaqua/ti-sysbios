@@ -290,7 +290,9 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
         UInt32 ICPR [16];    /*! 0xE000E280-0xE000E2BC Interrupt Clear Pending Registers */
         UInt32 RES_2C0 [16]; /*! 0xE000E2C0-0xE000E2FC reserved */
         UInt32 IABR [16];    /*! 0xE000E300-0xE000E33C Interrupt Active Bit Registers */
-        UInt32 RES_340 [48]; /*! 0xE000E340-0xE000E3FC reserved */
+        UInt32 RES_340 [16]; /*! 0xE000E340-0xE000E37C reserved */
+        UInt32 ITNS [16];    /*! 0xE000E380-0xE000E3BC Interrupt Target Non-Secure Registers */
+        UInt32 RES_3C0 [16]; /*! 0xE000E3C0-0xE000E3FC reserved */
         UInt8  IPR [492];    /*! 0xE000E400-0xE000E5EC Interrupt Priority Registers */
         UInt32 RES_5F0 [453];/*! 0xE000E5F0-0xE000ECFC reserved */
         UInt32 CPUIDBR;      /*! 0xE000ED00 CPUID Base Register */
@@ -510,6 +512,22 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     };
 
     /*! @_nodoc */
+    metaonly struct VectorTableView {
+        UInt        vectorNum;
+        Ptr         vector;
+        String      vectorLabel;
+        String      type;
+        String      priority;
+        Int         preemptPriority;
+        Int         subPriority;
+        String      status;
+        String      hwiHandle;
+        String      hwiFxn;
+        UArg        hwiArg;
+        Ptr         hwiIrp;
+    };
+
+    /*! @_nodoc */
     @Facet
     metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
@@ -540,6 +558,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
                         type: ViewInfo.TREE,
                         viewInitFxn: 'viewInitException',
                         structName: 'ExcContext'
+                    }
+                ],
+                ['Vector Table',
+                    {
+                        type: ViewInfo.MODULE_DATA,
+                        viewInitFxn: 'viewInitVectorTable',
+                        structName: 'VectorTableView'
                     }
                 ]
             ]

@@ -32,26 +32,35 @@
 
 MEMORY
 {
-    SRAM  (RWX) : origin = 0x2C400000, length = 0x00040000
+    MAIN            (RX)  : origin = 0x00000000, length = 0x00180000
+    APP_0_STARTUP   (RWX) : origin = 0x2C800000, length = 0x00000400
+    APP_1_STARTUP   (RWX) : origin = 0x2C400000, length = 0x00000400
+    APP_0_SRAM      (RWX) : origin = 0x2C400400, length = 0x0003FC00
+    APP_1_SRAM      (RWX) : origin = 0x2C800400, length = 0x0003FC00
+    SHARED          (RW)  : origin = 0x401C3800, length = 0x00000800
 }
-
-/* Section allocation in memory */
 
 SECTIONS
 {
-    .text   :   > SRAM
-    .TI.ramfunc : {} load=SRAM, run=SRAM, table(BINIT)
-    .const  :   > SRAM
-    .rodata :   > SRAM
-    .cinit  :   > SRAM
-    .pinit  :   > SRAM
-    .init_array : > SRAM
+    .intvecs:   > 0x2C400400
+    .text   :   > APP_0_SRAM
+    .const  :   > APP_0_SRAM
+    .rodata :   > APP_0_SRAM
+    .cinit  :   > APP_0_SRAM
+    .pinit  :   > APP_0_SRAM
+    .init_array   :     > APP_0_SRAM
+    .binit        : {}  > APP_0_SRAM
+    .app_0_startup : > APP_0_STARTUP
+    .app_1_startup : > APP_1_STARTUP
 
-    .data   :   > SRAM
-    .bss    :   > SRAM
-    .sysmem :   > SRAM
-    .stack  :   > SRAM
+    .vtable :   > APP_0_SRAM
+    .data   :   > APP_0_SRAM
+    .bss    :   > APP_0_SRAM
+    .sysmem :   > APP_0_SRAM
+    .args   :   > APP_0_SRAM
 
-    .ARM.exidx : > SRAM
-    .ARM.extab : > SRAM
+    .ARM.exidx : > APP_0_SRAM
+    .ARM.extab : > APP_0_SRAM
+
+    .stack  :   > APP_0_SRAM (HIGH)
 }

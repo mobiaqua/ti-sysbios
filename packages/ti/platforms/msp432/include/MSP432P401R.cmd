@@ -1,6 +1,6 @@
 /******************************************************************************
 *
-* Copyright (C) 2012 - 2016 Texas Instruments Incorporated - http://www.ti.com/
+* Copyright (C) 2012 - 2018 Texas Instruments Incorporated - http://www.ti.com/
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -68,6 +68,7 @@ SECTIONS
 #endif
 #endif
     .const  :   > MAIN
+    .rodata :   > MAIN
     .cinit  :   > MAIN
     .pinit  :   > MAIN
 
@@ -75,6 +76,9 @@ SECTIONS
     .bss    :   > SRAM_DATA
     .sysmem :   > SRAM_DATA
     .stack  :   > SRAM_DATA (HIGH)
+
+    .ARM.exidx : > MAIN
+    .ARM.extab : > MAIN
 }
 
 /* Symbolic definition of the WDTCTL register for RTS */

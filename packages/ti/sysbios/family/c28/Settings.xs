@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -258,6 +258,9 @@ function getDefaultBootModule()
 {
     if (Program.cpu.deviceName.match(/F28M3/)) {
         return ("ti.catalog.c2800.concertoInit.Boot");
+    }
+    else if (Program.cpu.deviceName.match(/F2838/)) {
+        return ("ti.sysbios.family.c28.f2838x.init.Boot");
     }
     else if(Program.cpu.deviceName.match(/F2807/) ||
             Program.cpu.deviceName.match(/F2837/) ||

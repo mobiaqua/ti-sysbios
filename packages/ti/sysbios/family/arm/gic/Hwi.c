@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1139,6 +1139,7 @@ UInt __attribute__ ((naked)) Hwi_disableFxn()
             "mrs r0, cpsr_cf\n\t"
             "cpsid i\n\t"
             "bx lr"
+            ::: "memory"
             );
 }
 #endif
@@ -1170,6 +1171,7 @@ Void __attribute__ ((naked)) Hwi_restoreFxn(UInt key)
             "orr r1, r1, r0\n\t"
             "msr cpsr_cf, r1\n\t"
             "bx lr"
+            ::: "memory"
             );
 }
 #endif
@@ -1195,6 +1197,7 @@ UInt __attribute__ ((naked)) Hwi_enableFxn()
             "mrs r0, cpsr_cf\n\t"
             "cpsie i\n\t"
             "bx lr"
+            ::: "memory"
             );
 }
 #endif

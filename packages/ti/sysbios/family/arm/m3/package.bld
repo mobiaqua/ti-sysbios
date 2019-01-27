@@ -83,6 +83,9 @@ var trgFilter = {
     list: [ "gnu.targets.arm.M3",
             "gnu.targets.arm.M4",
             "gnu.targets.arm.M4F",
+            "ti.targets.arm.clang.M3",
+            "ti.targets.arm.clang.M4",
+            "ti.targets.arm.clang.M4F",
           ]
 };
 
@@ -116,6 +119,9 @@ BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
 Pkg.otherFiles = [ "package.bld", "linkcmd.xdt", 
                    "Hwi__epilogue.h", "Hwi__prologue.h",
+                   "TimestampProvider__prologue.h",
+                   "TimestampProvider__epilogue.h",
+                   "TimestampProvider_svc.c",
                    "Hwi_smp.c",
                    "Hwi_link.xdt", "doc-files",
                    "Hwi.xml", "Timer.xml" ];

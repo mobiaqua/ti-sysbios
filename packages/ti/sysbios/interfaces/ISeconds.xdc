@@ -77,4 +77,14 @@ interface ISeconds
      *  Note: This function is non-reentrant.
      */
     Void set(UInt32 seconds);
+
+    /*!
+     *  ======== setTime ========
+     *  Update the real time clock with the number of seconds and nanoseconds
+     *  that have elapsed since 1970 (the Unix epoch).  The Seconds_Time
+     *  structure passed to setTime() contains the seconds and nanoseconds
+     *  to set the real time clock to.  This API can be called instead
+     *  of Seconds_set(), if finer granularity of the time is required.
+     */
+    UInt32 setTime(ISeconds.Time *ts);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -155,7 +155,7 @@ module HeapTrack inherits xdc.runtime.IHeap {
      *  not be directly accessing them.
      */
     struct Tracker {
-        UInt32 scribble;
+        UArg scribble;
         Queue.Elem queElem;
         SizeT size;
         UInt32 tick;
@@ -167,7 +167,7 @@ module HeapTrack inherits xdc.runtime.IHeap {
      *  @_nodoc
      *  Constant used to help detect over-writing of a buffer
      */
-    const UInt32 STARTSCRIBBLE = 0xa5a5a5a5;
+    const UArg STARTSCRIBBLE = 0xa5a5a5a5;
 
     /*!
      *  ======== printTask ========
@@ -235,7 +235,7 @@ internal:
      *  Using a non-zero constant in the free to aid in the development
      *  of this module.
      */
-    const UInt32 NOSCRIBBLE = 0x05101920;
+    const UArg NOSCRIBBLE = 0x05101920;
 
     /*
      *  ======== printTrack ========

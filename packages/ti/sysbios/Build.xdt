@@ -69,12 +69,5 @@
     }
 
     tplt.genFile(outputDir + "/makefile", this, [Program.build.target]);
-
-    if ((Program.build.target.name.match(/430/))
-      && (BIOS.buildingAppLib == true)) {
-        print("generating custom ti.sysbios.family.msp430 Hwi stubs ... ");
-        var tplt = xdc.loadTemplate(this.$package.packageBase + "family/msp430/Hwi.xdt");
-        tplt.genFile(outputDir + "/HwiFuncs.c", this, [Program.build.target]);
-    }
 %%}
 %}

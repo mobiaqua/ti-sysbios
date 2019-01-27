@@ -310,9 +310,9 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
         Ptr         halHwiHandle;
         String      label;
         Int         intNum;
-        String      absolutePriority;
-        UInt        relativeGrpPriority;
-        UInt        relativeSubPriority;
+        String      absPri;
+        UInt        relGrpPri;
+        UInt        relSubPri;
         String      fxn;
         UArg        arg;
     };
@@ -325,14 +325,15 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
         Ptr         halHwiHandle;
         String      label;
         Int         intNum;
-        String      absolutePriority;
-        UInt        relativeGrpPriority;
-        UInt        relativeSubPriority;
+        String      absPri;
+        UInt        relGrpPri;
+        UInt        relSubPri;
         String      fxn;
         UArg        arg;
         Ptr         irp;
-        Bool        enabled;
-        Bool        pending;
+        String      enabled;
+        String      pending;
+        String      active;
         String      triggerSensitivity;
     };
 
@@ -543,10 +544,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
         UInt32 IGRPMODR0;       /*! 0x0D00 Interrupt Group Modifier Register */
         UInt32 hole10[63];      /*! 0x0D04-0x0DFC */
         UInt32 NSACR;           /*! 0x0E00 NonSecure Access Control Register */
-        UInt32 hole11[11391];   /*! 0x0E04-0xBFFC */
-        UInt32 MISCSTATUSR;     /*! 0xC000 Miscellaneous Status Register */
-        UInt32 hole12[31];      /*! 0xC004-0xC07C */
-        UInt32 PPISR;           /*! 0xC080 PPI Status Register */
     };
 
     /*!
@@ -854,6 +851,12 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     Void init();
 
     /*!
+     *  @_nodoc
+     *  ======== initIntControllerCoreX ========
+     */
+    Void initIntControllerCoreX();
+
+    /*!
      *  ======== intAffinity ========
      *  SMP Interrupt affinity mappings
      *
@@ -867,7 +870,30 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *
      *  @p(code)
      *     var Hwi = xdc.useModule('ti.sysbios.family.arm.gicv3.Hwi');
-     *     Hwi.intAffinity[<intNum>] = {aff0: 1, aff1: 0,
+     *     Hwi.intAffinity[<intNum>] = 1;
+     *  @p
+     *
+     *  @a(constraints)
+     *  Interrupt numbers below 32 are ignored. This config param only
+     *  allows routing interrupt numbers greater than or equal to #32.
+     */
+    metaonly config UInt8 intAffinity[];
+
+    /*!
+     *  ======== intRouting ========
+     *  SMP Interrupt routing mappings
+     *
+     *  In SMP mode, this array maps the interrupt number to the
+     *  core or cores it is to be tied to. By default, all interrupts
+     *  are routed to Core0.
+     *
+     *  For example, to route Timer 1 (from the ti.sysbios.timers.dmtimer.Timer)
+     *  module interrupt to core 1 rather than core 0, add the following to
+     *  your config file:
+     *
+     *  @p(code)
+     *     var Hwi = xdc.useModule('ti.sysbios.family.arm.gicv3.Hwi');
+     *     Hwi.intRouting[<intNum>] = {aff0: 1, aff1: 0,
                                         routingMode: Hwi.RoutingMode_NODE};
      *  @p
      *
@@ -875,7 +901,7 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  Interrupt numbers below 32 are ignored. This config param only
      *  allows routing interrupt numbers greater than or equal to #32.
      */
-    metaonly config IntAffinity intAffinity[];
+    metaonly config IntAffinity intRouting[];
 
     /*!
      *  @_nodoc
@@ -985,6 +1011,8 @@ internal:   /* not for client use */
      */
     config UInt NUM_GICD_ENABLE_REGS;
 
+    config SizeT isrStackSize;
+
     /*
      *  ======== initGicd ========
      *  Flag determines whether to initialize global gic distributor
@@ -1024,7 +1052,7 @@ internal:   /* not for client use */
      *  ======== dispatchIRQC ========
      *  Interrupt Dispatcher C code
      */
-    Void dispatchIRQC(Irp irp);
+    Void dispatchIRQC(Irp irp, Bool rootISR, Char *taskSP);
 
     /*!
      *  ======== excDumpContext ========
@@ -1039,7 +1067,7 @@ internal:   /* not for client use */
     /*
      *  ======== initIntController ========
      */
-    Void initIntController();
+    Void initIntControllerCore0();
 
     /*
      *  ======== initStacks ========
@@ -1100,6 +1128,8 @@ internal:   /* not for client use */
     struct Module_State {
         Char         *isrStack[];     /* Points to isrStack address */
         Char          hwiStack[][];   /* IRQ stack for each core */
+        UInt          irp[];          /* temp irp storage for IRQ handler */
+        Char         *taskSP[];       /* Interrupted Task's Stack Pointer */
         Ptr           isrStackSize;   /* = Program.stack */
                                       /*
                                        * !!! The above three fields MUST be kept
@@ -1111,7 +1141,6 @@ internal:   /* not for client use */
         UInt32        icfgr[];        /* Initial Trigger sensitivity values */
         UInt          spuriousInts;   /* Count of spurious interrupts */
         UInt          lastSpuriousInt;/* Most recent spurious interrupt */
-        UInt          irp;            /* temp irp storage for IRQ handler */
         Ptr           isrStackBase;   /* = __TI_STACK_BASE */
         Handle        dispatchTable[];/* dispatch table */
         volatile UInt curIntId;       /* current Interrupt Id */

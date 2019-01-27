@@ -202,6 +202,13 @@ module Cache inherits ti.sysbios.interfaces.ICache
      */
     override Void wbInvAll();
 
+    /*!
+     *  @_nodoc
+     *  ======== startup ========
+     *  startup function to enable cache early during climb-up
+     */
+    Void startup();
+
 internal:
 
     /*
@@ -213,12 +220,6 @@ internal:
      *  is registered as a first function.
      */
     Void initModuleState();
-
-    /*
-     *  ======== startup ========
-     *  startup function to enable cache early during climb-up
-     */
-    Void startup();
 
     /*
      *  ======== disableL1D ========

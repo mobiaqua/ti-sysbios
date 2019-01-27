@@ -90,10 +90,6 @@ function module$use()
     Build = xdc.module('ti.sysbios.Build');
     Reset = xdc.useModule('xdc.runtime.Reset');
 
-    if (BIOS.smpEnabled) {
-        Cache.$logError("This module does not support SMP mode.", Cache);
-    }
-
     /* Enable cache early */
     Reset.fxns[Reset.fxns.length++] = Cache.startup;
 }

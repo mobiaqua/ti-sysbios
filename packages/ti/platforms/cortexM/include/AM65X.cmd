@@ -33,8 +33,8 @@
 MEMORY
 {
     IRAM  (RWX) : origin = 0x00040000, length = 0x00020000
-    DRAM0 (RWX) : origin = 0x00080000, length = 0x00004000
-    DRAM1 (RWX) : origin = 0x00084000, length = 0x00004000
+    DRAM0 (RWX) : origin = 0x00070000, length = 0x00010000
+    DRAM1 (RWX) : origin = 0x00080000, length = 0x00004000
 }
 
 /* Section allocation in memory */

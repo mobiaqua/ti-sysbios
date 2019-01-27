@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,7 @@
 #pragma FUNC_EXT_CALLED(free);
 #pragma FUNC_EXT_CALLED(calloc);
 #pragma FUNC_EXT_CALLED(realloc);
+#pragma FUNC_EXT_CALLED(aligned_alloc);
 
 #define ATTRIBUTE
 
@@ -96,9 +97,6 @@
 
 /*
  * Header is a union to make sure that the size is a power of 2.
- *
- * On the MSP430 small model (MSP430X), size_t is 2 bytes, which makes
- * the size of this struct 6 bytes.
  */
 typedef union Header {
     struct {
@@ -117,6 +115,7 @@ Void *ti_sysbios_rts_MemAlloc_memalign(SizeT alignment, SizeT size);
 Void *ti_sysbios_rts_MemAlloc_calloc(SizeT nmemb, SizeT size);
 Void ti_sysbios_rts_MemAlloc_free(Void *ptr);
 Void *ti_sysbios_rts_MemAlloc_realloc(Void *ptr, SizeT size);
+Void *ti_sysbios_rts_MemAlloc_aligned_alloc(SizeT alignment, SizeT size);
 
 /*
  *  ======== malloc ========
@@ -184,11 +183,26 @@ Void ATTRIBUTE *realloc(Void *ptr, SizeT size)
     return (ret);
 }
 
-#define memalign    ti_sysbios_rts_MemAlloc_memalign
-#define malloc      ti_sysbios_rts_MemAlloc_malloc
-#define calloc      ti_sysbios_rts_MemAlloc_calloc
-#define free        ti_sysbios_rts_MemAlloc_free
-#define realloc     ti_sysbios_rts_MemAlloc_realloc
+/*
+ *  ======== aligned_alloc ========
+ */
+Void ATTRIBUTE *aligned_alloc(SizeT alignment, SizeT size)
+{
+    Void *ret;
+
+    ti_sysbios_hal_SysCall_enterPrivMode();
+    ret = ti_sysbios_rts_MemAlloc_memalign(alignment, size);
+    ti_sysbios_hal_SysCall_restorePrivMode();
+
+    return (ret);
+}
+
+#define memalign        ti_sysbios_rts_MemAlloc_memalign
+#define malloc          ti_sysbios_rts_MemAlloc_malloc
+#define calloc          ti_sysbios_rts_MemAlloc_calloc
+#define free            ti_sysbios_rts_MemAlloc_free
+#define realloc        	ti_sysbios_rts_MemAlloc_realloc
+#define aligned_alloc   ti_sysbios_rts_MemAlloc_aligned_alloc
 
 %    }
 
@@ -237,15 +251,13 @@ Void ATTRIBUTE *memalign(SizeT alignment, SizeT size)
     Void                        *tmp;
     xdc_runtime_Error_Block     eb;
 
-    if (alignment < sizeof(Header)) {
-        alignment = sizeof(Header);
-    }
-
-    /*
-     * return NULL if size is 0, or alignment is not a power of 2
-     */
+    /* return NULL if size is 0, or alignment is not a power-of-2 */
     if (size == 0 || (alignment & (alignment - 1))) {
         return (NULL);
+    }
+
+    if (alignment < sizeof(Header)) {
+        alignment = sizeof(Header);
     }
 
     xdc_runtime_Error_init(&eb);
@@ -336,6 +348,18 @@ Void ATTRIBUTE *realloc(Void *ptr, SizeT size)
     return (retval);
 }
 
+/*
+ *  ======== aligned_alloc ========
+ */
+Void ATTRIBUTE *aligned_alloc(SizeT alignment, SizeT size)
+{
+    Void *retval;
+
+    retval = memalign(alignment, size);
+
+    return (retval);
+}
+
 %}
 %else {  /* BIOS.heapSize = 0, NULL implementations since there is no heap */
 /*
@@ -378,6 +402,13 @@ Void ATTRIBUTE *realloc(Void *ptr, SizeT size)
     return (NULL);
 }
 
+/*
+ *  ======== aligned_alloc ========
+ */
+Void ATTRIBUTE *aligned_alloc(SizeT alignment, SizeT size)
+{
+    return (NULL);
+}
 %}
 #if defined(__GNUC__) && !defined(__ti__)
 

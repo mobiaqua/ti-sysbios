@@ -126,7 +126,7 @@ function instance$meta$init(name)
     var nameParams = name.split(":");
 
     if (nameParams.length > maxParamsLength) {
-        this.$module.$logWarning("The platform ti.platforms.cortexR accepts "
+        this.$module.$logWarning("The platform ti.platforms.cortexA accepts "
             + "only " + maxParamsLength + " instance parameters in its name. "
             + "The supplied string '" + name + "' contains additional values, "
             + "which will be ignored.", this, this.$module.nameFormat);
@@ -173,7 +173,8 @@ function instance$meta$init(name)
 
         /* figure out the clock configuration */
         if (this.deviceName.match(/^SIMMAXWELL/) ||
-            this.deviceName.match(/^AM65X/)) {
+            this.deviceName.match(/^AM65/) ||
+            this.deviceName.match(/^J7ES/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexa53";
             this.CPU.deviceName = "CortexA";
             this.CPU.clockRate = 800;

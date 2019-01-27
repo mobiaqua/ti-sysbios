@@ -48,21 +48,21 @@ function getAsmFiles(targetName)
         case "ti.targets.arm.elf.M3":
         case "ti.targets.arm.elf.M4":
         case "ti.targets.arm.elf.M4F":
-        case "ti.targets.arm.clang.M33F":
             return (["Clobber_asm.sv7M"]);
             break;
 
         case "gnu.targets.arm.M3":
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
-        case "gnu.targets.arm.M33F":
+        case "ti.targets.arm.clang.M3":
+        case "ti.targets.arm.clang.M4":
+        case "ti.targets.arm.clang.M4F":
             return (["Clobber_asm_gnu.sv7M"]);
             break;
     
         case "iar.targets.arm.M3":
         case "iar.targets.arm.M4":
         case "iar.targets.arm.M4F":
-        case "iar.targets.arm.M33":
             return (["Clobber_asm_iar.sv7M"]);
             break; 
 

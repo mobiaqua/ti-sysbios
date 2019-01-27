@@ -87,11 +87,17 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 
     for (i = 0; i < aclLength; i++) {
         /* Validate ACL entry */
-        // TODO
+        // TODO enumerate return codes
 
         /* Read user supplied ACL entry */
         baseAddress = acl[i].baseAddress;
         length = acl[i].length;
+
+        /* verify base address is a multiple of length */
+        if (((UInt32)baseAddress & (length - 1)) != 0) {
+            return (-3);
+        }
+
         flags = acl[i].flags;
 
 #if defined(__TI_COMPILER_VERSION__)
@@ -100,7 +106,7 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 
         regionAttrs = MemProtect_parseFlags(flags);
         if (regionAttrs == (~0)) {
-            return (-3);
+            return (-4);
         }
 
         /* Validate address range falls in unprivileged address space */
@@ -118,17 +124,9 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
     return (0);
 }
 
-MemProtect_Handle MemProtect_createDomain(MemProtect_Acl *acl, UInt16 aclLength)
+Int MemProtect_destructDomain(MemProtect_Struct *obj)
 {
-    return (NULL);
-}
-
-Void MemProtect_deleteDomain(MemProtect_Handle handle)
-{
-}
-
-Void MemProtect_destructDomain(MemProtect_Struct *obj)
-{
+    return (0);
 }
 
 UInt32 MemProtect_parseFlags(UInt32 flags)

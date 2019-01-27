@@ -20,30 +20,9 @@
  */
 
 /*
- *  ======== MSP430 ========
- */
-#if defined(__MSP430__)
-#  if defined(__MSP430X__)
-     /* --silicon_version=mspx is specified */
-#    if defined(__LARGE_CODE_MODEL__)
-       /* --code_model=large is specified */
-#      define xdc_target_name__ MSP430X
-#    else
-#      define xdc_target_name__ MSP430X_small
-#    endif
-#  else
-#    define xdc_target_name__ MSP430
-#  endif
-#  if __TI_EABI__ == 1
-#    define xdc_target_types__ ti/targets/msp430/elf/std.h
-#  else
-#    define xdc_target_types__ ti/targets/msp430/std.h
-#  endif
-
-/*
  *  ======== TMS320C6X ========
  */
-#elif defined(_TMS320C6X)
+#if defined(_TMS320C6X)
 #  if __TI_EABI__ == 1
      /* set to 1 if compiling for EABI (ELF) and is set to 0 otherwise. */
 #    define xdc_target_types__ ti/targets/elf/std.h
@@ -211,7 +190,7 @@
 #  endif
 #endif
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 7-20-2018 13:58:59; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets; 1, 0, 3,2; 12-17-2018 15:56:59; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

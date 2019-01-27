@@ -83,10 +83,6 @@ package ti.sysbios.hal;
  *    <!--                                                         -->
  *    <tr><td> MemProtect_constructDomain </td><td>   N   </td><td>   N   </td>
  *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
- *    <tr><td> MemProtect_createDomain </td><td>   N    </td><td>   N   </td>
- *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
- *    <tr><td> MemProtect_deleteDomain </td><td>   N    </td><td>   N   </td>
- *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
  *    <tr><td> MemProtect_destructDomain </td><td>   N    </td><td>   N   </td>
  *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
  *    <tr><td colspan="6"> Definitions: <br />
@@ -164,10 +160,6 @@ package ti.sysbios.hal;
  *  @p(code)
  *  Int MemProtect_constructDomain(MemProtect_Struct *obj, struct MemProtect_Acl *acl, UInt16 aclLength)
  * 
- *  MemProtect_Handle MemProtect_createDomain(MemProtect_Acl *acl, UInt16 aclLength)
- *
- *  Void MemProtect_deleteDomain(MemProtect_Handle handle)
- *
  *  Void MemProtect_destructDomain(MemProtect_Struct *obj)
  *  @p
  *
@@ -176,17 +168,15 @@ package ti.sysbios.hal;
  *  @p(html)
  *  <h3> MemProtect_constructDomain() </h3>
  *  @p
- *  Create execution domain with given access control permissions
+ *  Construct an execution domain with given access control permissions
  *  @p(code)
  *  Int MemProtect_constructDomain(MemProtect_Struct *obj, struct MemProtect_Acl *acl, UInt16 aclLength)
  *  @p
  *  @p(html)
  *  <h4> ARGUMENTS </h4>
- *  @p
+ *  @p(code)
  *  obj - Pointer to a statically created MemProtect object of type MemProtect_Struct
- *
  *  acl - Pointer to an array of ACL entries. ACL entries are of type MemProtect_Acl
- *
  *  aclLength - Length of ACL entry array
  *  @p(html)
  *  <h4> RETURNS </h4>
@@ -195,31 +185,29 @@ package ti.sysbios.hal;
  *  @p(html)
  *  <h4> DETAILS </h4>
  *  @p
- *  This function creates an execution domain with the access permissions
+ *  This function constructs an execution domain with the access permissions
  *  specified by the Access Control List (ACL) passed to it.
  *
  *  @p(html)
- *  <h3> MemProtect_createDomain() </h3>
+ *  <br/>
+ *  <h3> MemProtect_destructDomain() </h3>
  *  @p
- *  Create execution domain with given access control permissions
+ *  Destruct execution domain
  *  @p(code)
- *  MemProtect_Handle MemProtect_createDomain(MemProtect_Acl *acl, UInt16 aclLength)
+ *  Int MemProtect_destructDomain(MemProtect_Struct *obj)
  *  @p
  *  @p(html)
  *  <h4> ARGUMENTS </h4>
- *  @p
- *  acl - Pointer to an array of ACL entries. ACL entries are of type MemProtect_Acl
- *
- *  aclLength - Length of ACL entry array
+ *  @p(code)
+ *  obj - Pointer to a statically created MemProtect object of type MemProtect_Struct
  *  @p(html)
  *  <h4> RETURNS </h4>
  *  @p
- *  Returns MemProtect handle on success. Returns null in case of an error.
+ *  Returns 0 on success. A negative return value indicates an error occurred.
  *  @p(html)
  *  <h4> DETAILS </h4>
  *  @p
- *  This function creates an execution domain with the access permissions
- *  specified by the Access Control List (ACL) passed to it.
+ *  This function destructs a previously constructed execution domain.
  */
 
 @CustomHeader

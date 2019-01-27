@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -215,7 +215,7 @@ function instance$meta$init(name)
         }
 
         if (this.deviceName.match(/2837/) || this.deviceName.match(/2807/) ||
-        this.deviceName.match(/28004/)) {
+            this.deviceName.match(/28004/) || this.deviceName.match(/2838/)) {
             this.$private.linkerFile = xdc.findFile("ti/platforms/tms320x28/"
                 + "include/" + this.deviceName + ".cmd");
         }
@@ -266,6 +266,9 @@ function instance$meta$init(name)
         var Boot = xdc.useModule('ti.catalog.c2800.initF2837x.Boot');
 
         Boot.configureClocks = true;
+    }
+    else if (this.deviceName.match(/2838/)) {
+        var Boot = xdc.useModule('ti.sysbios.family.c28.f2838x.init.Boot');
     }
     else {
         var Boot = xdc.useModule('ti.catalog.c2800.init.Boot');

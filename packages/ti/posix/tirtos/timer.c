@@ -101,11 +101,6 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
         return (-1);
     }
 
-    pthread_attr_init(&pDefAttrs);
-
-    pAttrs = (evp->sigev_notify_attributes != NULL) ?
-        evp->sigev_notify_attributes : &pDefAttrs;
-
     Error_init(&eb);
 
     *timerid = (timer_t)NULL;
@@ -142,11 +137,23 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
             return (-1);
         }
 
+        if (evp->sigev_notify_attributes != NULL) {
+            pAttrs = evp->sigev_notify_attributes;
+        }
+        else {
+            pthread_attr_init(&pDefAttrs);
+            pAttrs = &pDefAttrs;
+        }
+
         /* Timer notification threads must be detached */
         pthread_attr_setdetachstate(pAttrs, PTHREAD_CREATE_DETACHED);
 
         retc = pthread_create(&(timer->thread), pAttrs, timerThreadFxn,
                 (void *)timer);
+
+        if (pAttrs == &pDefAttrs) {
+            pthread_attr_destroy(&pDefAttrs);
+        }
 
         if (retc != 0) {
             timer_delete((timer_t)timer);

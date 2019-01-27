@@ -61,6 +61,7 @@ VECTOR_ENTRY el1SyncSP0
         ldr     x2, =ti_sysbios_family_arm_gicv3_Hwi_excHandler__I
         br      x2
 
+/* here on root IRQ */
 VECTOR_ENTRY el1IrqSP0
         msr     spsel, #0            /* switch to task stack */
         PUSH_CALLER_SAVE_CPU_REGS sp /* save cpu scratch regs */
@@ -105,6 +106,7 @@ VECTOR_ENTRY el1SyncSPx
         ldr     x2, =ti_sysbios_family_arm_gicv3_Hwi_excHandler__I
         br      x2
 
+/* here on nested IRQ */
 VECTOR_ENTRY el1IrqSPx
         PUSH_CALLER_SAVE_CPU_REGS sp /* save cpu scratch regs */
 #if defined(__ARM_FP)

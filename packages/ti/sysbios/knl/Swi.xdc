@@ -449,7 +449,7 @@ module Swi
      *  target-specific and depends on the number of
      *  bits in a UInt data type. For 6x and ARM devices
      *  the maximum number of priorities is therefore 32.
-     *  For 28x, 55x, and MSP430 devices, the maximum number of
+     *  For the C28x, the maximum number of
      *  priorities is 16.
      */
     config UInt numPriorities = 16;

@@ -103,8 +103,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     /* Keystone3 devices */
     deviceTable["SIMFLEMING"] = deviceTable["RM57D8XX"];
     deviceTable["SIMMAXWELL"] = deviceTable["RM57D8XX"];
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"]     = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]       = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -471,31 +471,14 @@ function viewMpuRegionAttrs(view)
         print(e.toString());
     }
 
-    /* Get the module state */
-    var mod = rawView.modState;
-
-    /* Retrieve the MMU descriptor table */
-    try {
-        mpuRegionEntry = Program.fetchArray(
-            {
-                type: 'xdc.rov.support.ScalarStructs.S_UInt32',
-                isScalar: true
-            },
-            mod.regionEntry,
-            (MPUCfg.numRegions * 3),
-            false);
-    }
-    catch (e) {
-        print(e.toString());
-    }
-
     /* Walk through the level 1 descriptor table */
     for (var i = 0; i < MPUCfg.numRegions; i++) {
         var elem = Program.newViewStruct('ti.sysbios.family.arm.MPU',
                 'MpuRegionAttrsView');
 
-        viewPopulateRegionAttrs(i, elem, mpuRegionEntry[i*3],
-            mpuRegionEntry[i*3 + 1], mpuRegionEntry[i*3 + 2]);
+        viewPopulateRegionAttrs(i, elem, MPUCfg.regionEntry[i].baseAddress,
+                MPUCfg.regionEntry[i].sizeAndEnable,
+                MPUCfg.regionEntry[i].regionAttrs);
 
         /* Add the element to the list. */
         view.elements.$add(elem);

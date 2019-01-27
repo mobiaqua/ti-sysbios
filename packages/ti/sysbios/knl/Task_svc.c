@@ -133,9 +133,9 @@ Void ti_sysbios_knl_Task_restore_SVC(UInt tskKey)
 /*
  *  ======== ti_sysbios_knl_Task_setPri_SVC ========
  */
-UInt ti_sysbios_knl_Task_setPri_SVC(Task_Object *tsk, Int priority)
+Int ti_sysbios_knl_Task_setPri_SVC(Task_Object *tsk, Int priority)
 {
-    UInt ret;
+    Int ret;
 
     SysCall_enterPrivMode();
     ret = Task_setPri(tsk, priority);

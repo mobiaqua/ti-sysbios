@@ -131,7 +131,7 @@ extern void __interrupt _c_int00()
 }
 
 /*
- *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 7-20-2018 14:28:04; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets.arp32.rts; 1, 0, 0,0; 12-18-2018 16:05:59; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

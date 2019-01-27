@@ -34,39 +34,28 @@
 %var Hwi = xdc.module("ti.sysbios.family.arm.v8m.Hwi");
 %if (Program.build.target.$name.match(/elf/)) {
 -u `String(Hwi.resetFunc).substr(1)`
-%    if (Hwi.resetVectorAddress != Hwi.vectorTableAddress) {
+%   if (Hwi.resetVectorAddress != Hwi.vectorTableAddress) {
 --retain "*(.resetVecs)"
-%    }
+%   }
 %}
 %else if (Program.build.target.$name.match(/gnu/)) {
-%    if (Hwi.isTiva == true) {
-    _intvecs_base_address = `Hwi.resetVectorAddress`;
-%        if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
-    _vtable_base_address = `Hwi.vectorTableAddress`;
-%        }
-%    }
-%    else {
-%        if (Program.build.target.$name.match(/gnu/)) {
+%   if (Hwi.isTiva == true) {
+_intvecs_base_address = `Hwi.resetVectorAddress`;
+%       if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
+_vtable_base_address = `Hwi.vectorTableAddress`;
+%       }
+%   }
+%   else {
     SECTIONS {
         .resetVecs (`Hwi.resetVectorAddress`) : AT (`Hwi.resetVectorAddress`) {KEEP(*(.resetVecs))}
-%            if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
+%       if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
         .vecs (`Hwi.vectorTableAddress`) : AT (`Hwi.vectorTableAddress`) {KEEP(*(.vecs))}
-%            }
-%            else {
+%       }
+%       else {
         .vecs (DSECT) : {*(.vecs)}
-%            }
+%       }
     }
-%        }
-%        else {
-    .resetVecs (`Hwi.resetVectorAddress`) : AT (`Hwi.resetVectorAddress`) {KEEP(*(.resetVecs))}
-%            if (Hwi.vectorTableAddress != Hwi.resetVectorAddress) {
-    .vecs (`Hwi.vectorTableAddress`) : AT (`Hwi.vectorTableAddress`) {KEEP(*(.vecs))}
-%            }
-%            else {
-    .vecs (DSECT) : {*(.vecs)}
-%            }
-%        }
-%    }
+%   }
 %}
 %else if (Program.build.target.$name.match(/iar/)) {
 --entry `String(Hwi.resetFunc).substr(1)`
@@ -77,4 +66,7 @@
 %}
 %else {
 ti_sysbios_family_arm_v8m_Hwi_nvic = 0xe000e000;
+%}
+%if (Program.build.target.$name.match(/clang/)) {
+--diag_suppress=10229 // suppress compression warning
 %}

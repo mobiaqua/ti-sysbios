@@ -39,7 +39,15 @@
 #include <xdc/runtime/Startup.h>
 
 #include <ti/sysbios/hal/Hwi.h>
+
+#if (ti_sysbios_BIOS_smpEnabled__D)
 #include <ti/sysbios/family/arm/v8a/Cache.h>
+#include <ti/sysbios/family/arm/v8a/smp/Core.h>
+#else
+#include <ti/sysbios/family/arm/v8a/Cache.h>
+#include <ti/sysbios/family/arm/v8a/Core.h>
+#endif
+
 
 #include "package/internal/Mmu.xdc.h"
 
@@ -427,14 +435,14 @@ Void Mmu_startup()
     UInt i, tableLen = Mmu_configInfo.tableLength;
 
     /* Initialize MAIR */
-    Mmu_setMAIR(0, Mmu_MAIR0);
-    Mmu_setMAIR(1, Mmu_MAIR1);
-    Mmu_setMAIR(2, Mmu_MAIR2);
-    Mmu_setMAIR(3, Mmu_MAIR3);
-    Mmu_setMAIR(4, Mmu_MAIR4);
-    Mmu_setMAIR(5, Mmu_MAIR5);
-    Mmu_setMAIR(6, Mmu_MAIR6);
-    Mmu_setMAIR(7, Mmu_MAIR7);
+    Mmu_setMAIRAsm(0, Mmu_MAIR0);
+    Mmu_setMAIRAsm(1, Mmu_MAIR1);
+    Mmu_setMAIRAsm(2, Mmu_MAIR2);
+    Mmu_setMAIRAsm(3, Mmu_MAIR3);
+    Mmu_setMAIRAsm(4, Mmu_MAIR4);
+    Mmu_setMAIRAsm(5, Mmu_MAIR5);
+    Mmu_setMAIRAsm(6, Mmu_MAIR6);
+    Mmu_setMAIRAsm(7, Mmu_MAIR7);
 
     if (Mmu_granuleSize == Mmu_GranuleSize_4KB) {
         tcr = Mmu_GRANULE_SIZE_4KB;
@@ -458,22 +466,35 @@ Void Mmu_startup()
 
     Mmu_setTCR(tcr);
 
-    /* Initialize table array */
-    for (i = 0; i < Mmu_tableArrayLen; i++) {
-        Mmu_tableArray[tableLen * i] = i + 1;
-    }
-    Mmu_tableArray[tableLen * (i - 1)] = (~0);
-    Mmu_tableArraySlot = 0;
+    /*
+     *  When running in SMP mode, the MMU table init should be done
+     *  by core 0 (master) only.
+     *
+     *  If not running in SMP mode, Core_getId() always returns 0,
+     *  and the below init code will be run.
+     */
+    if (Core_getId() == 0) {
+        /* Initialize table array */
+        for (i = 0; i < Mmu_tableArrayLen; i++) {
+            Mmu_tableArray[tableLen * i] = i + 1;
+        }
+        Mmu_tableArray[tableLen * (i - 1)] = (~0);
+        Mmu_tableArraySlot = 0;
 
-    /* Allocate level1 Table */
-    Mmu_level1Table = Mmu_allocTable();
+        /* Allocate level1 Table */
+        Mmu_level1Table = Mmu_allocTable();
+    }
+
+    /* Install MMU translation tables */
     Mmu_init(Mmu_level1Table);
 
     /*
      * Call init function. This function is part of the application and will
-     * add MMU mappings.
+     * add MMU mappings. If in SMP mode, core 0 has already done this.
      */
-    Mmu_initFunc();
+    if (Core_getId() == 0) {
+        Mmu_initFunc();
+    }
 
     /* Invalidate entire TLB */
     Mmu_tlbInvAll();
@@ -589,3 +610,47 @@ Void Mmu_tlbInvAll()
         ::: "memory"
     );
 }
+
+/*
+ *  ======== Mmu_intFuncDefault ========
+ */
+Void Mmu_initFuncDefault()
+{
+    Bool ret;
+    Mmu_MapAttrs attrs;
+
+    Mmu_initMapAttrs(&attrs);
+
+    attrs.attrIndx = Mmu_AttrIndx_MAIR0;
+    ret = Mmu_map(0x01800000, 0x01800000, 0x00100000, &attrs); /* gicv3       */
+    if (!ret) {
+        goto fail;
+    }
+
+    ret = Mmu_map(0x02400000, 0x02400000, 0x000c0000, &attrs); /* dmtimer     */
+    if (!ret) {
+        goto fail;
+    }
+
+    ret = Mmu_map(0x02800000, 0x02800000, 0x00001000, &attrs); /* uart        */
+    if (!ret) {
+        goto fail;
+    }
+
+    ret = Mmu_map(0x2A430000, 0x2A430000, 0x00001000, &attrs); /* systimer    */
+    if (!ret) {
+        goto fail;
+    }
+
+    attrs.attrIndx = Mmu_AttrIndx_MAIR7;
+    ret = Mmu_map(0x70000000, 0x70000000, 0x00200000, &attrs); /* msmc        */
+    if (!ret) {
+        goto fail;
+    }
+
+    return;
+
+fail:
+    while (1);
+}
+

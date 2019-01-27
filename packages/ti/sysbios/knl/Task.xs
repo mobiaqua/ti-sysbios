@@ -44,6 +44,7 @@ var Settings = null;
 var Clock = null;
 var Core = null;
 var Swi = null;
+var Build = null;
 
 /*
  * ======== getCFiles ========
@@ -659,6 +660,8 @@ function viewInitBasic(view, obj)
     var BIOS = xdc.useModule('ti.sysbios.BIOS');
     var BIOSCfg = Program.getModuleConfig(BIOS.$name);
 
+    var coreId = obj.curCoreId;
+
     if (viewCheckForNullObject(Task, obj)) {
         view.label = "Uninitialized Task object";
         return;
@@ -679,6 +682,7 @@ function viewInitBasic(view, obj)
 
         if (obj.curCoreId == CoreCfg.numCores) {
             view.curCoreId = "X";
+            coreId = 0; /* task has not been assigned to a core yet */
         }
         else {
             view.curCoreId = String(obj.curCoreId);
@@ -720,7 +724,7 @@ function viewInitBasic(view, obj)
         var biosModView = Program.scanModuleView('ti.sysbios.BIOS', 'Module');
         switch (obj.mode) {
             case Task.Mode_RUNNING:
-                if (biosModView.currentThreadType[0] == "Task") {
+                if (biosModView.currentThreadType[coreId] == "Task") {
                     view.mode = "Running";
                 }
                 else {
@@ -733,7 +737,7 @@ function viewInitBasic(view, obj)
                 }
                 else {
                     if ((Number(rawView.modState.curTask) == Number(obj.$addr))) {
-                        if (biosModView.currentThreadType[0] == "Task") {
+                        if (biosModView.currentThreadType[coreId] == "Task") {
                             view.mode = "Running";
                         }
                         else {
@@ -1527,6 +1531,10 @@ function viewInitCallStack()
     var Program = xdc.useModule('xdc.rov.Program');
     var BIOS = xdc.useModule('ti.sysbios.BIOS');
     var BIOSCfg = Program.getModuleConfig(BIOS.$name);
+    if (BIOSCfg.smpEnabled == true) {
+        Core = xdc.useModule("ti.sysbios.hal.Core");
+        var CoreCfg = Program.getModuleConfig(Core.$name);
+    }
 
     var Task = xdc.useModule('ti.sysbios.knl.Task');
 
@@ -1572,10 +1580,19 @@ function viewInitCallStack()
             }
         }
 
+        if (BIOSCfg.smpEnabled == true) {
+            var taskCoreId = taskView.curCoreId;
+            /* If the curCoreId is "don't care", the task isn't running on any core, pretend we're in Task mode */
+            var coreThreadType = (taskCoreId == CoreCfg.numCores) ? "Task" : biosModView.currentThreadType[taskCoreId];
+        }
+        else {
+            var coreThreadType = biosModView.currentThreadType[0];
+        }
+
         /* fetch call stack string from target specific TaskSupport module */
         var bts = Delegate.getCallStack$view(taskView,
-                                             taskState,
-                                             biosModView.currentThreadType[0]);
+                                                taskState,
+                                                coreThreadType);
 
         /*
          * Call stack text returned from getCallStack is one long string

@@ -36,10 +36,10 @@
 #include <xdc/std.h>
 
 #include <xdc/runtime/Types.h>
+
 #include <ti/sysbios/hal/Hwi.h>
 
 #include "package/internal/Seconds.xdc.h"
-
 
 /* Definitions from CC3200 SDK */
 #define HWREG(x)                (*((volatile unsigned long *)(x)))
@@ -99,89 +99,17 @@
         count = count | (UInt64)HWREG(HIB1P2_BASE + HIB1P2_O_HIB_RTC_TIMER_LSW_1P2);
 
 
+static Void getTime(Seconds_Time *ts);
+
 /*
  *  ======== Seconds_get ========
  */
 UInt32 Seconds_get(Void)
 {
-    UInt32 curSeconds;
-    UInt   key;
+    Seconds_Time ts;
 
-    key = Hwi_disable();
-
-    /*
-     *  The CC3200 timer has a frequency of 32768 (2 ** 15), so
-     *  to get seconds, drop the lower 15 bits.
-     */
-    curSeconds = (UInt32)(Seconds_getCount() >> 15);
-
-    curSeconds = curSeconds - Seconds_module->refSeconds +
-        Seconds_module->setSeconds;
-
-    /* Re-enable scheduling */
-    Hwi_restore(key);
-
-    return (curSeconds);
-}
-
-/*
- *  ======== Seconds_getTime ========
- */
-UInt32 Seconds_getTime(Seconds_Time *ts)
-{
-    UInt64 curCount;
-    UInt   key;
-
-    key = Hwi_disable();
-
-    curCount = Seconds_getCount();
-
-    ts->secs = (UInt32)(curCount >> 15) - Seconds_module->refSeconds +
-        Seconds_module->setSeconds;
-
-    ts->nsecs = (UInt32)(1000000000 * (curCount & 0x7FFF) / 32768);
-
-    /* Re-enable scheduling */
-    Hwi_restore(key);
-
-    return (0);
-}
-
-/*
- *  ======== Seconds_set ========
- */
-Void Seconds_set(UInt32 seconds)
-{
-    UInt64        curCount;
-    UInt          key;
-
-    key = Hwi_disable();
-
-    /*
-     *  Start the RTC counter the first time Seconds_set() is called, if
-     *  it is not already running.
-     */
-    if (Seconds_module->refSeconds == 0xffffffff) {
-        /*
-         *  Only start the RTC if it is not already running.
-         */
-        if (!(HWREG(HIB3P3_BASE + HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE) & 0x1)) {
-            /* Enable the timer */
-            HWREG(HIB3P3_BASE + HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE) = 0x1;
-        }
-    }
-
-    curCount = Seconds_getCount();
-
-    /*
-     *  The CC3200 timer has a frequency of 32768 (2 ** 15), so
-     *  to get seconds, drop the lower 15 bits.
-     */
-    Seconds_module->refSeconds = (UInt32)(curCount >> 15);
-    Seconds_module->setSeconds = seconds;
-
-    /* Re-enable scheduling */
-    Hwi_restore(key);
+    Seconds_getTime(&ts);
+    return (ts.secs);
 }
 
 /*
@@ -201,4 +129,108 @@ UInt64 Seconds_getCount()
     curCount = COUNT_WITHIN_TRESHOLD(count[0], count[1], count[2], 1);
 
     return (curCount);
+}
+
+/*
+ *  ======== Seconds_getTime ========
+ */
+UInt32 Seconds_getTime(Seconds_Time *ts)
+{
+    Seconds_Time curTs;
+    UInt         key;
+
+    key = Hwi_disable();
+
+    getTime(&curTs);
+
+    ts->secs = curTs.secs - Seconds_module->refSeconds +
+            Seconds_module->setSeconds;
+    ts->nsecs = curTs.nsecs + Seconds_module->deltaNSecs;
+    if (ts->nsecs >= 1000000000) {
+        ts->secs = ts->secs + 1;
+        ts->nsecs = ts->nsecs - 1000000000;
+    }
+    ts->secs = ts->secs + Seconds_module->deltaSecs;
+
+    Hwi_restore(key);
+
+    return (0);
+}
+
+/*
+ *  ======== Seconds_set ========
+ */
+Void Seconds_set(UInt32 seconds)
+{
+    Seconds_Time ts;
+
+    ts.secs = seconds;
+    ts.nsecs = 0;
+
+    Seconds_setTime(&ts);
+}
+
+/*
+ *  ======== Seconds_setTime ========
+ */
+UInt32 Seconds_setTime(Seconds_Time *ts)
+{
+    Seconds_Time refTs;
+    UInt         key;
+
+    key = Hwi_disable();
+
+    /*
+     *  Start the RTC counter the first time Seconds_set() is called, if
+     *  it is not already running.
+     */
+    if (Seconds_module->refSeconds == 0xffffffff) {
+        /*
+         *  Only start the RTC if it is not already running.
+         */
+        if (!(HWREG(HIB3P3_BASE + HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE) & 0x1)) {
+            /* Enable the timer */
+            HWREG(HIB3P3_BASE + HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE) = 0x1;
+        }
+    }
+
+    getTime(&refTs);
+
+    Seconds_module->setSeconds = ts->secs;
+    Seconds_module->refSeconds = refTs.secs;
+
+    if (refTs.nsecs > ts->nsecs) {
+        Seconds_module->deltaNSecs = 1000000000 + ts->nsecs - refTs.nsecs;
+        Seconds_module->deltaSecs = -1;
+    }
+    else {
+        Seconds_module->deltaNSecs = ts->nsecs - refTs.nsecs;
+        Seconds_module->deltaSecs = 0;
+    }
+
+    Hwi_restore(key);
+
+    return (0);
+}
+
+/*
+ *  ======== getTime ========
+ *  Read the RTC counter and store values in ts.  Call with interrupts
+ *  disabled.
+ */
+static Void getTime(Seconds_Time *ts)
+{
+    UInt64 curCount;
+    UInt   key;
+
+    key = Hwi_disable();
+
+    curCount = Seconds_getCount();
+
+    ts->secs = (UInt32)(curCount >> 15);
+//    ts->nsecs = (UInt32)(1000000000 * (curCount & 0x7FFF) / 32768);
+    ts->nsecs = (UInt32)((1000000000 / 32768) * (curCount & 0x7FFF)); // / 32768);
+
+    /* Re-enable scheduling */
+    Hwi_restore(key);
 }

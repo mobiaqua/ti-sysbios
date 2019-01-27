@@ -50,7 +50,7 @@ function getLibs(prog)
     return (libs);
 }
 /*
- *  @(#) gnu.targets.arm.rtsv8M; 1, 0, 0,0; 7-20-2018 14:26:50; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) gnu.targets.arm.rtsv8M; 1, 0, 0,0; 12-18-2018 16:05:19; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

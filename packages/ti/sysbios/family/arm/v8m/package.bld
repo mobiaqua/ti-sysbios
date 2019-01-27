@@ -42,6 +42,7 @@ var objList = [
     "Hwi_asm_switch_gnu",
     "IntrinsicsSupport_asm_gnu",
     "Power.c",
+    "SAU.c",
     "TaskSupport.c",
     "TaskSupport_asm_gnu",
     "Timer.c",
@@ -69,6 +70,7 @@ var objList = [
     "Hwi_asm_switch_gnu",
     "IntrinsicsSupport_asm_gnu",
     "Power.c",
+    "SAU.c",
     "TaskSupport.c",
     "TaskSupport_asm_gnu",
     "Timer.c",
@@ -94,6 +96,7 @@ var objList = [
     "Hwi_asm_switch_iar",
     "IntrinsicsSupport_asm_iar",
     "Power.c",
+    "SAU.c",
     "TaskSupport.c",
     "TaskSupport_asm_iar",
     "Timer.c",
@@ -112,7 +115,7 @@ BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
 Pkg.otherFiles = [ "package.bld", "linkcmd.xdt", 
                    "Hwi__epilogue.h", "Hwi__prologue.h",
-                   "Hwi_link.xdt",
+                   "Hwi_link.xdt", "SAU_link.xdt",
                    "Hwi.xml" ];
 
 /* include source files in the release package */

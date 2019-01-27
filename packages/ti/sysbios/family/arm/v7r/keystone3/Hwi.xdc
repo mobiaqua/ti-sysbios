@@ -273,9 +273,12 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
             viewMap: [
-                ['Basic', {type: ViewInfo.INSTANCE, viewInitFxn: 'viewInitBasic', structName: 'BasicView'}],
-                ['ChannelMap', {type: ViewInfo.MODULE_DATA, viewInitFxn: 'viewChannelMap', structName: 'ChannelMapView'}],
-                ['Module', {type: ViewInfo.MODULE, viewInitFxn: 'viewInitModule', structName: 'ModuleView'}]
+                ['Basic', {type: ViewInfo.INSTANCE,
+                           viewInitFxn: 'viewInitBasic',
+                           structName: 'BasicView'}],
+                ['Module', {type: ViewInfo.MODULE,
+                            viewInitFxn: 'viewInitModule',
+                            structName: 'ModuleView'}]
             ]
         });
 

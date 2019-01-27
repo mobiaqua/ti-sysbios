@@ -725,7 +725,7 @@ module Task
      *  target specific and depends on the number of
      *  bits in a UInt data type. For 6x and ARM devices
      *  the maximum number of priorities is therefore 32.
-     *  For 28x, 55x, and MSP430 devices, the maximum number of
+     *  For C28x devices, the maximum number of
      *  priorities is 16.
      */
     config UInt numPriorities = 16;
@@ -2025,7 +2025,7 @@ instance:
      *  The new priority should not be zero (0). This priority level is
      *  reserved for the Idle task.
      */
-    UInt setPri(Int newpri);
+    Int setPri(Int newpri);
 
     /*!
      *  ======== stat ========
@@ -2247,6 +2247,11 @@ internal:   /* not for client use */
      *  ======== getObjectCheckValue ========
      */
     UInt32 getObjectCheckValue(Task.Handle handle);
+
+    /*
+     *  ======== enableOtherCores ========
+     */
+    Void enableOtherCores();
 
     /*
      *  ======== startupHookFunc ========

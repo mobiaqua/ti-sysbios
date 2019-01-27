@@ -42,7 +42,6 @@
 #define MemProtect_PRIV_RW_MASK     0x00000030
 
 #define MemProtect_domainCreateDone ti_sysbios_hal_MemProtect_domainCreateDone
-#define MemProtect_staticObj        ti_sysbios_hal_MemProtect_staticObj
 
 extern Ptr _privileged_code_begin;
 extern Ptr _privileged_code_end;
@@ -64,9 +63,6 @@ extern Void MemProtect_init();
 
 /* Track if domain was previously created */
 static Bool MemProtect_domainCreateDone;
-
-/* MemProtect static object */
-static MemProtect_Struct MemProtect_staticObj;
 
 /*
  *  ======== MemProtect_constructDomain ========
@@ -117,33 +113,11 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 }
 
 /*
- *  ======== MemProtect_createDomain ========
- */
-MemProtect_Handle MemProtect_createDomain(MemProtect_Acl *acl, UInt16 aclLength)
-{
-    Int ret;
-
-    ret = MemProtect_constructDomain(&MemProtect_staticObj, acl, aclLength);
-
-    if (ret < 0) {
-        return (NULL);
-    }
-
-    return (&MemProtect_staticObj);
-}
-
-/*
- *  ======== MemProtect_deleteDomain ========
- */
-Void MemProtect_deleteDomain(MemProtect_Handle handle)
-{
-}
-
-/*
  *  ======== MemProtect_destructDomain ========
  */
-Void MemProtect_destructDomain(MemProtect_Struct *obj)
+Int MemProtect_destructDomain(MemProtect_Struct *obj)
 {
+    return (0);
 }
 
 /*
@@ -231,4 +205,16 @@ Bool MemProtect_isDataInKernelSpace(Ptr obj, SizeT size)
     }
 
     return (ret);
+}
+
+#if defined(__IAR_SYSTEMS_ICC__)
+__weak Void DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
+#elif defined(__GNUC__) && !defined(__ti__)
+Bool __attribute__((weak)) DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
+#else
+#pragma WEAK (DMSC_programFirewall)
+Bool DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
+#endif
+{
+    return (FALSE);
 }

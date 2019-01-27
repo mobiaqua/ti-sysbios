@@ -110,7 +110,7 @@ if (xdc.om.$name == "cfg") {
         }
     };
 
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"] = deviceTable["SIMMAXWELL"];
     deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
@@ -125,14 +125,14 @@ function deviceSupportCheck()
     for (device in deviceTable) {
         if (device == Program.cpu.deviceName) {
             return device;
-            }
+        }
     }
 
     /* now look for a wildcard match */
     for (device in deviceTable) {
         if (Program.cpu.deviceName.match(device)) {
             return device;
-            }
+        }
     }
 
     /*
@@ -214,6 +214,8 @@ function module$meta$init()
      */
     Hwi.interrupt.length = Hwi.NUM_INTERRUPTS;
     Hwi.intAffinity.length = Hwi.NUM_INTERRUPTS;
+    Hwi.intRouting.length = Hwi.NUM_INTERRUPTS;
+
     for (var intNum = 0; intNum < Hwi.NUM_INTERRUPTS; intNum++) {
         Hwi.interrupt[intNum].used = false;
         Hwi.interrupt[intNum].fxn = null;
@@ -249,16 +251,21 @@ function module$use()
 {
     BIOS = xdc.useModule('ti.sysbios.BIOS');
     Build = xdc.useModule('ti.sysbios.Build');
+    Reset = xdc.useModule('xdc.runtime.Reset');
+
+    /* Install Hwi_init as a reset function */
+    Reset.fxns[Reset.fxns.length++] = "&ti_sysbios_family_arm_gicv3_Hwi_init__E";
 
     /* Pull smp.Core module only if SMP enabled */
     if (BIOS.smpEnabled) {
-        // FIXME
+        Core = xdc.useModule('ti.sysbios.family.arm.v8a.smp.Core');
+        Hwi.initGicd = true;
     }
     else {
         Core = xdc.useModule('ti.sysbios.family.arm.v8a.Core');
+        Hwi.initGicd = Core.bootMaster;
     }
 
-    Hwi.initGicd = Core.bootMaster;
 
     if (BIOS.smpEnabled) {
         Hwi.gicMap.length = Core.numCores;
@@ -291,8 +298,6 @@ function module$use()
     else {
         Memory = xdc.useModule('xdc.runtime.Memory');
     }
-
-    Reset = xdc.useModule('xdc.runtime.Reset');
 
     xdc.useModule('xdc.runtime.Log');
     xdc.useModule('ti.sysbios.hal.Cache');
@@ -333,8 +338,6 @@ function module$use()
         Hwi.taskRestoreHwi = null;
     }
 
-    /* Install Hwi_init as a reset function */
-    Reset.fxns[Reset.fxns.length++] = "&ti_sysbios_family_arm_gicv3_Hwi_init__E";
 
     /* Compute Minimum and Default priority */
     var Mask = 1 << (8 - Hwi.NUM_PRIORITY_BITS);
@@ -389,6 +392,8 @@ function module$static$init(mod, params)
      */
     isrStackSize = Program.stack & (-align);
 
+    Hwi.isrStackSize = isrStackSize;
+
     if (isrStackSize != Program.stack) {
         Hwi.$logWarning("stack size was adjusted to guarantee proper alignment",
             this, "Program.stack");
@@ -396,12 +401,16 @@ function module$static$init(mod, params)
 
     mod.isrStackBase = $externPtr('__TI_STACK_BASE');
     mod.isrStackSize = isrStackSize;
+    mod.taskSP.length = Core.numCores;
+    mod.irp.length = Core.numCores;
     mod.isrStack.length = Core.numCores;
     mod.hwiStack.length = Core.numCores;
     mod.excActive.length = Core.numCores;
     mod.excContext.length = Core.numCores;
 
     for (var idx = 0; idx < Core.numCores; idx++) {
+        mod.taskSP[idx] = null;
+        mod.irp[idx] = 0;
         mod.isrStack[idx] = null;
         if (idx == 0) {
             /* Use ".stack" for Core 0 */
@@ -424,19 +433,22 @@ function module$static$init(mod, params)
     mod.spuriousInts = 0;
     mod.lastSpuriousInt = 0;
 
-    mod.irp = 0;
-
     mod.dispatchTable.length = Hwi.NUM_INTERRUPTS;
     mod.intAffinity.length = Hwi.NUM_INTERRUPTS;
 
     for (var intNum = 0; intNum < Hwi.NUM_INTERRUPTS; intNum++) {
         mod.dispatchTable[intNum] = null;
         // TODO should we validate the affinity ???
-        if (Hwi.intAffinity[intNum].routingMode != undefined) {
-            mod.intAffinity[intNum].aff0 = Hwi.intAffinity[intNum].aff0;
-            mod.intAffinity[intNum].aff1 = Hwi.intAffinity[intNum].aff1;
+        if (Hwi.intRouting[intNum].routingMode != undefined) {
+            mod.intAffinity[intNum].aff0 = Hwi.intRouting[intNum].aff0;
+            mod.intAffinity[intNum].aff1 = Hwi.intRouting[intNum].aff1;
             mod.intAffinity[intNum].routingMode =
-                Hwi.intAffinity[intNum].routingMode;
+                Hwi.intRouting[intNum].routingMode;
+        }
+        else if (Hwi.intAffinity[intNum] != undefined) {
+            var aff = Hwi.intAffinity[intNum];
+            mod.intAffinity[intNum] = {aff0: aff & 1, aff1: (aff & 2) > 1,
+                routingMode: Hwi.RoutingMode_NODE};
         }
         else {
             /* By default, all interrupts are routed to Cluster 0 Core 0 */
@@ -580,10 +592,10 @@ function viewInitBasic(view, obj)
 
     view.halHwiHandle =  halHwi.viewGetHandle(obj.$addr);
     view.label = Program.getShortName(obj.$label);
-    view.absolutePriority = "0x" +
+    view.absPri = "0x" +
         Number(obj.priority).toString(16).toUpperCase();
-    view.relativeGrpPriority = (obj.priority >> (modCfg.BPR + 1));
-    view.relativeSubPriority = (obj.priority >> (8 - modCfg.NUM_PRIOIRTY_BITS))
+    view.relGrpPri = (obj.priority >> (modCfg.BPR + 1));
+    view.relSubPri = (obj.priority >> (8 - modCfg.NUM_PRIOIRTY_BITS))
         & SubPriorityMask;
     var fxn = Program.lookupFuncName(Number(obj.fxn));
     view.fxn = fxn[0];
@@ -608,6 +620,42 @@ function viewInitBasic(view, obj)
 }
 
 /*
+ *  ======== viewGicMapFetch ========
+ *  Once per halt, fetch current gics contents
+ */
+function viewGicMapFetch(that)
+{
+    var Hwi = xdc.useModule('ti.sysbios.family.arm.gicv3.Hwi');
+    var BIOS = xdc.useModule('ti.sysbios.BIOS');
+    var biosModConfig = Program.getModuleConfig(BIOS.$name);
+
+    if (biosModConfig.smpEnabled == true) {
+        var Core = xdc.useModule('ti.sysbios.family.arm.v8a.smp.Core');
+        var coreModConfig = Program.getModuleConfig(Core.$name);
+        var numCores = coreModConfig.numCores;
+    }
+    else {
+        var numCores = 1;
+    }
+ 
+    var modCfg = Program.getModuleConfig('ti.sysbios.family.arm.gicv3.Hwi');
+    
+    try {
+        if (that.GicMap === undefined) {
+            that.GicMap = Program.fetchArray(
+                                                Hwi.GicRegisterMap$fetchDesc,
+                                                Program.getSymbolValue("ti_sysbios_family_arm_gicv3_Hwi_gicMap__A"),
+                                                numCores,
+                                                false
+                                           );
+        }
+    }
+    catch (e) {
+        print("Error: Problem fetching GICS Registers: " + e.toString());
+    }
+}
+
+/*
  *  ======== viewGicdFetch ========
  *  Once per halt, fetch current gicd contents
  *  Called from viewInitModule()
@@ -626,7 +674,7 @@ function viewGicdFetch(that)
         }
     }
     catch (e) {
-        print("Error: Problem fetching GIC Registers: " + e.toString());
+        print("Error: Problem fetching GICD Registers: " + e.toString());
     }
 }
 
@@ -638,24 +686,60 @@ function viewInitDetailed(view, obj)
 {
     var Hwi = xdc.useModule('ti.sysbios.family.arm.gicv3.Hwi');
     var Program = xdc.useModule('xdc.rov.Program');
+    var BIOS = xdc.useModule('ti.sysbios.BIOS');
+    var biosModConfig = Program.getModuleConfig(BIOS.$name);
+    if (biosModConfig.smpEnabled == true) {
+        var Core = xdc.useModule('ti.sysbios.family.arm.v8a.smp.Core');
+        var coreModConfig = Program.getModuleConfig(Core.$name);
+        var numCores = coreModConfig.numCores;
+    }
+    else {
+        var numCores = 1;
+    }
 
     /* Detailed view builds off basic view. */
     viewInitBasic(view, obj);
 
     view.irp = obj.irp;
 
-    var enabled = false;
-    var pending = false;
+    var enabled = "";
+    var pending = "";
+    var active = "";
     var intNum = view.intNum;
 
+    var gics = new Array();
+    
+
     if (intNum < 32) {
-        // TODO
+        viewGicMapFetch(this);
+        for (i = 0; i < numCores; i++) {
+            gics[i] = { ISENABLER0 : Program.fetchArray(
+                          {type: 'xdc.rov.support.ScalarStructs.S_UInt32', isScalar: true},
+                          this.GicMap[i].gics + 0x100, 1,
+                          false
+                          ),
+                        ISPENDR0 : Program.fetchArray(
+                          {type: 'xdc.rov.support.ScalarStructs.S_UInt32', isScalar: true},
+                          this.GicMap[i].gics + 0x200, 1,
+                          false
+                          ),
+                        ISACTIVER0 : Program.fetchArray(
+                          {type: 'xdc.rov.support.ScalarStructs.S_UInt32', isScalar: true},
+                          this.GicMap[i].gics + 0x300, 1,
+                          false
+                          )
+                      };
+            enabled = (gics[i].ISENABLER0 & (1 << intNum) ? "1" : "0") + enabled;
+            pending = (gics[i].ISPENDR0 & (1 << intNum) ? "1" : "0") + pending;
+            active = (gics[i].ISACTIVER0 & (1 << intNum) ? "1" : "0") + active;
+        }
     }
     else {
         viewGicdFetch(this);
 
-        enabled = this.GICD.ISENABLER[intNum >>> 5] & (1 << intNum);
-        pending = this.GICD.ISPENDR[intNum >>> 5] & (1 << intNum);
+        enabled = this.GICD.ISENABLER[intNum >>> 5] & (1 << intNum) ? "1" : "0";
+        pending = this.GICD.ISPENDR[intNum >>> 5] & (1 << intNum) ? "1" : "0";
+        active = this.GICD.ISACTIVER[intNum >>> 5] & (1 << intNum) ? "1" : "0";
 
         var icfgr = (this.GICD.ICFGR[intNum >>> 4] >>> ((intNum & 0xF) << 1)) & 0x2;
         if (icfgr) {
@@ -666,19 +750,10 @@ function viewInitDetailed(view, obj)
         }
     }
 
-    if (enabled) {
-        view.enabled = true;
-    }
-    else {
-        view.enabled = false;
-    }
+    view.enabled = enabled;
+    view.pending = pending;
+    view.active = active;
 
-    if (pending) {
-        view.pending = true;
-    }
-    else {
-        view.pending = false;
-    }
 }
 
 /*!

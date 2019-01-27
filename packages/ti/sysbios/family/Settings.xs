@@ -43,10 +43,6 @@ var family = {
     "ti.targets.elf.C67P" :                     "c67p",
     "ti.targets.elf.nda.C71" :                  "c7x",
     "ti.targets.elf.C28_float" :                "c28",
-    "ti.targets.msp430.elf.MSP430X" :           "msp430",
-    "iar.targets.msp430.MSP430" :               "msp430",
-    "iar.targets.msp430.MSP430X_small" :        "msp430",
-    "iar.targets.msp430.MSP430X_large" :        "msp430",
     "ti.targets.arm.elf.Arm9" :                 "arm",
     "ti.targets.arm.elf.A8Fnv" :                "arm",
     "ti.targets.arm.elf.M3" :                   "arm",
@@ -55,7 +51,10 @@ var family = {
     "ti.targets.arm.elf.R5F" :                  "arm",
     "ti.targets.arm.elf.R4F" :                  "arm",
     "ti.targets.arm.elf.R4Ft" :                 "arm",
-    "ti.targets.arm.clang.M33F" :                "arm",
+    "ti.targets.arm.clang.M33F" :               "arm",
+    "ti.targets.arm.clang.M3" :                 "arm",
+    "ti.targets.arm.clang.M4" :                 "arm",
+    "ti.targets.arm.clang.M4F" :                "arm",
     "gnu.targets.arm.M3" :                      "arm",
     "gnu.targets.arm.M4" :                      "arm",
     "gnu.targets.arm.M4F" :                     "arm",
@@ -298,12 +297,6 @@ function unsupportedTargetCheck(mod)
     else if (Program.build.target.$name == "ti.targets.C674") {
         mod.$logError(Program.build.target.$name + " is no longer supported. " +
             "Please use ti.targets.elf.C674 instead.", mod);
-        throw Error();
-    }
-    else if (Program.build.target.$name ==
-                "ti.targets.msp430.elf.MSP430X_small") {
-        mod.$logError(Program.build.target.$name + " is no longer supported. " +
-            "Please use ti.targets.msp430.elf.MSP430X instead.", mod);
         throw Error();
     }
 }

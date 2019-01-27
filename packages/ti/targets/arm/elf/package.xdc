@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2008-2017 Texas Instruments Incorporated
+ *  Copyright (c) 2008-2018 Texas Instruments Incorporated
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -25,17 +25,13 @@ requires ti.targets;
 package ti.targets.arm.elf [1,0,0] {
     interface IArm;
     interface IR4, IR5;
-    interface IA8, IM3, IM4, IM0;
+    interface IM3, IM4;
     module Arm9;
-    module M0;
-    module M3;
-    module M4, M4F;
-    module A8F, A8Ft;
-    module A8Fv, A8Fnv;
-    module R4F, R4Ft, R5F;
+    module M3, M4, M4F;
+    module R4Ft, R5F;
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 7-20-2018 13:59:04; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) ti.targets.arm.elf; 1, 0, 0,2; 12-17-2018 15:57:03; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

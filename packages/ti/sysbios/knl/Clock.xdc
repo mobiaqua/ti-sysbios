@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ import xdc.runtime.Log;
  *  interrupt on each tick (TickMode_PERIODIC), and a tick suppression
  *  mode (TickMode_DYNAMIC), which reduces the number of timer interrupts to
  *  the minimum required to support the scheduled timeouts.  For devices that
- *  support it (e.g., MSP430 devices), TickMode_DYNAMIC may be the default
+ *  support it (e.g., CC13xx/CC26xx devices), TickMode_DYNAMIC may be the default
  *  mode if one is not specified in the application configuration; otherwise,
  *  the default mode will be TickMode_PERIODIC.  The following example shows
  *  how the tick mode  can be specified in the application configuration:
@@ -418,9 +418,7 @@ module Clock
      *  With TickMode_DYNAMIC the timer can be dynamically reprogrammed by
      *  Clock, to interrupt the CPU when the next tick is actually needed for
      *  a scheduled timeout. TickMode_DYNAMIC is not supported on all devices,
-     *  and may have some application constraints (for example, for MSP430,
-     *  see a description on this wiki page:
-     *  http://processors.wiki.ti.com/index.php/SYS/BIOS_for_the_MSP430#Clock_Tick_Suppression).
+     *  and may have some application constraints.
      */
     config TickMode tickMode;
 

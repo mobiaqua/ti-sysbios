@@ -1009,7 +1009,7 @@ Void Timer_write(Bool altclk, volatile UInt32 *pReg, UInt32 val)
 /*
  *  ======== Timer_masterDisable ========
  */
-#if defined(__GNUC__) && !defined(__ti__)
+#if (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Bool __attribute__((naked)) Timer_masterDisable(Void)
 {
     /* read PRIMASK bit to R0 and call CPSID to disable interrupts */
@@ -1044,7 +1044,7 @@ Bool Timer_masterDisable(Void)
 /*
  *  ======== Timer_masterEnable ========
  */
-#if defined(__GNUC__) && !defined(__ti__)
+#if (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Void __attribute__((naked)) Timer_masterEnable(Void)
 {
     __asm__ __volatile__(
@@ -1079,7 +1079,7 @@ Void Timer_masterEnable(Void)
 #define INVALID_TIMER_ID ~0
 #if defined(__IAR_SYSTEMS_ICC__)
 __weak Void Timer_enableCC26xx(Int id)
-#elif defined(__GNUC__) && !defined(__ti__)
+#elif (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Void __attribute__((weak)) Timer_enableCC26xx(Int id)
 #else
 #pragma WEAK (Timer_enableCC26xx)
@@ -1132,7 +1132,7 @@ Void Timer_enableCC26xx(Int id)
  */
 #if defined(__IAR_SYSTEMS_ICC__)
 __weak Void Timer_enableCC3200(Int id)
-#elif defined(__GNUC__) && !defined(__ti__)
+#elif (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Void __attribute__((weak)) Timer_enableCC3200(Int id)
 #else
 #pragma WEAK (Timer_enableCC3200)
@@ -1222,7 +1222,7 @@ Void Timer_enableTiva(Int id)
  */
 #if defined(__IAR_SYSTEMS_ICC__)
 __weak Void Timer_disableCC26xx(Int id)
-#elif defined(__GNUC__) && !defined(__ti__)
+#elif (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Void __attribute__((weak)) Timer_disableCC26xx(Int id)
 #else
 #pragma WEAK (Timer_disableCC26xx)
@@ -1237,7 +1237,7 @@ Void Timer_disableCC26xx(Int id)
  */
 #if defined(__IAR_SYSTEMS_ICC__)
 __weak Void Timer_disableCC3200(Int id)
-#elif defined(__GNUC__) && !defined(__ti__)
+#elif (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Void __attribute__((weak)) Timer_disableCC3200(Int id)
 #else
 #pragma WEAK (Timer_disableCC3200)

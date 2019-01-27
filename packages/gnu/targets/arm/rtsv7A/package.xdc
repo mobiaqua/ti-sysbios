@@ -27,7 +27,7 @@ package gnu.targets.arm.rtsv7A [1,0,0] {
     module Settings;
 }
 /*
- *  @(#) gnu.targets.arm.rtsv7A; 1, 0, 0,0; 7-20-2018 14:26:27; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) gnu.targets.arm.rtsv7A; 1, 0, 0,0; 12-18-2018 16:05:04; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

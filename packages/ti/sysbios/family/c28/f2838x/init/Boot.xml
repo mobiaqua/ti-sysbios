@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+Copyright (c) 2018, Texas Instruments Incorporated
+All rights reserved.
+-->
+
+<gep name="F2838x/Boot" title="F2838x Boot" version="1">
+<page name="Basic" title="Boot/Startup Options">
+<html><body><table>
+  <tr><td colspan="2">
+    <control type="checkbox" label="Add F2838x Boot management to my configuration" value="value:this.$used" bold="true"/></td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td>
+      <h1>System Configuration</h1>
+        <table>
+        <tr>
+          <td><control type="checkbox"
+                       label="Disable the watchdog timer"
+                       value="value:this.disableWatchdog"
+                       tooltip="value:this.disableWatchdog.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable boot from FLASH"
+                       value="value:this.bootFromFlash"
+                       tooltip="value:this.bootFromFlash.$summary"/></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table></body></html>
+</page>
+
+<properties name="Advanced" title="All Options" enabled="true" visible="true" link="this"/>
+
+</gep>

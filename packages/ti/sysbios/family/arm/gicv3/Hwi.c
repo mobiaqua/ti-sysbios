@@ -95,7 +95,7 @@ Int Hwi_Module_startup (Int startupPhase)
     }
 #endif
 
-    Hwi_initIntController();
+    Hwi_initIntControllerCore0();
 
     /*
      * Round up isrStackBase address to align with the cache line size
@@ -270,9 +270,9 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 }
 
 /*
- *  ======== Hwi_initIntController ========
+ *  ======== Hwi_initIntControllerCore0 ========
  */
-Void Hwi_initIntController()
+Void Hwi_initIntControllerCore0()
 {
     UInt32 i, j;
     UInt32 intActiveReg;
@@ -424,6 +424,92 @@ Void Hwi_initIntController()
 }
 
 /*
+ *  ======== Hwi_initIntControllerCoreX ========
+ */
+Void Hwi_initIntControllerCoreX()
+{
+    UInt32 i, j;
+    UInt32 intActiveReg;
+    UInt coreId;
+
+    coreId = Core_getId();
+
+    /*
+     * Interrupts should be disabled by the Core_smpBoot code so we do not
+     * have to explicitly disable them here.
+     */
+
+    /* Enable interrupt controller system register access at EL1 */
+    Hwi_writeSystemReg(s3_0_c12_c12_5, 0x7);   /* icc_sre_el1 */
+
+    /* Search for any previously active interrupts and acknowledge them */
+    intActiveReg = Hwi_gicMap[coreId].gics->ICACTIVER0;
+    if (intActiveReg) {
+        for (j = 0; j < 32; j++) {
+            if (intActiveReg & 0x1) {
+                Hwi_writeSystemReg(s3_0_c12_c12_1, j);   /* icc_eoir1_el1 */
+            }
+            intActiveReg = intActiveReg >> 1;
+        }
+    }
+
+    /*
+     * Clear any currently pending enabled interrupts
+     */
+    Hwi_gicMap[coreId].gics->ICPENDR0 = 0xFFFFFFFF;
+
+    /*
+     * Clear all interrupt active status registers
+     */
+    Hwi_gicMap[coreId].gics->ICACTIVER0 = 0xFFFFFFFF;
+
+    /*
+     * Initialize Binary Point Register
+     */
+    Hwi_writeSystemReg(s3_0_c12_c12_3, Hwi_BPR);   /* icc_bpr1_el1 */
+
+    /*
+     * Set configured interrupt Sense and Priority for each
+     * interrupt
+     */
+    for (i=0; i < Hwi_NUM_INTERRUPTS; i++) {
+        if (Hwi_module->dispatchTable[i] != NULL) {
+            Hwi_setPriority(i, Hwi_module->dispatchTable[i]->priority);
+        }
+    }
+
+    /*
+     * Set trigger sensitivity of interrupts
+     *
+     * On the Cortex-A15:
+     *  -   For SGI:
+     *          The ICFGR bits are read-only and a bit-pair always reads as
+     *          b10 because SGIs are edge-triggered.
+     *  -   For PPI and SPI :
+     *          The LSB of the bit-pair is read only and is always 0. MSB can
+     *          be altered to change trigger sensitivity.
+     *              b00    Interrupt is active-High level-sensitive
+     *              b10    Interrupt is rising edge-sensitive
+     */
+    Hwi_gicMap[coreId].gics->ICFGR[1] = Hwi_module->icfgr[1];
+
+    /*
+     * Enable any statically config'd interrupts that are enabled.
+     */
+    Hwi_gicMap[coreId].gics->ISENABLER0 = Hwi_module->iser[0];
+    for (i = 1; i < Hwi_NUM_GICD_ENABLE_REGS; i++) {
+        Hwi_gicd.ISENABLER[i] = Hwi_module->iser[i];
+    }
+
+    /*
+     * Initialize Interrupt Priority Mask Register
+     *
+     * Initialize PMR with the minimum possible interrupt priority.
+     */
+    Hwi_writeSystemReg(s3_0_c4_c6_0, 0xFF); /* icc_pmr_el1 */
+}
+
+/*
  *  ======== Hwi_startup ========
  */
 Void Hwi_startup()
@@ -479,18 +565,15 @@ Void Hwi_raiseSGI(Hwi_SgiIntAffinity affinity, UInt intNum)
 
     key = Core_hwiDisable();
 
-    reg = ((UInt64)affinity.routingMode << 40) |
-          ((UInt64)intNum << 24) |
-          ((UInt64)affinity.aff1 << 16) |
+    reg = (UInt64)affinity.routingMode << 40;
+    reg |= (UInt64)intNum << 24;
+
+    if (affinity.routingMode == Hwi_RoutingMode_NODE) {
+        reg |= ((UInt64)affinity.aff1 << 16) |
           ((UInt64)affinity.targetList & 0xFFFF);
+    }
 
-    /* Ensure all memory write ops complete */
-    __asm__ __volatile__ (
-        "dmb ishst"
-        ::: "memory"
-    );
-
-    Hwi_gicd.SGIR = reg;
+    Hwi_writeSystemReg(s3_0_c12_c11_5, reg); /* icc_sgi1r_el1 */
 
     Core_hwiRestore(key);
 }
@@ -505,7 +588,7 @@ UInt Hwi_disableInterrupt(UInt intNum)
     key = Hwi_disable();
     mask = 1 << (intNum & 0x1f);
     if (intNum < 32) {
-        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0;
+        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0 & mask;
         Hwi_gicMap[0].gics->ICENABLER0 = mask;
     }
     else {
@@ -528,7 +611,7 @@ UInt Hwi_enableInterrupt(UInt intNum)
     key = Hwi_disable();
     mask = 1 << (intNum & 0x1f);
     if (intNum < 32) {
-        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0;
+        oldEnableState = Hwi_gicMap[0].gics->ISENABLER0 & mask;
         Hwi_gicMap[0].gics->ISENABLER0 = mask;
     }
     else {
@@ -583,7 +666,11 @@ Void Hwi_clearInterrupt(UInt intNum)
  */
 Void Hwi_switchFromBootStack()
 {
+#if (ti_sysbios_BIOS_smpEnabled__D)
+    Hwi_initStacks(Hwi_module->isrStack[Core_getId()]);
+#else
     Hwi_initStacks(Hwi_module->isrStack[0]);
+#endif
 }
 
 /*
@@ -666,7 +753,14 @@ Bool Hwi_getCoreStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth,
 Void Hwi_setPriority(UInt intNum, UInt priority)
 {
     if (intNum < 32) {
+#if (ti_sysbios_BIOS_smpEnabled__D)
+        UInt i;
+        for (i = 0; i < Core_numCores; i++) {
+            Hwi_gicMap[i].gics->IPRIORITYR[intNum] = priority & 0xFF;
+        }
+#else
         Hwi_gicMap[0].gics->IPRIORITYR[intNum] = priority & 0xFF;
+#endif
     }
     else if (intNum < Hwi_NUM_INTERRUPTS) {
         Hwi_gicd.IPRIORITYR[intNum] = priority & 0xFF;
@@ -870,112 +964,6 @@ Void Hwi_nonPluggedHwiHandler()
 }
 
 /*
- *  ======== Hwi_dispatchIRQC ========
- *  Configurable IRQ interrupt dispatcher.
- */
-Void Hwi_dispatchIRQC(Hwi_Irp irp)
-{
-    /*
-     * TODO Stale comment ???
-     * Enough room is reserved above the isr stack to handle
-     * as many as 16 32-bit stack resident local variables.
-     * This space is reserved for the Swi scheduler.
-     *
-     * If the swi scheduler requires more than this, you must
-     * handle this in Hwi_Module_startup().
-     */
-
-    Hwi_Object *hwi;
-    BIOS_ThreadType prevThreadType;
-    UInt intNum;
-    Int swiKey;
-#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
-    Int i;
-#endif
-
-    /* Acknowledge Interrupt */
-    Hwi_readSystemReg(s3_0_c12_c12_0, Hwi_module->curIntId); /* icc_iar1_el1 */
-
-    /* Ignore spurious ints */
-    if ((Hwi_module->curIntId >= 1020) && (Hwi_module->curIntId <= 1023)) {
-        Hwi_module->spuriousInts++;
-        Hwi_module->lastSpuriousInt = Hwi_module->curIntId;
-        return;
-    }
-
-    /* save irp for ROV call stack view */
-    Hwi_module->irp = irp;
-
-    intNum = Hwi_module->curIntId;
-
-    /* Process only this pending interrupt */
-    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x3FF];
-
-    if (hwi == NULL) {
-        Hwi_nonPluggedHwiHandler();
-        /* Signal End of Interrupt */
-        Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
-        return;
-    }
-
-    if (Hwi_dispatcherSwiSupport) {
-        swiKey = SWI_DISABLE();
-    }
-
-    /* set thread type to Hwi */
-    prevThreadType = BIOS_setThreadType(BIOS_ThreadType_Hwi);
-
-    hwi->irp = Hwi_module->irp;
-
-#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
-    /* call the begin hooks */
-    for (i = 0; i < Hwi_hooks.length; i++) {
-        if (Hwi_hooks.elem[i].beginFxn != NULL) {
-            Hwi_hooks.elem[i].beginFxn((IHwi_Handle)hwi);
-        }
-    }
-#endif
-
-    Log_write5(Hwi_LM_begin, (IArg)hwi, (IArg)hwi->fxn,
-               (IArg)prevThreadType, (IArg)Hwi_module->curIntId, hwi->irp);
-
-    if (Hwi_dispatcherAutoNestingSupport) {
-        /*
-         * IRQ Handler is disabled on exception entry
-         * in secure state
-         */
-        Core_hwiEnable();
-    }
-
-    /* call user's ISR func */
-    (hwi->fxn)(hwi->arg);
-
-    Core_hwiDisable();
-
-    /* Signal End of Interrupt */
-    Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
-
-    Log_write1(Hwi_LD_end, (IArg)hwi);
-
-#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
-    /* call the end hooks */
-    for (i = 0; i < Hwi_hooks.length; i++) {
-        if (Hwi_hooks.elem[i].endFxn != NULL) {
-            Hwi_hooks.elem[i].endFxn((IHwi_Handle)hwi);
-        }
-    }
-#endif
-
-    /* Run Swi scheduler */
-    if (Hwi_dispatcherSwiSupport) {
-        SWI_RESTORE(swiKey);
-    }
-
-    /* restore thread type */
-    BIOS_setThreadType(prevThreadType);
-}
-
-/*
  *  ======== Hwi_excHandler ========
  */
 Void Hwi_excHandler(UInt64 *excStack, Hwi_ExcType excType)
@@ -1079,10 +1067,6 @@ Void Hwi_excHandler(UInt64 *excStack, Hwi_ExcType excType)
 
     BIOS_setThreadType(BIOS_ThreadType_Main);
 
-    if (Hwi_enableDecode == TRUE) {
-        Hwi_excDumpContext();
-    }
-
     /* Call user's exception hook */
     switch (excType) {
         case Hwi_ExcType_Synchronous:
@@ -1135,6 +1119,10 @@ Void Hwi_excHandler(UInt64 *excStack, Hwi_ExcType excType)
             break;
         default:
             break;
+    }
+
+    if (Hwi_enableDecode == TRUE) {
+        Hwi_excDumpContext();
     }
 
     Error_raise(0, Hwi_E_exception, 0, 0);
@@ -1230,4 +1218,123 @@ Void Hwi_excDumpContext()
     System_printf ("ELR = 0x%8.8x%8.8x  ESR = 0x%8.8x\n",
         PRINTF_64BIT_ARG(excp->elr), excp->esr);
     System_printf ("SPSR = 0x%8.8x\n", excp->spsr);
+}
+
+/*
+ *  ======== Hwi_dispatchIRQC ========
+ *  Configurable IRQ interrupt dispatcher.
+ */
+Void Hwi_dispatchIRQC(Hwi_Irp irp, Bool rootISR, Char *taskSP)
+{
+    /*
+     * TODO Stale comment ???
+     * Enough room is reserved above the isr stack to handle
+     * as many as 16 32-bit stack resident local variables.
+     * This space is reserved for the Swi scheduler.
+     *
+     * If the swi scheduler requires more than this, you must
+     * handle this in Hwi_Module_startup().
+     */
+
+    Hwi_Object *hwi;
+    BIOS_ThreadType prevThreadType;
+    UInt intNum;
+    Int swiKey;
+    UInt coreId = 0;
+#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
+    Int i;
+#endif
+
+    /* Acknowledge Interrupt */
+    Hwi_readSystemReg(s3_0_c12_c12_0, Hwi_module->curIntId); /* icc_iar1_el1 */
+
+    /* Ignore spurious ints */
+    if ((Hwi_module->curIntId >= 1020) && (Hwi_module->curIntId <= 1023)) {
+        Hwi_module->spuriousInts++;
+        Hwi_module->lastSpuriousInt = Hwi_module->curIntId;
+        return;
+    }
+
+    if (BIOS_smpEnabled) {
+        coreId = Core_getId();
+    }
+
+    /* save irp for ROV call stack view */
+    Hwi_module->irp[coreId] = irp;
+
+    if (rootISR) {
+        Hwi_module->taskSP[coreId] = taskSP;
+    }
+
+    intNum = Hwi_module->curIntId;
+
+    /* Process only this pending interrupt */
+    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x3FF];
+
+    if (hwi == NULL) {
+        Hwi_nonPluggedHwiHandler();
+        /* Signal End of Interrupt */
+        Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
+        return;
+    }
+
+    if (Hwi_dispatcherSwiSupport) {
+        swiKey = SWI_DISABLE();
+    }
+
+    /* set thread type to Hwi */
+    prevThreadType = BIOS_setThreadType(BIOS_ThreadType_Hwi);
+
+    hwi->irp = irp;
+
+#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
+    /* call the begin hooks */
+    for (i = 0; i < Hwi_hooks.length; i++) {
+        if (Hwi_hooks.elem[i].beginFxn != NULL) {
+            Hwi_hooks.elem[i].beginFxn((IHwi_Handle)hwi);
+        }
+    }
+#endif
+
+    Log_write5(Hwi_LM_begin, (IArg)hwi, (IArg)hwi->fxn,
+               (IArg)prevThreadType, (IArg)Hwi_module->curIntId, hwi->irp);
+
+    if (Hwi_dispatcherAutoNestingSupport) {
+        /*
+         * IRQ Handler is disabled on exception entry
+         * in secure state
+         */
+        Core_hwiEnable();
+    }
+
+    /* call user's ISR func */
+    (hwi->fxn)(hwi->arg);
+
+    Core_hwiDisable();
+
+    /* Signal End of Interrupt */
+    Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
+
+    Log_write1(Hwi_LD_end, (IArg)hwi);
+
+#ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
+    /* call the end hooks */
+    for (i = 0; i < Hwi_hooks.length; i++) {
+        if (Hwi_hooks.elem[i].endFxn != NULL) {
+            Hwi_hooks.elem[i].endFxn((IHwi_Handle)hwi);
+        }
+    }
+#endif
+
+    /* Run Swi scheduler */
+    if (Hwi_dispatcherSwiSupport) {
+        SWI_RESTORE(swiKey);
+    }
+
+    /* restore thread type */
+    BIOS_setThreadType(prevThreadType);
+
+    if (rootISR) {
+        Hwi_module->taskSP[coreId] = NULL;
+    }
 }

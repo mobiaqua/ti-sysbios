@@ -66,7 +66,8 @@ if (xdc.om.$name == "cfg") {
     };
 
     deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"]     = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]       = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -79,14 +80,14 @@ function deviceSupportCheck()
     for (device in deviceTable) {
         if (device == Program.cpu.deviceName) {
             return device;
-            }
+        }
     }
 
     /* now look for a wildcard match */
     for (device in deviceTable) {
         if (Program.cpu.deviceName.match(device)) {
             return device;
-            }
+        }
     }
 
     /*

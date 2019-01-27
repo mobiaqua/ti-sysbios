@@ -52,7 +52,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     override readonly config string isa                 = "v8A";
     override readonly config xdc.bld.ITarget.Model model= {
         endian: "little",
-        shortEnums: true
+        shortEnums: false
     };
 
     override readonly config Bool alignDirectiveSupported = true;
@@ -62,7 +62,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
 
     override config string GCCTARG = "aarch64-elf";
 
-    override config String binaryParser = "ti.targets.omf.elf.Elf";
+    override config String binaryParser = "xdc.targets.omf.Elf";
 
     override readonly config String stdInclude = "gnu/targets/arm/std.h";
 
@@ -165,7 +165,7 @@ metaonly module A53F inherits gnu.targets.arm.ITarget {
     };
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 7-20-2018 13:58:33; /db/ztree/library/trees/xdctargets/xdctargets-r09/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,2; 12-17-2018 15:56:44; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
 
  */
 

@@ -206,7 +206,7 @@ function instance$meta$init(name)
 
         if (this.deviceName.match(/^SIMMAXWELL/) ||
             this.deviceName.match(/^J7/) ||
-            this.deviceName.match(/^AM65X/)) {
+            this.deviceName.match(/^AM65/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexr5";
             this.CPU.deviceName = "CortexR";
             this.CPU.clockRate = 400;

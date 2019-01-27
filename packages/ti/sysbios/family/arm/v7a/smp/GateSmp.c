@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,6 +93,7 @@ static Void __attribute__((naked)) GateSmp_unlock(volatile UInt32 *lockAddr)
         "dsb\n\t"
         "sev\n\t"
         "bx lr"
+        ::: "memory"
     );
 }
 

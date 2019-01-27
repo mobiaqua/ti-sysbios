@@ -76,18 +76,12 @@ typedef Void ti_sysbios_hal_MemProtect_Struct;
 
 typedef ti_sysbios_hal_MemProtect_Struct *ti_sysbios_hal_MemProtect_Handle;
 
-extern ti_sysbios_hal_MemProtect_Handle ti_sysbios_hal_MemProtect_createDomain(
-    ti_sysbios_hal_MemProtect_Acl *acl, UInt16 aclLength);
-
 extern Int ti_sysbios_hal_MemProtect_constructDomain(
     ti_sysbios_hal_MemProtect_Struct *obj,
     struct ti_sysbios_hal_MemProtect_Acl *acl,
     UInt16 aclLength);
 
-extern Void ti_sysbios_hal_MemProtect_deleteDomain(
-    ti_sysbios_hal_MemProtect_Handle handle);
-
-extern Void ti_sysbios_hal_MemProtect_destructDomain(
+extern Int ti_sysbios_hal_MemProtect_destructDomain(
     ti_sysbios_hal_MemProtect_Struct *obj);
 
 extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
@@ -103,9 +97,8 @@ extern Bool ti_sysbios_hal_MemProtect_isDataInKernelSpace(Ptr obj, SizeT size);
 #define MemProtect_Acl               ti_sysbios_hal_MemProtect_Acl
 #define MemProtect_Handle            ti_sysbios_hal_MemProtect_Handle
 
-#define MemProtect_createDomain      ti_sysbios_hal_MemProtect_createDomain
 #define MemProtect_constructDomain   ti_sysbios_hal_MemProtect_constructDomain
-#define MemProtect_deleteDomain      ti_sysbios_hal_MemProtect_deleteDomain
+#define MemProtect_destructDomain    ti_sysbios_hal_MemProtect_destructDomain
 #define MemProtect_parseFlags        ti_sysbios_hal_MemProtect_parseFlags
 #define MemProtect_startup           ti_sysbios_hal_MemProtect_startup
 #define MemProtect_switch            ti_sysbios_hal_MemProtect_switch

@@ -32,10 +32,11 @@
  */
 %%}
 %var Hwi = xdc.module("ti.sysbios.family.arm.m3.Hwi");
-%if (Program.build.target.$name.match(/elf/)) {
+%if (Program.build.target.$name.match(/elf/) || Program.build.target.$name.match(/clang/)) {
 -u `String(Hwi.resetFunc).substr(1)`
 %    if (Hwi.resetVectorAddress != Hwi.vectorTableAddress) {
 --retain "*(.resetVecs)"
+--retain "*(.vecs)"
 %    }
 %}
 %else if (Program.build.target.$name.match(/gnu/)) {

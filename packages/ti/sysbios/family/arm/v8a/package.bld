@@ -59,7 +59,7 @@ var trgFilter = {
 /* generate gnu A53F target libs */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
-Pkg.otherFiles = ["CacheMacros.h", "CoreBoot.h", "linkcmd.xdt", "Core_link.xdt",
+Pkg.otherFiles = ["CoreBoot.h", "linkcmd.xdt", "Core_link.xdt",
                   "package.bld", "Mmu.xdt", "Pmu.xml"];
 
 /* include source files in the release package */

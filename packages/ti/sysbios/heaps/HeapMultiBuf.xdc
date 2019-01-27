@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -410,11 +410,6 @@ internal:   /* not for client use */
      */
     Int sizeAlignCompare(const Void *a, const Void *b);
 
-    /*
-     *  ======== moveToEnd ========
-     */
-    Void moveToEnd(HeapBuf.Handle *heapBufs, UInt numHeapBufs, UInt index);
-    
     /*
      *  ======== borrowBlock ========
      */

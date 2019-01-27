@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -136,15 +136,6 @@ Void Load_idleFxnPwr(Void)
     if ((Load_module->timeElapsed >= window) && (Load_updateInIdle)) {
         Load_update();
     }
-}
-
-/*
- *  ======== Load_logCPULoad ========
- */
-Void Load_logCPULoad(Void)
-{
-    /* Log global CPU load */
-    Log_write1(Load_LS_cpuLoad, (IArg)Load_getCPULoad());
 }
 
 /*

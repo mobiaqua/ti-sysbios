@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@
 
 #include <xdc/std.h>
 
+#include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/hal/Hwi.h>
 #include <ti/sysbios/hal/Seconds.h>
 #include <ti/sysbios/knl/Clock.h>
@@ -233,6 +234,7 @@ int clock_nanosleep(clockid_t clockId, int flags,
  */
 int clock_settime(clockid_t clock_id, const struct timespec *ts)
 {
+
     if (clock_id != CLOCK_REALTIME) {
         errno = EINVAL;
         return (-1);
@@ -243,7 +245,17 @@ int clock_settime(clockid_t clock_id, const struct timespec *ts)
         return (-1);
     }
 
+#if BIOS_version < 0x67500
     Seconds_set(ts->tv_sec);
+#else
+{
+    Seconds_Time its;
+
+    its.secs = (UInt32)(ts->tv_sec);
+    its.nsecs = (UInt32)(ts->tv_nsec);
+    Seconds_setTime(&its);
+}
+#endif
 
     return (0);
 }

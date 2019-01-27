@@ -51,4 +51,5 @@ package ti.sysbios.family.arm.v8m [2,0,0,0] {
     module Timer;
     module TimestampProvider;
     module Power;
+    module SAU;
 }

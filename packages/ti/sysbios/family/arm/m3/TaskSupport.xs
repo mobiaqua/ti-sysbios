@@ -34,6 +34,8 @@
  *  ======== TaskSupport.xs ========
  */
 
+var Build = null;
+
 /*
  * ======== getAsmFiles ========
  * return the array of assembly language files associated
@@ -51,15 +53,15 @@ function getAsmFiles(targetName)
         case "gnu.targets.arm.M3":
         case "gnu.targets.arm.M4":
         case "gnu.targets.arm.M4F":
-        case "gnu.targets.arm.M33F":
-        case "ti.targets.arm.clang.M33F":
+        case "ti.targets.arm.clang.M3":
+        case "ti.targets.arm.clang.M4":
+        case "ti.targets.arm.clang.M4F":
             return (["TaskSupport_asm_gnu.sv7M"]);
             break;
 
         case "iar.targets.arm.M3":
         case "iar.targets.arm.M4":
         case "iar.targets.arm.M4F":
-        case "iar.targets.arm.M33":
             return (["TaskSupport_asm_iar.sv7M"]);
             break;
 
@@ -82,6 +84,14 @@ function module$meta$init()
 
     /* provide getAsmFiles() for Build.getAsmFiles() */
     this.$private.getAsmFiles = getAsmFiles;
+}
+
+/*
+ *  ======== module$use ========
+ */
+function module$use()
+{
+    Build = xdc.useModule('ti.sysbios.Build');
 }
 
 /*

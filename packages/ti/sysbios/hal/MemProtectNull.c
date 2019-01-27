@@ -47,25 +47,11 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 }
 
 /*
- *  ======== MemProtect_createDomain ========
- */
-MemProtect_Handle MemProtect_createDomain(MemProtect_Acl *acl, UInt16 aclLength)
-{
-    return (NULL);
-}
-
-/*
- *  ======== MemProtect_deleteDomain ========
- */
-Void MemProtect_deleteDomain(MemProtect_Handle handle)
-{
-}
-
-/*
  *  ======== MemProtect_destructDomain ========
  */
-Void MemProtect_destructDomain(MemProtect_Struct *obj)
+Int MemProtect_destructDomain(MemProtect_Struct *obj)
 {
+    return (-1);
 }
 
 /*

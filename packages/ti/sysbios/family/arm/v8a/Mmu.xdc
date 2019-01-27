@@ -43,20 +43,21 @@ package ti.sysbios.family.arm.v8a;
  *  to a 48-bit physical address and enable/disable the MMU. It does this
  *  through translation tables in memory.
  *
- *  Every application must register a Mmu init function that contains calls
- *  to Mmu_map() to configure the MMU.
+ *  Every application must register a Mmu init function (see {@link #initFunc})
+ *  that contains calls to Mmu_map() to configure the MMU.
  *
  *  *.cfg:
  *  @p(code)
  *  var Mmu = xdc.useModule('ti.sysbios.family.arm.v8a.Mmu');
- *  Mmu.initFunc = "&InitMmu";
+ *  Mmu.initFunc = "&Mmu_initFuncDefault";
  *  @p
  *
- *  Example InitMmu() function for evmAM6x devices:
+ *  Example {@link #initFuncDefault Mmu_initFuncDefault()} provided
+ *  function for evmAM6x devices:
  *  @p(code)
  *  ...
  *
- *  Void InitMmu()
+ *  Void Mmu_initFuncDefault()
  *  {
  *      Bool ret;
  *      Mmu_MapAttrs attrs;
@@ -86,6 +87,12 @@ package ti.sysbios.family.arm.v8a;
  *          goto fail;
  *      }
  *
+ *      // Map System Timer registers
+ *      ret = Mmu_map(0x2A430000, 0x2A430000, 0x00001000, &attrs);
+ *      if (!ret) {
+ *          goto fail;
+ *      }
+ *
  *      // MAIR7 has a default attribute type of Inner and Outer
  *      // write-back cacheable
  *      attrs.attrIndx = Mmu_AttrIndx_MAIR7;
@@ -97,6 +104,7 @@ package ti.sysbios.family.arm.v8a;
  *      }
  *
  *      return;
+ *
  *  fail:
  *      System_printf("Mmu config failed.\n");
  *      while (1);
@@ -369,8 +377,12 @@ module Mmu
      *  C initialization i.e. before the data section is initialized.
      *  Therefore, care must be taken to not rely on any initialized
      *  data variables.
+     *
+     *  By default, the {@link #initFuncDefault Mmu_initFuncDefault} function
+     *  designed for use with AM65x devices is used if the application doesn't
+     *  provide its own implementation.
      */
-    config InitFuncPtr initFunc = null;
+    config InitFuncPtr initFunc = initFuncDefault;
 
     /*!
      *  ======== tableArraySection ========
@@ -511,6 +523,15 @@ module Mmu
      *  Invalidate entire TLB (both data and instruction)
      */
     Void tlbInvAll();
+
+    /*!
+     *  ======== initFuncDefault ========
+     *  default Mmu.initFunc implementation.
+     *
+     *  provides Mmu regions for the AM65x's GIC, DMTimer, UART, SYSTIMER,
+     *  and MSMC memory.
+     */
+    Void initFuncDefault();
 
 internal:
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1048,7 +1048,7 @@ Boot_sysCtlClockSetI(ULong ui32Config)
 // For CCS implement this function in pure assembly.  This prevents the TI
 // compiler from doing funny things with the optimizer.
 //
-#if defined(__ti__)
+#if defined(__ti__) && !defined(__clang__)
     __asm("    .sect \".text:ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I\"\n"
           "    .clink\n"
           "    .thumbfunc ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I\n"
@@ -1061,7 +1061,7 @@ Boot_sysCtlClockSetI(ULong ui32Config)
           "    bx lr\n");
 #endif
 
-#if defined(__GNUC__) && !defined(__ti__)
+#if defined(__GNUC__) && !defined(__ti__) || defined(__GNUC__) && defined(__clang__)
 void __attribute__((naked))
 ti_catalog_arm_cortexm4_tiva_ce_Boot_sysCtlDelayI__I(unsigned long ulCount)
 {

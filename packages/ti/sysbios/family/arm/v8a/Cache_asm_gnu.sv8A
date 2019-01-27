@@ -34,7 +34,19 @@
  * ======== Cache_asm_gnu.asm ========
  */
 
-#include <ti/sysbios/family/arm/v8a/CacheMacros.h>
+.macro DCACHE_LINE_SIZE reg0, reg1
+        mrs     \reg1, ctr_el0
+        ubfm    \reg1, \reg1, #16, #19      /* extract cache line size bits */
+        mov     \reg0, #4
+        lsl     \reg0, \reg0, \reg1         /* compute cache line size */
+.endm
+
+.macro ICACHE_LINE_SIZE reg0, reg1
+        mrs     \reg1, ctr_el0
+        and     \reg1, \reg1, #0xf          /* extract cache line size bits */
+        mov     \reg0, #4
+        lsl     \reg0, \reg0, \reg1         /* compute cache line size */
+.endm
 
         .global ti_sysbios_family_arm_v8a_Cache_disableL1D__I
         .global ti_sysbios_family_arm_v8a_Cache_disableL1P__I

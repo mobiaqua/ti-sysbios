@@ -197,5 +197,10 @@ function instance$meta$init(name)
             this.CPU.deviceName = "CortexM";
             this.CPU.clockRate = 120;
         }
+        else if (this.deviceName.match(/^TMS320F2838X/)) {
+            this.CPU.catalogName = "ti.catalog.arm.cortexm4";
+            this.CPU.deviceName = "CortexM";
+            this.CPU.clockRate = 125;
+        }
     }
 }

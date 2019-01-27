@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, Texas Instruments Incorporated
+ * Copyright (c) 2012-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,6 +67,7 @@ static inline UInt ti_sysbios_family_arm_ducati_Core_hwiDisable()
             "msr basepri, %1"
             : "=&r" (key)
             : "r" (ti_sysbios_family_arm_m3_Hwi_disablePriority)
+            : "memory"
             );
     return key;
 }
@@ -82,7 +83,8 @@ static inline UInt ti_sysbios_family_arm_ducati_Core_hwiEnable()
             "mrs %0, basepri\n\t"
             "msr basepri, r12"
             : "=r" (key)
-            :: "r12"
+            :
+            : "r12", "memory"
             );
     return key;
 }
@@ -95,7 +97,9 @@ static inline Void ti_sysbios_family_arm_ducati_Core_hwiRestore(UInt key)
 {
     __asm__ __volatile__ (
             "msr basepri, %0"
-            :: "r" (key)
+            :
+            : "r" (key)
+            : "memory"
             );
 }
 

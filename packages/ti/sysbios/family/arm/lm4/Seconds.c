@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,13 @@
 #define HIB_CTL_CLK32EN         0x00000040  /* Clocking Enable */
 #define HIB_CTL_RTCEN           0x00000001  /* RTC Timer Enable */
 
+#define NSECSPERSEC 1000000000  /* nanoseconds per second */
+
+static Void getTime(Seconds_Time *ts);
+static Void initRtc(Void);
+
+static Bool initDone = FALSE;
+
 /*
  *  ======== _HibernateWriteComplete ========
  */
@@ -66,15 +73,10 @@ static void _HibernateWriteComplete(void)
  */
 UInt32 Seconds_get(Void)
 {
-    UInt32            curSeconds;
-    UInt32 seconds = 0;
+    Seconds_Time ts;
 
-    curSeconds = HWREG(HIB_RTCC);
-
-    seconds = curSeconds - Seconds_module->refSeconds +
-        Seconds_module->setSeconds;
-
-    return (seconds);
+    Seconds_getTime(&ts);
+    return (ts.secs);
 }
 
 /*
@@ -82,25 +84,23 @@ UInt32 Seconds_get(Void)
  */
 UInt32 Seconds_getTime(Seconds_Time *ts)
 {
-    UInt32 seconds_1, seconds_2;
-    UInt32 subSeconds;
-    UInt32 nsecs;
-    UInt   key;
+    Seconds_Time curTs;
+    UInt         key;
 
     key = Hwi_disable();
 
-    do {
-        seconds_1 = HWREG(HIB_RTCC);
-        subSeconds = HWREG(HIB_RTCSS) & 0x7fff;
-        seconds_2 = HWREG(HIB_RTCC);
-    } while (seconds_1 != seconds_2);
+    getTime(&curTs);
+
+    ts->secs = curTs.secs - Seconds_module->refSeconds +
+            Seconds_module->setSeconds;
+    ts->nsecs = curTs.nsecs + Seconds_module->deltaNSecs;
+    if (ts->nsecs >= NSECSPERSEC) {
+        ts->secs = ts->secs + 1;
+        ts->nsecs = ts->nsecs - NSECSPERSEC;
+    }
+    ts->secs = ts->secs + Seconds_module->deltaSecs;
 
     Hwi_restore(key);
-
-    nsecs = (1000000000 / 32768) * subSeconds;
-    ts->secs = seconds_1 - Seconds_module->refSeconds +
-            Seconds_module->setSeconds;
-    ts->nsecs = nsecs;
 
     return (0);
 }
@@ -110,22 +110,96 @@ UInt32 Seconds_getTime(Seconds_Time *ts)
  */
 Void Seconds_set(UInt32 seconds)
 {
-    UInt32            curSeconds;
+    Seconds_Time ts;
 
-    /* Turn on the clock enable bit. */
-    HWREG(HIB_CTL) |= HIB_CTL_CLK32EN;
+    ts.secs = seconds;
+    ts.nsecs = 0;
 
-    /* Wait for write complete following register load (above). */
-    _HibernateWriteComplete();
+    Seconds_setTime(&ts);
+}
 
-    /* Enable the RTC. */
-    HWREG(HIB_CTL) |= HIB_CTL_RTCEN;
+/*
+ *  ======== Seconds_setTime ========
+ */
+UInt32 Seconds_setTime(Seconds_Time *ts)
+{
+    Seconds_Time refTs;
+    UInt32       secs;
+    UInt32       nsecs; 
+    UInt         key;
 
-    /* Spin until the write complete bit is set. */
-    _HibernateWriteComplete();
+    initRtc();
 
-    curSeconds = HWREG(HIB_RTCC);
+    /* Adjust seconds if nanoseconds is over a second */
+    secs  = ts->secs + (ts->nsecs / NSECSPERSEC);
+    nsecs = ts->nsecs - (ts->nsecs / NSECSPERSEC) * NSECSPERSEC;
 
-    Seconds_module->refSeconds = curSeconds;
-    Seconds_module->setSeconds = seconds;
+    key = Hwi_disable();
+
+    getTime(&refTs);
+
+    Seconds_module->setSeconds = secs;
+    Seconds_module->refSeconds = refTs.secs;
+
+    if (refTs.nsecs > nsecs) {
+        Seconds_module->deltaNSecs = NSECSPERSEC + nsecs - refTs.nsecs;
+        Seconds_module->deltaSecs = -1;
+    }
+    else {
+        Seconds_module->deltaNSecs = nsecs - refTs.nsecs;
+        Seconds_module->deltaSecs = 0;
+    }
+
+    Hwi_restore(key);
+
+    return (0);
+}
+
+/*
+ *  ======== getTime ========
+ *  Read the RTC counter and store values in ts.  Call with interrupts
+ *  disabled.
+ */
+static Void getTime(Seconds_Time *ts)
+{
+    UInt32 seconds_1, seconds_2;
+    UInt32 subSeconds;
+    UInt32 nsecs;
+
+    do {
+        seconds_1 = HWREG(HIB_RTCC);
+        subSeconds = HWREG(HIB_RTCSS) & 0x7fff;
+        seconds_2 = HWREG(HIB_RTCC);
+    } while (seconds_1 != seconds_2);
+
+    nsecs = (NSECSPERSEC / 32768) * subSeconds;
+    ts->secs = seconds_1;
+    ts->nsecs = nsecs;
+}
+
+/*
+ *  ======== initRtc ========
+ */
+static Void  initRtc(Void)
+{
+    UInt   key;
+
+    key = Hwi_disable();
+
+    if (!initDone) {
+        /* Turn on the clock enable bit. */
+        HWREG(HIB_CTL) |= HIB_CTL_CLK32EN;
+
+        /* Wait for write complete following register load (above). */
+        _HibernateWriteComplete();
+
+        /* Enable the RTC. */
+        HWREG(HIB_CTL) |= HIB_CTL_RTCEN;
+
+        /* Spin until the write complete bit is set. */
+        _HibernateWriteComplete();
+        initDone = TRUE;
+    }
+
+    Hwi_restore(key);
 }

@@ -316,14 +316,6 @@ Void Task_startCore(UInt coreId)
 }
 
 /*
- *  ======== Task_unlockSched ========
- */
-Void Task_unlockSched(Void)
-{
-    Task_module->locked = FALSE;
-}
-
-/*
  *  ======== Task_enabled ========
  */
 Bool Task_enabled(Void)
@@ -1165,7 +1157,7 @@ Void Task_setEnv(Task_Object *tsk, Ptr env)
 /*
  *  ======== Task_setPri ========
  */
-UInt Task_setPri(Task_Object *tsk, Int priority)
+Int Task_setPri(Task_Object *tsk, Int priority)
 {
     Int oldPri;
     UInt newMask, tskKey, hwiKey;
@@ -1188,7 +1180,7 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
     if (oldPri == priority) {
         Hwi_restore(hwiKey);
         Task_restore(tskKey);
-        return ((UInt)oldPri);
+        return (oldPri);
     }
 
     if (priority < 0) {
@@ -1236,7 +1228,7 @@ UInt Task_setPri(Task_Object *tsk, Int priority)
     Hwi_restore(hwiKey);
     Task_restore(tskKey);
 
-    return (UInt)oldPri;
+    return (oldPri);
 }
 
 /*

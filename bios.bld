@@ -75,19 +75,14 @@ var ccOpts = {
 
     "ti.targets.elf.C64P"             : c6xOpts,
     "ti.targets.elf.C66"              : c6xOpts,
-    "ti.targets.elf.C66_big_endian"   : c6xOpts,
     "ti.targets.elf.C674"             : c6xOpts,
 
     "ti.targets.arm.elf.Arm9"         : " -ms -g ",
-    "ti.targets.arm.elf.A8Fnv"        : " -ms -g ",
-    "ti.targets.arm.elf.R4F"          : " -ms -g ",
     "ti.targets.arm.elf.R4Ft"         : " -ms -g ",
     "ti.targets.arm.elf.R5F"          : " -ms -g ",
     "ti.targets.arm.elf.M3"           : " -ms -g ",
     "ti.targets.arm.elf.M4"           : " -ms -g ",
     "ti.targets.arm.elf.M4F"          : " -ms -g ",
-
-    "ti.targets.msp430.elf.MSP430X"   : " -g ",
 
     "ti.targets.arp32.elf.ARP32"      : " -g ",
     "ti.targets.arp32.elf.ARP32_far"  : " -g ",
@@ -98,8 +93,7 @@ var ccOpts = {
     "gnu.targets.arm.A8F"             : " -g ",
     "gnu.targets.arm.A9F"             : " -g ",
     "gnu.targets.arm.A15F"            : " -g ",
-
-    "iar.targets.msp430.MSP430X_small" : "",
+    "gnu.targets.arm.A53F"            : " -g ",
 
     "iar.targets.arm.M3"               : "",
     "iar.targets.arm.M4"               : "",

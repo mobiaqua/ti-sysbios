@@ -60,3 +60,11 @@ Void Seconds_set(UInt32 seconds)
 {
     Seconds_SecondsProxy_set(seconds);
 }
+
+/*
+ *  ======== Seconds_setTime ========
+ */
+UInt32 Seconds_setTime(Seconds_Time *ts)
+{
+    return (Seconds_SecondsProxy_setTime(ts));
+}

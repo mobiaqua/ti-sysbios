@@ -32,12 +32,6 @@
 /*
  *  ======== MultithreadSupport.c ========
  */
-
-#ifdef __ICC430__
-    #define _DLIB_THREAD_SUPPORT 3
-    #define TLS "TLS16_I"
-#endif
-
 #include <xdc/std.h>
 
 #include <xdc/runtime/Assert.h>
@@ -54,11 +48,7 @@
 
 #include <yvals.h>
 
-#if __ICC430__
-#pragma segment=TLS
-#elif __ICCARM__
 #include <DLib_Threads.h>
-#endif
 
 #define MultithreadSupport_Lock ti_sysbios_rts_iar_MultithreadSupport_Lock
 
@@ -89,17 +79,6 @@ Void MultithreadSupport_taskRegHook(Int id)
  */
 Void MultithreadSupport_taskDeleteHook(Task_Handle task)
 {
-#ifdef __ICC430__
-    void _DLIB_TLS_MEMORY *pStoredContext;
-
-    pStoredContext =
-        (void _DLIB_TLS_MEMORY *)Task_getHookContext(task,
-                                        MultithreadSupport_module->taskHId);
-
-    if (pStoredContext != NULL) {
-        __iar_dlib_perthread_deallocate(pStoredContext);
-    }
-#elif __ICCARM__
     UInt key;
     void *pStoredContext;
 
@@ -135,80 +114,19 @@ Void MultithreadSupport_taskDeleteHook(Task_Handle task)
         Hwi_restore(key);
         Semaphore_post(MultithreadSupport_module->lock);
     }
-#endif
 }
 
 /*
  *  ======== MultithreadSupport_perThreadAccess ========
  */
-#ifdef __ICC430__
-Void _DLIB_TLS_MEMORY *MultithreadSupport_perThreadAccess(
-    Void _DLIB_TLS_MEMORY *symbp)
-{
-    Task_Handle task;
-    char _DLIB_TLS_MEMORY *pCurTaskEnv;
-    BIOS_ThreadType type;
-
-    /* Get the thread type */
-    type = BIOS_getThreadType();
-    Assert_isTrue(((type != BIOS_ThreadType_Hwi) &&
-                   (type != BIOS_ThreadType_Swi)),
-                    MultithreadSupport_A_badThreadType);
-
-    /* If it is the main thread */
-    if (type == BIOS_ThreadType_Main) {
-        pCurTaskEnv =
-            (char _DLIB_TLS_MEMORY *)__segment_begin(TLS);
-        pCurTaskEnv += __IAR_DLIB_PERTHREAD_SYMBOL_OFFSET(symbp);
-
-        return ((void _DLIB_TLS_MEMORY *)pCurTaskEnv);
-    }
-
-    task = Task_self();
-
-    pCurTaskEnv = (char _DLIB_TLS_MEMORY *)Task_getHookContext(task,
-            MultithreadSupport_module->taskHId);
-    if (pCurTaskEnv == NULL) {
-        /*
-         * In case __iar_dlib_perthread_allocate fails, the heap proxy's alloc
-         * function will internally call Error_raise(). Error_raise() logs the
-         * error message and if the System proxy is SysStd, it will call
-         * this function.
-         *
-         * In order to prevent an infinite call loop, assign the global
-         * reentrancy structure to the current task. If allocation fails
-         * and the System proxy is SysStd, it will let Error_raise()
-         * print the error message.
-         *
-         */
-        pCurTaskEnv = (char _DLIB_TLS_MEMORY *)__segment_begin(TLS);
-        Task_setHookContext(task, MultithreadSupport_module->taskHId,
-                            pCurTaskEnv);
-
-        pCurTaskEnv = (char _DLIB_TLS_MEMORY *)__iar_dlib_perthread_allocate();
-        if (pCurTaskEnv != NULL) {
-            Task_setHookContext(task, MultithreadSupport_module->taskHId,
-                            pCurTaskEnv);
-        }
-    }
-
-    if (pCurTaskEnv != NULL) {
-        pCurTaskEnv += __IAR_DLIB_PERTHREAD_SYMBOL_OFFSET(symbp);
-    }
-
-    return ((void _DLIB_TLS_MEMORY *)pCurTaskEnv);
-}
-#elif __ICCARM__
 Void *MultithreadSupport_perThreadAccess(Void *symbp)
 {
     return (NULL);
 }
-#endif
 
 /*
  *  ======== MultithreadSupport_getTlsPtr ========
  */
-#if __ICCARM__
 #pragma section="__iar_tls$$DATA"
 void *MultithreadSupport_getTlsPtr()
 {
@@ -247,12 +165,6 @@ void *MultithreadSupport_getTlsPtr()
 
     return (pCurTaskEnv);
 }
-#elif __ICC430__
-Void *MultithreadSupport_getTlsPtr(Void)
-{
-    return (NULL);
-}
-#endif
 
 /*
  *  ======== MultithreadSupport_initLock ========

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ package ti.sysbios.rts;
  *  ======== MemAlloc ========
  *  This module conditionally generates re-entrant versions of RTS memory
  *  allocation functions like malloc(), calloc(), realloc(), free(),
- *  and memalign().
+ *  memalign(), and aligned_alloc().
  *
  *  If BIOS.heapSize is set to a non-zero value, the generated APIs
  *  forward their arguments to the corresponding re-entrant 

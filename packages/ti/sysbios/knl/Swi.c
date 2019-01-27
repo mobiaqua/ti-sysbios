@@ -292,14 +292,6 @@ Void Swi_startup(Void)
 }
 
 /*
- *  ======== Swi_unlockSched ========
- */
-Void Swi_unlockSched(Void)
-{
-    Swi_module->locked = FALSE;
-}
-
-/*
  *  ======== Swi_enabled ========
  */
 Bool Swi_enabled(Void)

@@ -43,6 +43,8 @@
 
 #include "package/internal/SecondsClock.xdc.h"
 
+#define NSECSPERSEC 1000000000  /* nanoseconds per second */
+
 /*
  *  ======== Clock_Module_startup ========
  */
@@ -201,4 +203,58 @@ Void SecondsClock_increment(UArg arg)
 Void SecondsClock_set(UInt32 seconds)
 {
     SecondsClock_module->seconds = seconds;
+}
+
+/*
+ *  ======== SecondsClock_setTime ========
+ */
+UInt32 SecondsClock_setTime(SecondsClock_Time *ts)
+{
+    UInt   key;
+    UInt32 secs;
+    UInt32 nsecs;
+    UInt32 ticksNSecs;
+    UInt32 ticksClock;
+    UInt32 nsecsPerTick;
+    UInt32 timeout;
+    UInt32 period;
+
+    /* Adjust seconds if nanoseconds is over a second */
+    secs = ts->secs + (ts->nsecs / NSECSPERSEC);
+    nsecs = ts->nsecs - (ts->nsecs / NSECSPERSEC) * NSECSPERSEC;
+
+    key = Hwi_disable();
+
+    nsecsPerTick = Clock_tickPeriod * 1000;
+
+    Clock_stop(SecondsClock_Module_State_clock());
+
+    ticksClock = Clock_getTicks();
+
+    /*
+     *  Adjust nsces to be a multiple of Clock ticks (in nanosecond units).
+     *  Take the ceiling of nsecs and the next Clock tick.  This will ensure
+     *  that if SecondsClock_getTime() is called immediately after
+     *  SecondsClock_setTime(), the time returned will not be behind the
+     *  time set.
+     */
+    ticksNSecs = ((nsecs + nsecsPerTick - 1) / 1000) / Clock_tickPeriod;
+
+    SecondsClock_module->seconds = secs;
+    SecondsClock_module->ticks = ticksClock - ticksNSecs;
+
+    /* Set the SecondsClock timeout to ticks per second - ticks */
+    timeout = (1000000 / Clock_tickPeriod) - ticksNSecs;
+    period = Clock_getPeriod(SecondsClock_Module_State_clock());
+    if ((timeout == 0) || (timeout > period)) {
+        /* Should not happen */
+        timeout = period;
+    }
+
+    Clock_setTimeout(SecondsClock_Module_State_clock(), timeout);
+    Clock_startI(SecondsClock_Module_State_clock());
+
+    Hwi_restore(key);
+
+    return (0);
 }

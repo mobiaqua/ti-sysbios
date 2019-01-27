@@ -323,3 +323,14 @@ Void Seconds_set(UInt32 seconds)
 
     Hwi_restore(hwiKey);
 }
+
+/*
+ *  ======== Seconds_setTime ========
+ */
+UInt32 Seconds_setTime(Seconds_Time *ts)
+{
+    /* The MSP432 RTC has only one-second resolution */
+    Seconds_set(ts->secs);
+
+    return (0);
+}

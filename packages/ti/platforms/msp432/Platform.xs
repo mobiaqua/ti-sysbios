@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2018, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -207,7 +207,7 @@ function instance$meta$init(name)
         }
         else if (this.deviceName.match(/^MSP432/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexm4";
-            this.CPU.clockRate = 48;
+            this.CPU.clockRate = 3;
         }
     }
 }

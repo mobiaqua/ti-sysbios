@@ -47,7 +47,8 @@ if (xdc.om.$name == "cfg") {
         }
     };
 
-    deviceTable["AM65X"] = deviceTable["SIMMAXWELL"];
+    deviceTable["AM65.*"] = deviceTable["SIMMAXWELL"];
+    deviceTable["J7ES"]   = deviceTable["SIMMAXWELL"];
 }
 
 /*
@@ -85,11 +86,22 @@ function module$meta$init()
     Core.common$.fxntab = false;
 
     for (var device in deviceTable) {
-        if (device == Program.cpu.deviceName) {
+        if (device == Program.cpu.deviceName ||
+            Program.cpu.deviceName.match(device)) {
             Core.baseClusterId = deviceTable[device].baseClusterId;
             return;
         }
     }
+
+    /* falls thru on failure */
+    print("Core module is not supported for the specified device (" +
+        Program.cpu.deviceName + ").");
+
+    for (device in deviceTable) {
+        print("\t" + device);
+    }
+
+    throw new Error ("Core module unsupported on device!");
 }
 
 /*
