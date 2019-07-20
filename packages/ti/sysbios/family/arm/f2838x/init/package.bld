@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,15 +42,13 @@ var objList = [
 
 var trgFilter = {
     field: "$name",
-    list: [
-            "ti.targets.arm.elf.M4",
-          ]
+    list: [ "ti.targets.arm.elf.M4" ]
 };
 
 /* generate makefiles */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
-Pkg.otherFiles = ["package.bld", "Boot.xml"];
+Pkg.otherFiles = ["package.bld", "linkcmd.xdt", "Boot.xml"];
 
 /* include source files in the release package */
 Pkg.attrs.exportSrc = true;

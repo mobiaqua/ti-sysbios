@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
 
     /* Cortex-M33 devices */
     deviceTable["MTL1_VSOC"] = deviceTable["FVP_MPS2"];
+    deviceTable["MTL1_CORE0"] = deviceTable["FVP_MPS2"];
+    deviceTable["MTL1_CORE1"] = deviceTable["FVP_MPS2"];
 }
 
 /*

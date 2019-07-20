@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,79 +46,9 @@ import ti.sysbios.family.arm.v8m.Hwi;
 
 /*!
  *  ======== Timer ========
- *  CC26xx Timer Peripheral Manager
+ *  MTL Timer Peripheral Manager
  *
- *  This Timer module manages the RTC timer peripheral on
- *  CC26XX/CC13XX devices.  This Timer operates in a dynamic tick mode
- *  (RunMode_DYNAMIC). Rather than interrupting on every fixed tick period,
- *  the Timer is dynamically reprogrammed to interrupt on the next required
- *  tick (as determined by work that has been scheduled with a future timeout).
- *
- *  By default, this Timer module is used by the SYS/BIOS
- *  {@link ti.sysbios.knl.Clock Clock} module for implementing timing services
- *  on CC26XX/CC13XX devices.  Operating in dynamic mode allows the Clock module
- *  to implement dynamic tick suppression, to reduce the number of interrupts
- *  from the timer, to the minimum required for any scheduled work.
- *
- *  The RTC peripheral is implemented as a 64-bit counter, with the upper
- *  32-bits of count representing seconds, and the lower 32-bits representing
- *  sub-seconds.  Three timer "channels" are provided for generating time match
- *  interrupt events.  The match compare value for each channel is a 32-bit
- *  value, spanning the lower 16-bits of the RTC seconds count, and the upper
- *  16-bits of the subsecond count.  There is a single interrupt line from the
- *  RTC to generate a CPU interrupt, for a match event occurring on any
- *  of these three channels.
- *
- *  Channel 0 of the RTC is dedicated to use by the Clock module.  This Timer
- *  module implementation is therefore responsible for overall management of
- *  the RTC, including resetting and starting the RTC during application boot,
- *  and providing the single interrupt service routine (ISR) for the RTC.
- *
- *  Channels 1 and 2 of the RTC are not used by the Clock module.  These
- *  channels may be available for use by some applications, depending upon the
- *  mix of software components being used.  For this purpose, this Timer
- *  module supports sharing of the RTC interrupt, to support usage
- *  of these other channels (in parallel with the usage of Channel 0 by the
- *  Clock module).
- *
- *  To use one of these other channels the application will need to explicitly
- *  configure an interrupt "hook" function for the channel. In this case, when
- *  an RTC interrupt triggers the ISR will check the status of each channel to
- *  see if the corresponding channel hook function should be called.
- *
- *  The time match values for Channel 0 will be automatically programmed by
- *  the Clock module.  To use Channels 1 (and/or Channel 2), the application
- *  will need to explicitly program the match value for the corresponding
- *  channel, for the desired time for the interrupt.  Also, the application
- *  will need to explicitly enable the additional channel(s).  Note that if a
- *  hook function is configured for Channel 1 or Channel 2, the corresponding
- *  events will be configured automatically when Channel 0 is started.  In
- *  other words, there is no need for the application to explicitly configure
- *  events for Channel 1 or Channel 2 by calling AONRTCCombinedEventConfig().
- *
- *  The below snippets show an example of using Channel 1, with Driverlib API
- *  calls to configure an RTC event at 4 seconds after boot.
- *
- *  First, in the application .cfg file a hook function is defined for
- *  Channel 1:
- *
- *  @p(code)
- *    var Timer = xdc.module('ti.sysbios.family.arm.cc26xx.Timer');
- *    Timer.funcHookCH1 = "&myHookCH1";
- *  @p
- *
- *  In main(), Channel 1 is first cleared, a compare (match) value of 4 seconds
- *  is set, the channel is enabled:
- *
- *  @p(code)
- *    AONRTCEventClear(AON_RTC_CH1);
- *    AONRTCCompareValueSet(AON_RTC_CH1, 0x40000);
- *    AONRTCChannelEnable(AON_RTC_CH1);
- *  @p
- *
- *  With the above, myHookCH1() will be called when the RTC reaches a count of
- *  4 seconds.  At that time, a new compare value can be written for the next
- *  interrupt that should occur for Channel 1.
+ *  This Timer module manages the SystemTimer peripheral on MTL devices.
  *
  *  @p(html)
  *  <h3> Calling Context </h3>
@@ -191,11 +121,11 @@ import ti.sysbios.family.arm.v8m.Hwi;
 
 module Timer inherits ti.sysbios.interfaces.ITimer
 {
-    /*! override supportsDynamic - this Timer does support RunMode_DYNAMIC */
-    override metaonly config Bool supportsDynamic = true;
+    /*! initially this Timer does not support RunMode_DYNAMIC */
+    override metaonly config Bool supportsDynamic = false;
 
-    /*! override defaultMode - use RunMode_PERIODIC by default */
-    override metaonly config Bool defaultDynamic = true;
+    /*! use RunMode_PERIODIC by default */
+    override metaonly config Bool defaultDynamic = false;
 
     // -------- Module Types --------
 
@@ -213,7 +143,12 @@ module Timer inherits ti.sysbios.interfaces.ITimer
         Ptr         halTimerHandle;
         String      label;
         UInt        id;
+        UInt        channelId;
         String      startMode;
+        String      runMode;
+        UInt        period;
+        String      periodType;
+        UInt        intNum;
         String      tickFxn[];
         UArg        arg;
         String      hwiHandle;
@@ -222,12 +157,16 @@ module Timer inherits ti.sysbios.interfaces.ITimer
     /*! @_nodoc */
     metaonly struct DeviceView {
         UInt        id;
+        UInt        channelId;
         String      device;
         String      devAddr;
         UInt        intNum;
+        String      runMode;
+        UInt32      period;
         UInt32      currCount;
-        UInt32      nextCompareCount;
         UInt32      remainingCount;
+        UInt32      prevThreshold;
+        UInt32      nextThreshold;
         String      state;
     };
 
@@ -300,49 +239,30 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      *  Timer_create() is called with an id equal to
      *  {@link Timer#ANY Timer_ANY}.
      */
-    config UInt anyMask = 0x1;
+    config UInt anyMask = 0x3;
 
     /*!
-     *  ======== funcHookCH1 ========
-     *  Optional hook function for processing RTC channel 1 events
-     *
-     *  This function will be called when there is a timeout event on
-     *  RTC Channel 1.  It will be called from hardware interrupt context,
-     *  so any API calls from this function must be appropriate for
-     *  execution from an ISR.
-     *
-     *  Function hooks are only supported with RunMode_DYNAMIC.
+     *  ======== stopFreeRun ========
+     *  @_nodoc
+     *  Stop timer during debug halt.
      */
-    config FuncPtr funcHookCH1 = null;
+    config Bool stopFreeRun = true;
 
     /*!
-     *  ======== funcHookCH2 ========
-     *  Optional hook function for processing RTC channel 2 events.
+     *  ======== getAvailMask ========
+     *  Returns the availMask.
      *
-     *  This function will be called when there is a timeout event on
-     *  RTC Channel 2.  It will be called from hardware interrupt context,
-     *  so any API calls from this function must be appropriate for
-     *  execution from an ISR.
-     *
-     *  Function hooks are only supported with RunMode_DYNAMIC.
+     *  @b(returns)     Mask of available timers
      */
-    config FuncPtr funcHookCH2 = null;
+    UInt getAvailMask();
 
     /*!
-     *  ======== dynamicStub ========
+     *  ======== oneShotStub ========
      *  @_nodoc
      *
      *  @param(arg)     Unused.
      */
-    Void dynamicStub(UArg arg);
-
-    /*!
-     *  ======== dynamicMultiStub ========
-     *  @_nodoc
-     *
-     *  @param(arg)     Unused.
-     */
-    Void dynamicMultiStub(UArg arg);
+    Void oneShotStub(UArg arg);
 
     /*!
      *  ======== periodicStub ========
@@ -352,21 +272,19 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      */
     Void periodicStub(UArg arg);
 
-   /*!
-     *  ======== getCount64 ========
-     *  Read the 64-bit timer counter register
+    /*!
+     *  ======== setAvailMask ========
+     *  Set the availMask to given mask.
      *
-     *  @b(returns)     timer counter value
-     */
-    UInt64 getCount64(Object * timer);
-
-   /*!
-     *  ======== getExpiredCounts64 ========
-     *  Returns expired counts (64-bits) since the last serviced interrupt.
+     *  This function validates the given mask to ensure it does not mark
+     *  any currently used timer as available. If validation is successful,
+     *  the mask overwrites the current availMask and the function returns
+     *  TRUE. Otherwise, the mask is discarded and the function returns
+     *  FALSE.
      *
-     *  @b(returns)     timer counter value
+     *  @param(mask)    Mask used to write to availMask
      */
-    UInt64 getExpiredCounts64(Object * timer);
+    Bool setAvailMask(UInt mask);
 
     /*!
      *  ======== getHandle ========
@@ -410,23 +328,39 @@ internal:   /* not for client use */
      */
     Void setThreshold(Object *timer, UInt32 next, Bool wrap);
 
+    /*! Information about timer */
+    struct TimerDevice {
+        UInt intNum;
+        UInt channelId;
+    };
+
+    /*!
+     *  ======== numTimerDevices ========
+     *  The number of physical timers on the device
+     */
+    config Int numTimerDevices;
+
     struct Instance_State {
         Bool                    staticInst;
         Int                     id;
+        UInt32                  channelId;
+        RunMode                 runMode;
         ITimer.StartMode        startMode;
         UInt32                  period;
+        PeriodType              periodType;
+        UInt                    intNum;
         UArg                    arg;
         Hwi.FuncPtr             tickFxn;
-        Types.FreqHz            frequency;
+        Types.FreqHz            extFreq;
         Hwi.Handle              hwi;
-        UInt64                  period64;
-        UInt64                  savedCurrCount;
-        UInt64                  prevThreshold;
-        UInt64                  nextThreshold;
+        UInt32                  savedCurrCount;
+        UInt32                  prevThreshold;
+        UInt32                  nextThreshold;
     }
 
     struct Module_State {
         UInt            availMask;      /* available peripherals */
-        Handle          handle;	    /* array of handles based on id */
+        TimerDevice     device[];       /* timer device info */
+        Handle          handles[];      /* array of handles based on id */
     }
 }

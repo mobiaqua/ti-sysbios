@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -205,6 +205,9 @@ function getDefaultTimestampDelegate()
     else if (Program.cpu.deviceName.match(/F2807/) ||
              Program.cpu.deviceName.match(/F2837/)) {
         return ("ti.sysbios.family.c28.f2837x.TimestampProvider");
+    }
+    else if (Program.cpu.deviceName.match(/F2838/)) {
+        return ("ti.sysbios.family.c28.f2838x.TimestampProvider");
     }
     else {
         return ("ti.sysbios.family.c28.TimestampProvider");

@@ -230,7 +230,7 @@ module EventCombiner
     /*!
      *  Event Combiner registers base address
      */
-    config Registers *EVTRegs = 0x01800000;
+    config Registers *EVTRegs;
 
     /*!
      *  Assert raised when an invalid event id number is specified

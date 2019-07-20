@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -228,6 +228,10 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 #endif
     UInt intNum;
 
+    if (status == 1) {  /* failed Hwi_create */
+        return;
+    }
+
     for (intNum = 0; intNum < Hwi_NUM_INTERRUPTS; intNum++) {
         if (Hwi_module->dispatchTable[intNum] == hwi) {
             break;
@@ -241,10 +245,6 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 
     Hwi_disableInterrupt(intNum);
     Hwi_module->dispatchTable[intNum] = ti_sysbios_family_arm_a8_intcps_Hwi_Module_State_nonPluggedHwi();
-
-    if (status == 1) {  /* failed Hwi_create */
-        return;
-    }
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
     if (Hwi_hooks.length > 0) {

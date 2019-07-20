@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
  */
 
 var Boot = null;
+var BIOS = null;
 var Program = null;
 var Build = null;
 
@@ -47,6 +48,12 @@ function module$meta$init()
         return;
     }
     Boot = this;
+
+    /* set default loadSegment */
+    Boot.loadSegment = "CMBANK0_SECTOR0";
+
+    /* default runSegment */
+    Boot.runSegment = "S0RAM";
 }
 
 /*
@@ -56,20 +63,29 @@ function module$use()
 {
     Program = xdc.useModule('xdc.cfg.Program');
     Build = xdc.useModule('ti.sysbios.Build');
+    BIOS = xdc.module("ti.sysbios.BIOS");
 
     /* only install Boot_init if using XDC runtime */
     if (Program.build.rtsName === null) {
         return;
     }
 
-    /* install Boot_init as reset function */
-    var Reset = xdc.useModule('xdc.runtime.Reset');
-    Reset.fxns[Reset.fxns.length++] =
-        '&ti_sysbios_family_arm_f2838x_init_Boot_init';
+    /* disable watchdog */
+    if (Boot.disableWatchdog == true) {
+        /* install Reset function */
+        var Reset = xdc.useModule('xdc.runtime.Reset');
+        Reset.fxns[Reset.fxns.length++] =
+            '&ti_sysbios_family_arm_f2838x_init_Boot_init';
+    }
 
-    /* initialy set CPU rate to 95MHz, the default set by Flash plugin in CCS */
-    var BIOS = xdc.module('ti.sysbios.BIOS');
-    BIOS.cpuFreq.lo = 95000000;
+    /* configure Flash controller */
+    if (Boot.configureFlashController == true) {
+        updateFlashWaitStates(BIOS.cpuFreq.lo);
+        /* install Startup first function (runs as ramfunc) */
+        var Startup = xdc.useModule('xdc.runtime.Startup');
+        Startup.firstFxns[Startup.firstFxns.length++] =
+            '&ti_sysbios_family_arm_f2838x_init_Boot_initStartup';
+    }
 }
 
 /*
@@ -82,5 +98,42 @@ function viewInitModule(view, obj)
     var Boot = xdc.useModule('ti.sysbios.family.arm.f2838x.init.Boot');
     var modCfg = Program.getModuleConfig(Boot.$name);
 
-    view.disableWatchdog        = modCfg.disableWatchdog
+    view.disableWatchdog          = modCfg.disableWatchdog;
+    view.configureFlashController = modCfg.configureFlashController;
+    view.configureFlashWaitStates = modCfg.configureFlashWaitStates;
+    view.enableFlashProgramCache  = modCfg.enableFlashProgramCache;
+    view.enableFlashDataCache     = modCfg.enableFlashDataCache;
+    view.pllSourcedINTOSC         = modCfg.pllSourcedINTOSC;
+    view.bootFromFlash            = modCfg.bootFromFlash;
+}
+
+/*
+ *  ======== updateFlashWaitStates ========
+ */
+function updateFlashWaitStates(freq)
+{
+    /* if using internal oscillator as source for OSCCLK */
+    if (Boot.pllSourcedINTOSC == true) {
+        if (freq <= 48000000) {
+            Boot.flashWaitStates = 0;
+        }
+        else if (freq <= 97000000) {
+            Boot.flashWaitStates = 1;
+        }
+        else {
+            Boot.flashWaitStates = 2;
+        }
+    }
+    /* else, external oscillator */
+    else {
+        if (freq <= 50000000) {
+            Boot.flashWaitStates = 0;
+        }
+        else if (freq <= 100000000) {
+            Boot.flashWaitStates = 1;
+        }
+        else {
+            Boot.flashWaitStates = 2;
+        }
+    }
 }

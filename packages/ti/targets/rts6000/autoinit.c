@@ -1,155 +1,208 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
 /*****************************************************************************/
-/* _AUTO_INIT()   v7.0.3 - Perform initialization of C variables.            */
-/*  Copyright (c) 1993-2016  Texas Instruments Incorporated                  */
+/* _AUTO_INIT()          - Perform initialization of C variables.            */
+/*                                                                           */
+/* Copyright (c) 1993 Texas Instruments Incorporated                         */
+/* http://www.ti.com/                                                        */
+/*                                                                           */
+/*  Redistribution and  use in source  and binary forms, with  or without    */
+/*  modification,  are permitted provided  that the  following conditions    */
+/*  are met:                                                                 */
+/*                                                                           */
+/*     Redistributions  of source  code must  retain the  above copyright    */
+/*     notice, this list of conditions and the following disclaimer.         */
+/*                                                                           */
+/*     Redistributions in binary form  must reproduce the above copyright    */
+/*     notice, this  list of conditions  and the following  disclaimer in    */
+/*     the  documentation  and/or   other  materials  provided  with  the    */
+/*     distribution.                                                         */
+/*                                                                           */
+/*     Neither the  name of Texas Instruments Incorporated  nor the names    */
+/*     of its  contributors may  be used to  endorse or  promote products    */
+/*     derived  from   this  software  without   specific  prior  written    */
+/*     permission.                                                           */
+/*                                                                           */
+/*  THIS SOFTWARE  IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS    */
+/*  "AS IS"  AND ANY  EXPRESS OR IMPLIED  WARRANTIES, INCLUDING,  BUT NOT    */
+/*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR    */
+/*  A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT    */
+/*  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,    */
+/*  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL  DAMAGES  (INCLUDING, BUT  NOT    */
+/*  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,    */
+/*  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY    */
+/*  THEORY OF  LIABILITY, WHETHER IN CONTRACT, STRICT  LIABILITY, OR TORT    */
+/*  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE    */
+/*  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.     */
+/*                                                                           */
 /*****************************************************************************/
-#include <string.h>
+#include <autoinit.h>
+#include <boot_hooks.h>
 
 #include <xdc/runtime/Startup.h>
 
 extern __FAR__ int xdc_runtime_Startup__EXECFXN__C;
 
-#define ALIGN_MASK 0x7
-#define ALIGN_PTR(ptr) \
-   ((unsigned *)(((unsigned)ptr + ALIGN_MASK) & ~ALIGN_MASK))
+extern void __tdeh_init();
 
-typedef void (*PTRFUNC)();
-#ifndef __TI_EABI__
+#define WDTPW                (0x5A00)
+#define WDTCNTCL             (0x0008)
+#define WDTHOLD              (0x0080)
+#define RESTORE_WDT(setting) (WDTPW | (0x00FF & (setting)) | WDTCNTCL)
+#define HOLD_WDT             (WDTPW | WDTHOLD)
 
-   extern far const PTRFUNC __pinit__[];
+#if __ARM_ARCH
+#define WDTCTL WDTCTL_SYM
+#endif
 
+extern volatile uint16_t WDTCTL;
+
+/*****************************************************************************/
+/* Standard top-level autoinit                                               */
+/*****************************************************************************/
+static __inline __attribute__((always_inline))
+void __TI_auto_init_template(int RUN_BINIT, int RUN_PINIT,
+                             volatile uint16_t* WDTCTL_ptr)
+{
+   if (RUN_BINIT)
+    run_binit();
+
+   uint16_t initial_WDT;
+   if (WDTCTL_ptr)
+   {
+      initial_WDT = *WDTCTL_ptr;
+      *WDTCTL_ptr = HOLD_WDT;
+   }
+
+   run_cinit();
+
+   if (WDTCTL_ptr)
+      *WDTCTL_ptr = RESTORE_WDT(initial_WDT);
+
+    /*-----------------------------------------------------------------------*/
+    /* Call the startup hook function.                                       */
+    /*-----------------------------------------------------------------------*/
+    _system_post_cinit();
+
+    /*-----------------------------------------------------------------------*/
+    /* Process XDC Startup                                                   */
+    /*-----------------------------------------------------------------------*/
+    if (&xdc_runtime_Startup__EXECFXN__C == (int*)1) {
+        xdc_runtime_Startup_exec__E();
+    }
+
+#ifdef _TMS320C6X
+   /*------------------------------------------------------------------------*/
+   /* Initialize master thread's Thread-Local variables. The RTS library     */
+   /* provides the function __TI_tls_init to initialize TLS block of a       */
+   /* given thread.  The address of the newly allocated TLS Block of the     */
+   /* thread is passed as input parameter to this routine. If NULL is passed */
+   /* the master thread's TLS block allocated by the linker is initialized.  */
+   /*------------------------------------------------------------------------*/
+   __TI_tls_init(NULL);
 #else
+   /*------------------------------------------------------------------------*/
+   /* For those targets that support table driven exception handling,        */
+   /* initialize the global exception stack data structure here before       */
+   /* calling C++ global constructors to prepare for the first exception.    */
+   /*------------------------------------------------------------------------*/
+   /* C6x will call __tdeh_init() from within __TI_tls_init() since each     */
+   /* thread must set up its own private exception stack.                    */
+   /*------------------------------------------------------------------------*/
+#if defined(__TI_TABLE_DRIVEN_EXCEPTIONS)
+    __tdeh_init();
+#endif
+#endif
 
-extern void __TI_tls_init(void * TLS_block_addr);
+    if (RUN_PINIT)
+       run_pinit();
+}
 
-#pragma WEAK(__TI_INITARRAY_Limit);
-#pragma WEAK(__TI_INITARRAY_Base);
+/******************************************************************************/
+/* Specializations                                                            */
+/******************************************************************************/
+__attribute__((section(".text:__TI_auto_init"), used))
+void AUTO_INIT(void)
+{
+   __TI_auto_init_template(1, 1, NULL);
+}
 
-extern far const PTRFUNC __TI_INITARRAY_Base[];
-extern far const PTRFUNC __TI_INITARRAY_Limit[];
+/******************************************************************************/
+/* We cannot include specializations when virtual encoding is enabled.        */
+/* Vritual encodings from all sections are stored in a single .encode section */
+/* which may reference the .text sections. This means that if one .text       */
+/* section in a file is referenced, all .text sections will be included in    */
+/* the link. This breaks the specialization model which requires all          */
+/* specializatinos to be in their own subsections and removeable by the       */
+/* linker.                                                                    */
+/******************************************************************************/
+#if !defined(__VIRTUAL_ENCODING__)
 
-typedef void (*handler_fptr)(const unsigned char* in, unsigned char* out);
+__attribute__((section(".text:__TI_auto_init_nobinit"), used))
+void __TI_auto_init_nobinit(void)
+{
+   __TI_auto_init_template(0, 1, NULL);
+}
 
-#define HANDLER_TABLE __TI_Handler_Table_Base
-#pragma WEAK(HANDLER_TABLE);
+__attribute__((section(".text:__TI_auto_init_nopinit"), used))
+void __TI_auto_init_nopinit(void)
+{
+   __TI_auto_init_template(1, 0, NULL);
+}
 
-extern far unsigned int HANDLER_TABLE;
+__attribute__((section(".text:__TI_auto_init_nobinit_nopinit"), used))
+void __TI_auto_init_nobinit_nopinit(void)
+{
+   __TI_auto_init_template(0, 0, NULL);
+}
 
-#pragma WEAK(__TI_Handler_Table_Limit);
-extern far unsigned int __TI_Handler_Table_Limit;
+__attribute__((section(".text:__TI_auto_init_hold_wdt"), used))
+void AUTO_INIT_HOLD_WDT(void)
+{
+   __TI_auto_init_template(1, 1, &WDTCTL);
+}
 
-#pragma WEAK(__TI_CINIT_Base);
-#pragma WEAK(__TI_CINIT_Limit);
+__attribute__((section(".text:__TI_auto_init_nobinit_hold_wdt"), used))
+void __TI_auto_init_nobinit_hold_wdt(void)
+{
+   __TI_auto_init_template(0, 1, &WDTCTL);
+}
 
-extern far unsigned char* __TI_CINIT_Base;
-extern far unsigned char* __TI_CINIT_Limit;
+__attribute__((section(".text:__TI_auto_init_nopinit_hold_wdt"), used))
+void __TI_auto_init_nopinit_hold_wdt(void)
+{
+   __TI_auto_init_template(1, 0, &WDTCTL);
+}
+
+__attribute__((section(".text:__TI_auto_init_nobinit_nopinit_hold_wdt"), used))
+void __TI_auto_init_nobinit_nopinit_hold_wdt(void)
+{
+   __TI_auto_init_template(0, 0, &WDTCTL);
+}
 
 #endif
 
-#ifndef __TI_EABI__
-void _auto_init(const void *cinit)
-{
-   const unsigned int *recptr = cinit;
-   int length;
+/*****************************************************************************/
+/* C6x __TI_cpp_init symbol */
+/*****************************************************************************/
+#ifdef _TMS320C6X
+void __TI_cpp_init(void) { run_pinit(); }
+#endif
 
-   if ((int)recptr != -1)
-      while ((length = *recptr++) != 0)
-      {
-         char *to   = (void*) *recptr++; 
-         char *from = (void*) recptr; 
-
-         memcpy(to, from, length); 
-
-         from   += length;
-         recptr  = ALIGN_PTR(from);
-      }
-
-   /*------------------------------------------------------------------------*/
-   /* Process XDC Startup                                                    */
-   /*------------------------------------------------------------------------*/
-   if (&xdc_runtime_Startup__EXECFXN__C == (int*)1) {
-      xdc_runtime_Startup_exec__E();
-   }
-
-   /*------------------------------------------------------------------------*/
-   /* Process Pinit table.                                                   */
-   /* consists of pointers to init functions.                                */
-   /* section is NULL terminated                                             */
-   /* pointer is = -1 if section does not exist.                             */
-   /*------------------------------------------------------------------------*/
-
-   if ((int)__pinit__ != -1)
-   {
-      int i = 0;
-      while (__pinit__[i] != NULL )
-         __pinit__[i++]();
-   }
-}
-      
-#else
-
-void _auto_init_elf(void)
-{
-   /*------------------------------------------------------------------------*/
-   /* If elfabi, process the compressed cinit table. The format              */
-   /* is as follows:                                                         */
-   /* |4-byte load addr|4-byte run addr|                                     */
-   /* |4-byte load addr|4-byte run addr|                                     */
-   /*                                                                        */
-   /* Processing steps:                                                      */
-   /*   1. Read load and run address.                                        */
-   /*   2. Read one byte at load address, say idx.                           */
-   /*   3. Get pointer to handler at handler_start[idx]                      */
-   /*   4. call handler(load_addr + 1, run_addr)                             */
-   /*------------------------------------------------------------------------*/
-   unsigned char** table_ptr;
-   unsigned char** table_limit;
-
-   if (!(&__TI_Handler_Table_Base >= &__TI_Handler_Table_Limit))
-   {
-      table_ptr   = (unsigned char**) &__TI_CINIT_Base;
-      table_limit = (unsigned char**) &__TI_CINIT_Limit;
-      while (table_ptr < table_limit)
-      {
-        unsigned char* load_addr  = *table_ptr++;
-        unsigned char* run_addr   = *table_ptr++;
-        unsigned char handler_idx = *load_addr++;
-
-        handler_fptr handler      = (handler_fptr)(&HANDLER_TABLE)[handler_idx];
-
-        (*handler)((const unsigned char*)load_addr, run_addr);
-      }
-   }
-
-   /*------------------------------------------------------------------------*/
-   /* Process XDC Startup                                                    */
-   /*------------------------------------------------------------------------*/
-   if (&xdc_runtime_Startup__EXECFXN__C == (int*)1) {
-      xdc_runtime_Startup_exec__E();
-   }
-
-   __TI_tls_init(NULL);
-
-   /*------------------------------------------------------------------------*/
-   /* Process Pinit table for ELF.                                           */
-   /* The section is not NULL terminated, but can be accessed by pointers    */
-   /* which point to the beginning and end of the section.                   */
-   /*------------------------------------------------------------------------*/
-   if (__TI_INITARRAY_Base != __TI_INITARRAY_Limit)
-   {
-      int i = 0;
-      while (&(__TI_INITARRAY_Base[i]) != __TI_INITARRAY_Limit)
-         __TI_INITARRAY_Base[i++]();
-   }
-}
-
+#ifdef __TI_RTS_BUILD
+/*---------------------------------------------------------------------------*/
+/* __TI_default_auto_init indicates that the default TI auto initialization  */
+/* routine is being used.  The linker makes assumptions about how            */
+/* initialization is being performed when this symbols is seen.  This symbol */
+/* should NOT be defined if a customized auto initialization routine is used.*/
+/*---------------------------------------------------------------------------*/
+__asm("__TI_default_auto_init .set 1");
 #endif
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 12-18-2018 16:06:30; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-18-2019 17:45:16; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

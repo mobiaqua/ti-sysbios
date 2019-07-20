@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ function getAsmFiles(targetName)
 
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
-        "SIMFLEMING": {
+        "J7.*": {
             binaryPointReg     : 3,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
@@ -85,7 +85,7 @@ if (xdc.om.$name == "cfg") {
             ],
             enableSecureMode   : false
         },
-        "SIMMAXWELL": {
+        "AM65.*": {
             binaryPointReg     : 3,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
@@ -109,9 +109,6 @@ if (xdc.om.$name == "cfg") {
             enableSecureMode   : false
         }
     };
-
-    deviceTable["AM65.*"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"] = deviceTable["SIMMAXWELL"];
 }
 
 

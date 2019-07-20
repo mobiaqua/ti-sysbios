@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -180,6 +180,20 @@ function instance$meta$init(name)
     }
 
     this.CPU.clockRate = this.clockRate;
+
+    /*
+     * For F2838X devices set a non-zero default CPU frequency.  This value
+     * will typically be overriden by the application configuration, or it
+     * may be set by the Boot module (if PLL and clock configuration is
+     * enabled).  The frequency must be non-zero to avoid a build error in
+     * BIOS.xs.  For a default, will use the frequency typically established
+     * by the Flash loader.
+     */
+    if (this.deviceName.match(/2838/)) {
+        if (this.clockRate == 0) {
+            this.CPU.clockRate = 190;
+        }
+    }
 
     /* We need the device name so we can include the right linker command file,
      * in case the user requests it.

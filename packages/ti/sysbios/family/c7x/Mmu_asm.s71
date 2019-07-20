@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2018, Texas Instruments Incorporated
+;  Copyright (c) 2019, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -30,17 +30,70 @@
 ;  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 ;
-; ======== IntrinsicsSupport_asm_iar.s ========
+; ======== Mmu_asm.s71 ========
 ;
 ;
-        PRESERVE8
 
-        PUBLIC ti_sysbios_family_arm_v8m_IntrinsicsSupport_maxbit__E
+        .global ti_sysbios_family_c7x_Mmu_init__I
+        .sect ".text:ti_sysbios_family_c7x_Mmu_init__I"
+        .clink
+ti_sysbios_family_c7x_Mmu_init__I
+        .asmfunc
 
-        SECTION CODE:CODE:NOROOT
-        THUMB
-ti_sysbios_family_arm_v8m_IntrinsicsSupport_maxbit__E:
-        clz     r0, r0
-        rsb     r0, r0, #31
-        bx      r14
-        END
+        mvc.s1   a4, TBR0
+||      ret.b1
+
+        .endasmfunc
+
+        .global ti_sysbios_family_c7x_Mmu_isEnabled__E
+        .sect ".text:ti_sysbios_family_c7x_Mmu_isEnabled__E"
+        .clink
+ti_sysbios_family_c7x_Mmu_isEnabled__E
+        .asmfunc
+
+        mvc.s1   SCR, a4
+        nop
+        andd.l1  a4, 0x1, a4
+||      ret.b1
+
+        .endasmfunc
+
+        .global ti_sysbios_family_c7x_Mmu_setTCR__I
+        .sect ".text:ti_sysbios_family_c7x_Mmu_setTCR__I"
+        .clink
+ti_sysbios_family_c7x_Mmu_setTCR__I
+        .asmfunc
+
+        mvc.s1   a4, TCR0
+||      ret.b1
+
+        .endasmfunc
+
+        .global ti_sysbios_family_c7x_Mmu_tlbInvAll__E
+        .sect ".text:ti_sysbios_family_c7x_Mmu_tlbInvAll__E"
+        .clink
+ti_sysbios_family_c7x_Mmu_tlbInvAll__E
+        .asmfunc
+
+        mvc.s1   a4, TLB_INV
+||      ret.b1
+
+        .endasmfunc
+
+        .global ti_sysbios_family_c7x_Mmu_setMAIRAsm__I
+        .sect ".text:ti_sysbios_family_c7x_Mmu_setMAIRAsm__I"
+        .clink
+ti_sysbios_family_c7x_Mmu_setMAIRAsm__I
+        .asmfunc
+
+        shld.l1  a4, 3, a4
+        shld.l1  a5, a4, a5
+        mvk64.l1 0xff, a6
+        mvc.s1   MAR, a7
+        shld.l1  a6, a4, a6
+        andnd.l1 a6, a7, a4
+        ord.l1   a4, a5, a4
+        mvc.s1   a4, MAR
+||      ret.b1
+
+        .endasmfunc

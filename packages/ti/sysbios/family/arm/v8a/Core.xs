@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,16 +39,12 @@ var Core = null;
 
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
-        "SIMFLEMING": {
-            baseClusterId : 2
-        },
-        "SIMMAXWELL": {
+        "AM65.*": {
             baseClusterId : 0
         }
     };
 
-    deviceTable["AM65.*"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7ES"]   = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]   = deviceTable["AM65.*"];
 }
 
 /*

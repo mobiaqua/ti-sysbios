@@ -287,7 +287,7 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  SGI be routed to.
      *
      *  The routingMode field determines whether a generated SGI is routed to
-     *  all cores except the core generating the SGI (Hwi_RoutingMode_ANY) or
+     *  all cores except the core generating the SGI (Hwi_RoutingMode_ALL) or
      *  to list of target cores identified by the "targetList" and "aff1"
      *  fields (Hwi_RoutingMode_NODE).
      */

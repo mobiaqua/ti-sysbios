@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
@@ -60,7 +60,7 @@ function genConstCustom(names, types)
     return (sb.toString() + "");
 }
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,2; 12-17-2018 15:57:21; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 4-18-2019 17:33:10; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
-Copyright (c) 2018, Texas Instruments Incorporated
+Copyright (c) 2018-2019, Texas Instruments Incorporated
 All rights reserved.
 -->
 
@@ -23,7 +23,155 @@ All rights reserved.
         </tr>
         <tr>
           <td><control type="checkbox"
-                       label="Enable boot from FLASH"
+                       label="Configure PLL and CPU clock dividers"
+                       value="value:this.configureClocks"
+                       tooltip="value:this.configureClocks.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Oscillator clock source select bit for OSCCLK"
+                       align="left"/></td>
+          <td><control type="droplist"
+                       value="value:this.OSCCLKSRCSEL"
+                       tooltip="value:this.OSCCLKSRCSEL.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Input clock (OSCCLK) frequency (MHz)"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.OSCCLK"
+                       tooltip="value:this.OSCCLK.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="PLL Integer Multiplier - SPLLIMULT"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.SPLLIMULT"
+                       tooltip="value:this.SPLLIMULT.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="PLL Reference Clock Divider (REFDIV)"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.SPLLREFDIV"
+                       tooltip="value:this.SPLLREFDIV.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="PLL Output Clock Divider (ODIV)"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.SPLLODIV"
+                       tooltip="value:this.SPLLODIV.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="System Clock Divider (SYSCLKDIVSEL)"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.SYSCLKDIVSEL"
+                       tooltip="value:this.SYSCLKDIVSEL.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="CM clock source select bit (CMDIVSRCSEL)"
+                       align="left"/></td>
+          <td><control type="droplist"
+                       value="value:this.CMDIVSRCSEL"
+                       tooltip="value:this.CMDIVSRCSEL.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="CM clock divider select (CMCLKDIV)"
+                       align="left"/></td>
+          <td><control type="droplist"
+                       value="value:this.CMCLKDIV"
+                       tooltip="value:this.CMCLKDIV.$summary"
+                       enabled="value:this.configureClocks"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Abort function if OSCCLK is missing"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.limpAbortFunction"
+                       enabled="value:this.configureClocks"
+                       tooltip="value:this.limpAbortFunction.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Configure Flash controller"
+                       value="value:this.configureFlashController"
+                       tooltip="value:this.configureFlashController.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Configure Flash wait states"
+                       value="value:this.configureFlashWaitStates"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.configureFlashWaitStates.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable Flash program cache"
+                       value="value:this.enableFlashProgramCache"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.enableFlashProgramCache.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable Flash data cache"
+                       value="value:this.enableFlashDataCache"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.enableFlashDataCache.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Load Segment for Flash configuration functions"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.loadSegment"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.loadSegment.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Run Segment for Flash configuration functions"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       value="value:this.runSegment"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.runSegment.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Configure shared RAM ownership"
+                       value="value:this.configureSharedRAMs"
+                       tooltip="value:this.configureSharedRAMs.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="label"
+                       label="Shared RAM owner mask"
+                       align="left"/></td>
+          <td><control type="editbox"
+                       display="hex"
+                       value="value:this.sharedMemoryOwnerMask"
+                       enabled="value:this.configureSharedRAMs"
+                       tooltip="value:this.sharedMemoryOwnerMask.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable boot from Flash"
                        value="value:this.bootFromFlash"
                        tooltip="value:this.bootFromFlash.$summary"/></td>
         </tr>

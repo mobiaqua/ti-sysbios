@@ -258,6 +258,7 @@ function generateExampleTemplates(examples, targetOptions,
                             compilerBuildOptions: opts.compilerBuildOptions,
                             linkerBuildOptions: opts.linkerBuildOptions,
                             endianness: opts.endianness,
+                            outputFormat: opts.outputFormat,
                             title: exampleList[j].title,
                             name: exampleList[j].name,
                             description: exampleList[j].description,
@@ -409,5 +410,9 @@ function getTargetOptions(opts, deviceOpts)
 
     if ('endianness' in deviceOpts) {
         opts.endianness = deviceOpts.endianness;
+    }
+
+    if ('outputFormat' in deviceOpts) {
+        opts.outputFormat = deviceOpts.outputFormat;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,6 +78,7 @@ extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
  *
  *  Must be called with interrupts disabled.
  */
+/* REQ_TAG(SYSBIOS-456) */
 Void Task_schedule(Void)
 {
     Queue_Handle maxQ;
@@ -178,6 +179,7 @@ Void Task_enter(Void)
  *  Called at system init time before main().
  */
 /* MISRA.FUNC.UNUSEDPAR.2012 */
+/* REQ_TAG(SYSBIOS-464) */
 Int Task_Module_startup (Int phase)
 {
     /*
@@ -235,7 +237,9 @@ Int Task_Module_startup (Int phase)
 Void Task_startup(Void)
 {
     Task_startCore(0);
+/* LCOV_EXCL_START */
 }
+/* LCOV_EXCL_STOP */
 
 /*
  *  ======== Task_startCore ========
@@ -313,7 +317,9 @@ Void Task_startCore(UInt coreId)
    /* start first task by way of enter() */
     Task_SupportProxy_swap((Ptr)&prevTask->context,
                 (Ptr)&Task_module->curTask->context);
+/* LCOV_EXCL_START */
 }
+/* LCOV_EXCL_STOP */
 
 /*
  *  ======== Task_enabled ========
@@ -399,6 +405,7 @@ Void Task_restoreHwi(UInt tskKey)
 /*
  *  ======== Task_self ========
  */
+/* REQ_TAG(SYSBIOS-511) */
 Task_Handle Task_self(Void)
 {
     return (Task_module->curTask);
@@ -560,6 +567,7 @@ Void Task_sleepTimeout(UArg arg)
 /*
  *  ======== Task_sleep ========
  */
+/* REQ_TAG(SYSBIOS-518) */
 Void Task_sleep(UInt32 timeout)
 {
     Task_PendElem elem;
@@ -574,7 +582,7 @@ Void Task_sleep(UInt32 timeout)
                     Task_A_badTimeout);
 
     /*
-     * BIOS_clockEnabled check is here to eliminate Clock module 
+     * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
@@ -604,7 +612,7 @@ Void Task_sleep(UInt32 timeout)
     Task_blockI(elem.taskHandle);
 
     /*
-     * BIOS_clockEnabled check is here to eliminate Clock module 
+     * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
@@ -622,7 +630,7 @@ Void Task_sleep(UInt32 timeout)
     Task_restore(tskKey);       /* the calling task will block here */
 
     /*
-     * BIOS_clockEnabled check is here to eliminate Clock module 
+     * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
@@ -692,6 +700,7 @@ Task_Handle Task_getIdleTaskHandle(UInt coreId)
 /*
  *  ======== Task_Instance_init ========
  */
+/* REQ_TAG(SYSBIOS-575), REQ_TAG(SYSBIOS-463) */
 Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
                 const Task_Params *params, Error_Block *eb)
 {
@@ -980,8 +989,8 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
             if (Queue_empty(tsk->readyQ)) {
                 Task_module->curSet &= ~tsk->mask;
             }
-            
-            /* 
+
+            /*
              * if task was made ready by a pend timeout but hasn't run yet
              * then its clock object is still on the Clock service Q.
              */
@@ -1093,6 +1102,7 @@ Ptr Task_getEnv(Task_Object *tsk)
 /*
  *  ======== Task_FuncPtr ========
  */
+/* REQ_TAG(SYSBIOS-455) */
 Task_FuncPtr Task_getFunc(Task_Object *task, UArg *arg0, UArg *arg1)
 {
     if (arg0 != NULL) {
@@ -1109,6 +1119,7 @@ Task_FuncPtr Task_getFunc(Task_Object *task, UArg *arg0, UArg *arg1)
 /*
  *  ======== Task_getHookContext ========
  */
+/* REQ_TAG(SYSBIOS-454) */
 Ptr Task_getHookContext(Task_Object *tsk, Int id)
 {
     return tsk->hookEnv[id];
@@ -1117,6 +1128,7 @@ Ptr Task_getHookContext(Task_Object *tsk, Int id)
 /*
  *  ======== Task_setHookContext ========
  */
+/* REQ_TAG(SYSBIOS-454) */
 Void Task_setHookContext(Task_Object *tsk, Int id, Ptr hookContext)
 {
     tsk->hookEnv[id] = hookContext;
@@ -1125,6 +1137,7 @@ Void Task_setHookContext(Task_Object *tsk, Int id, Ptr hookContext)
 /*
  *  ======== Task_getPri ========
  */
+/* REQ_TAG(SYSBIOS-510) */
 Int Task_getPri(Task_Object *tsk)
 {
    return tsk->priority;
@@ -1157,6 +1170,7 @@ Void Task_setEnv(Task_Object *tsk, Ptr env)
 /*
  *  ======== Task_setPri ========
  */
+/* REQ_TAG(SYSBIOS-510) */
 Int Task_setPri(Task_Object *tsk, Int priority)
 {
     Int oldPri;
@@ -1250,6 +1264,7 @@ Task_Mode Task_getMode(Task_Object *tsk)
 /*
  *  ======== Task_getPrivileged ========
  */
+/* REQ_TAG(SYSBIOS-573) */
 Bool Task_getPrivileged(Task_Object *tsk)
 {
     return (tsk->privileged);

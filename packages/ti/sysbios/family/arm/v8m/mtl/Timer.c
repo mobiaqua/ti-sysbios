@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@
  *  ======== Timer.c ========
  *
  */
-
 #include <xdc/std.h>
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/Assert.h>
@@ -41,18 +40,19 @@
 #include <xdc/runtime/Types.h>
 
 #include <ti/sysbios/BIOS.h>
-#include <ti/sysbios/hal/Hwi.h>
+#include <ti/sysbios/family/arm/v8m/Hwi.h>
+#include <ti/sysbios/family/arm/v8m/mtl/Core.h>
 
-//#include DeviceFamily_constructPath(driverlib/aon_rtc.h)
-//#include DeviceFamily_constructPath(driverlib/aon_event.h)
-//#include DeviceFamily_constructPath(driverlib/interrupt.h)
+#include <ti/devices/mtxx/mtl1.h>
+#include <ti/devices/mtxx/hwpi/hwpi_sysrtc.h>
 
 #include "package/internal/Timer.xdc.h"
 
-#define COMPARE_MARGIN 6
-
-#define MAX_SKIP  (0x7E9000000000)    /* 32400 seconds (9 hours) */
-
+#define TIMER_DELETED   0
+#define BAD_TIMER_ID    1
+#define NO_TIMER_AVAIL  2
+#define NO_HWI_OBJ      3
+#define BAD_PERIOD      4
 
 /*
  *  ======== Timer_getNumTimers ========
@@ -60,7 +60,7 @@
  */
 UInt Timer_getNumTimers()
 {
-    return (1);
+    return (Timer_numTimerDevices);
 }
 
 /*
@@ -69,7 +69,7 @@ UInt Timer_getNumTimers()
  */
 Timer_Status Timer_getStatus(UInt timerId)
 {
-    Assert_isTrue(timerId < 1, NULL);
+    Assert_isTrue(timerId < Timer_numTimerDevices, NULL);
 
     if (Timer_module->availMask & (0x1 << timerId)) {
         return (Timer_Status_FREE);
@@ -84,57 +84,32 @@ Timer_Status Timer_getStatus(UInt timerId)
  */
 UInt32 Timer_getMaxTicks(Timer_Object *obj)
 {
-    UInt32 ticks;
-    UInt64 temp;
-
-    temp = (UInt64)(MAX_SKIP) / obj->period64;
-
-    /* clip value to Clock tick count limit of 32-bits */
-    if (temp > 0xFFFFFFFF) {
-        ticks = 0xFFFFFFFF;
-    }
-    else {
-        ticks = (UInt32) temp;
-    }
-
-    return (ticks);
+    return (0);
 }
 
 /*
- *  ======== Timer_setThreshold ========
+ *  ======== Timer_setAvailMask ========
  */
-Void Timer_setThreshold(Timer_Object *obj, UInt32 next, Bool wrap)
+Bool Timer_setAvailMask(UInt mask)
 {
-    UInt32 now;
-    Bool key;
+    UInt i;
+    UInt key;
+    UInt tmpMask;
 
-    /* prevent preemption by setting PRIMASK */
-//    key = IntMasterDisable();
     key = Hwi_disable();
-
-    /* get the current RTC count corresponding to compare window */
-//    now = AONRTCCurrentCompareValueGet();
-    now = 1;
-    
-    /* else if next is too soon, set at least one RTC tick in future */
-    /* assume next never be more than half the maximum 32 bit count value */
-    if ((next - now) > (UInt32)0x80000000) {
-	/* now is past next */
-        next = now + COMPARE_MARGIN;
-    }
-    else if ((now + COMPARE_MARGIN - next) < (UInt32)0x80000000) {
-        if (next < now + COMPARE_MARGIN) {
-            next = now + COMPARE_MARGIN;
+    tmpMask = mask;
+    for (i = 0; i < Timer_numTimerDevices; i++) {
+        /* Check if mask is setting any currently used timer as available */
+        if ((tmpMask & 0x1) && (Timer_module->handles[i] != NULL)) {
+            Hwi_restore(key);
+            return (FALSE);
         }
+        tmpMask = tmpMask >> 1;
     }
+    Timer_module->availMask = mask;
+    Hwi_restore(key);
 
-    /* set next compare threshold in RTC */
-//    AONRTCCompareValueSet(AON_RTC_CH0, next);
-
-    /* restore PRIMASK */
-    if (!key) {
-//        IntMasterEnable();
-    }
+    return (TRUE);
 }
 
 /*
@@ -142,21 +117,14 @@ Void Timer_setThreshold(Timer_Object *obj, UInt32 next, Bool wrap)
  */
 Void Timer_setNextTick(Timer_Object *obj, UInt32 ticks)
 {
-    Bool wrap = FALSE;
-    UInt32 next;
-    UInt64 newThreshold;
+}
 
-    /* calculate new 64-bit RTC count for next interrupt */
-    newThreshold = obj->savedCurrCount + (UInt64)ticks * obj->period64;
-
-    /* isolate the new 32-bit compare value to write to RTC */
-    next = (UInt32)(newThreshold >> 16);
-
-    /* set the compare threshold at the RTC */
-    Timer_setThreshold(obj, next, wrap);
-
-    /* save the threshold for next interrupt */
-    obj->prevThreshold = newThreshold;
+/*
+ *  ======== Timer_setThreshold ========
+ */
+Void Timer_setThreshold(Timer_Object *obj, UInt32 next, Bool wrap)
+{
+    SYSRTC_setUTIMEVAL(SYSRTC, obj->channelId, next);
 }
 
 /*
@@ -167,12 +135,19 @@ Void Timer_setNextTick(Timer_Object *obj, UInt32 ticks)
 Int Timer_Module_startup(Int status)
 {
     Timer_Object *obj;
+    Int i;
+
+#if ti_sysbios_family_arm_v8m_mtl_Timer_stopFreeRun__D==TRUE
+    SYSRTC_stopFreeRun(SYSRTC);
+#endif
 
     if (Timer_startupNeeded) {
-        obj = Timer_module->handle;
-        /* if timer was statically created/constructed */
-        if ((obj != NULL) && (obj->staticInst)) {
-            Timer_postInit(obj, NULL);
+        for (i = 0; i < Timer_numTimerDevices; i++) {
+            obj = Timer_module->handles[i];
+            /* if timer was statically created/constructed */
+            if ((obj != NULL) && (obj->staticInst)) {
+                Timer_postInit(obj, NULL);
+            }
         }
     }
 
@@ -186,13 +161,16 @@ Int Timer_Module_startup(Int status)
 Void Timer_startup()
 {
     Timer_Object *obj;
+    Int i;
 
     if (Timer_startupNeeded) {
-        obj = Timer_module->handle;
-        /* if timer was statically created/constructed */
-        if ((obj != NULL) && (obj->staticInst)) {
-            if (obj->startMode == Timer_StartMode_AUTO) {
-                Timer_start(obj);
+        for (i = 0; i < Timer_numTimerDevices; i++) {
+            obj = Timer_module->handles[i];
+            /* if timer was statically created/constructed */
+            if ((obj != NULL) && (obj->staticInst)) {
+                if (obj->startMode == Timer_StartMode_AUTO) {
+                    Timer_start(obj);
+                }
             }
         }
     }
@@ -203,17 +181,129 @@ Void Timer_startup()
  */
 Timer_Handle Timer_getHandle(UInt id)
 {
-    Assert_isTrue((id < 1), NULL);
-    return (Timer_module->handle);
+    Assert_isTrue((id < Timer_numTimerDevices), NULL);
+    return (Timer_module->handles[id]);
 }
 
 /*
  *  ======== Timer_Instance_init ========
+ * 1. Select timer based on id
+ * 2. Mark timer as in use
+ * 3. Init obj using params
+ * 4. Create Hwi if tickFxn !=NULL
+ * 5. Initialize timer
+ * 6. Configure timer (wrt emulation, frequency etc)
+ * 7. Set period
+ * 8. Timer_start()
  */
 Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const Timer_Params *params, Error_Block *eb)
 {
-    /* not implemented for this timer */
-    return (1);
+    Hwi_Params hwiParams;
+    UInt tempId = 0xffff;
+    Int status;
+    UInt key;
+    Int i;
+
+    if (id >= Timer_numTimerDevices) {
+        if (id != Timer_ANY) {
+            Error_raise(eb, Timer_E_invalidTimer, id, 0);
+            return (BAD_TIMER_ID);
+        }
+    }
+
+    key = Hwi_disable();
+
+    if (id == Timer_ANY) {
+        for (i = 0; i < Timer_numTimerDevices; i++) {
+            if ((Timer_anyMask & (1 << i))
+                && (Timer_module->availMask & (1 << i))) {
+                Timer_module->availMask &= ~(1 << i);
+                tempId = i;
+                break;
+            }
+        }
+    }
+    else if (Timer_module->availMask & (1 << id)) {
+        Timer_module->availMask &= ~(1 << id);
+        tempId = id;
+    }
+
+    Hwi_restore(key);
+
+    obj->staticInst = FALSE;
+
+    if (tempId == 0xffff) {
+        Error_raise(eb, Timer_E_notAvailable, id, 0);
+        return (NO_TIMER_AVAIL);
+    }
+    else {
+        obj->id = tempId;
+    }
+
+    obj->runMode = params->runMode;
+    obj->startMode = params->startMode;
+    obj->period = params->period;
+    obj->periodType = params->periodType;
+    obj->arg = params->arg;
+    obj->intNum = Timer_module->device[obj->id].intNum;
+    obj->channelId = Timer_module->device[obj->id].channelId;
+    obj->tickFxn = tickFxn;
+    obj->prevThreshold = 0;
+    obj->nextThreshold = 0;
+    obj->savedCurrCount = 0;
+    obj->extFreq.lo = params->extFreq.lo;
+    obj->extFreq.hi = params->extFreq.hi;
+
+    if (obj->tickFxn) {
+        if (params->hwiParams) {
+            Hwi_Params_copy(&hwiParams, (params->hwiParams));
+        }
+        else {
+            Hwi_Params_init(&hwiParams);
+        }
+
+        hwiParams.arg = (UArg)obj->id;
+
+        if (obj->runMode == Timer_RunMode_CONTINUOUS) {
+            obj->hwi = Hwi_create (obj->intNum, Timer_periodicStub,
+                &hwiParams, eb);
+        }
+        else {
+            obj->hwi = Hwi_create (obj->intNum, Timer_oneShotStub,
+                &hwiParams, eb);
+        }
+
+        if (obj->hwi == NULL) {
+            return (NO_HWI_OBJ);
+        }
+    }
+    else {
+        obj->hwi = NULL;
+    }
+
+    Timer_module->handles[obj->id] = obj;
+
+    Timer_initDevice(obj);
+
+    if (obj->periodType == Timer_PeriodType_MICROSECS) {
+        if (!Timer_setPeriodMicroSecs(obj, obj->period)) {
+            Error_raise(eb, Timer_E_cannotSupport, obj->period, 0);
+            Hwi_restore(key);
+            return (BAD_PERIOD);
+        }
+    }
+
+    status = Timer_postInit(obj, eb);
+
+    if (status) {
+        return (status);
+    }
+
+    if (obj->startMode == Timer_StartMode_AUTO) {
+        Timer_start(obj);
+    }
+
+    return (0);
 }
 
 /*
@@ -221,65 +311,116 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
  */
 Void Timer_Instance_finalize(Timer_Object *obj, Int status)
 {
-    /* not implemented for this timer */
+    UInt key;
+
+    /* note: fall through in switch below is intentional */
+    switch (status) {
+        /* Timer_delete() */
+        case TIMER_DELETED:
+
+        /* setPeriodMicroSecs failed */
+        case BAD_PERIOD:
+            Timer_initDevice(obj);
+            if (obj->hwi) {
+                Hwi_delete(&obj->hwi);
+            }
+
+        /* Hwi create failed */
+        case NO_HWI_OBJ:
+
+        /* timer not available */
+        case NO_TIMER_AVAIL:
+
+        /* invalid timer id */
+        case BAD_TIMER_ID:
+
+        default:
+            break;
+    }
+
+    key = Hwi_disable();
+    Timer_module->availMask |= (0x1 << obj->id);
+    Timer_module->handles[obj->id] = NULL;
+    Hwi_restore(key);
+}
+
+/*
+ *  ======== Timer_reconfig ========
+ *
+ * 1. Init obj using params
+ * 2. Timer_init()
+ * 3. Configure timer (wrt emulation, frequency, etc.)
+ * 4. Set period
+ * 5. Timer_start()
+ *
+ */
+Void Timer_reconfig (Timer_Object *obj, Timer_FuncPtr tickFxn, const
+    Timer_Params *params, Error_Block *eb)
+{
+    obj->runMode = params->runMode;
+    obj->startMode = params->startMode;
+    obj->periodType = params->periodType;
+    if (obj->periodType == Timer_PeriodType_MICROSECS) {
+        if (!Timer_setPeriodMicroSecs(obj, params->period)) {
+            Error_raise(eb, Timer_E_cannotSupport, params->period, 0);
+        }
+    }
+    else {
+        obj->period = params->period;
+    }
+
+    obj->arg = params->arg;
+    obj->tickFxn = tickFxn;
+
+    if (params->extFreq.lo) {              /* (extFreq.hi is ignored) */
+        obj->extFreq.lo = params->extFreq.lo;
+    }
+
+    Timer_postInit(obj, eb);
+
+    if (obj->startMode == Timer_StartMode_AUTO) {
+        Timer_start(obj);
+    }
 }
 
 /*
  *  ======== Timer_start ========
  *
  * 1. Hwi_disable()
- * 2. Reset the RTC
- * 3. Clear any RTC events
- * 4. Set first compare threshold (per configured period)
- * 5. Enable the compare channel
- * 6. Configure events for CH0, and other configured channels
- * 7. Enable the RTC to start it ticking
- * 8. Hwi_restore()
+ * 2. Reset the timer channel
+ * 3. Clear any pending channel events
+ * 4. Enable events from channel to CPU
+ * 5. Set first compare threshold to 'start' timer
+ * 6. Hwi_restore()
  *
  */
 Void Timer_start(Timer_Object *obj)
 {
-//    UInt32 events = AON_RTC_CH0;
-//    UInt32 compare;
     UInt key;
 
     key = Hwi_disable();
 
-    /* reset timer */
-//    AONRTCReset();
-//    AONRTCEventClear(AON_RTC_CH0);
-//    IntPendClear(INT_AON_RTC_COMB);
+    /* reset the channel */
+    SYSRTC_setActiveStatus(SYSRTC, obj->channelId,
+        SYSRTC_CHANNEL_CTL_ACTIVE_NOTACTIVE);
 
-    /* 
-     * set the compare register to the counter start value plus one period.
-     * For a very small period round up to interrupt upon 4th RTC tick
-     */
-    if (obj->period < 0x40000) {
-//        compare = 0x4;    /* 4 * 15.5us ~= 62us */
+    /* clear any pending events */
+    /* !!! TODO? */
+
+    /* enable events from channel */
+    if (Core_getId() == 0) {
+        SYSRTC_connectEvent0ToCPUSS0(SYSRTC, obj->channelId);
     }
-    /* else, interrupt on first period expiration */
     else {
-//        compare = obj->period >> 16;
+        SYSRTC_connectEvent0ToCPUSS1(SYSRTC, obj->channelId);
     }
+    SYSRTC_setInterruptMask(SYSRTC, obj->channelId,
+        SYSRTC_CHANNEL_INT_EVENT_IMASK_EVT_SET);
 
-    /* set the compare value at the RTC */
-//    AONRTCCompareValueSet(AON_RTC_CH0, compare);
-
-    /* enable compare channel 0 */
-//    AONEventMcuWakeUpSet(AON_EVENT_MCU_WU0, AON_EVENT_RTC0);
-//    AONRTCChannelEnable(AON_RTC_CH0);
-
-    /* configure CH0 events, plus CH1 and CH2 too if hooks are defined */
-    if (Timer_funcHookCH1) {
-//        events |= AON_RTC_CH1;
-    }
-    if (Timer_funcHookCH2) {
-//        events |= AON_RTC_CH2;
-    }
-//    AONRTCCombinedEventConfig(events);
-
-    /* start timer */
-//    AONRTCEnable();
+    /* compute and save thresholds, set compare value to start channel */
+    obj->prevThreshold = SYSRTC_getUTIME(SYSRTC);
+    obj->nextThreshold = obj->prevThreshold + obj->period;
+    SYSRTC_setUTIMEVAL(SYSRTC, obj->channelId, obj->nextThreshold);
 
     Hwi_restore(key);
 }
@@ -289,8 +430,10 @@ Void Timer_start(Timer_Object *obj)
  */
 Void Timer_stop(Timer_Object *obj)
 {
-    /* not implemented for this timer */
-    obj->savedCurrCount = 0;
+    SYSRTC_setActiveStatus(SYSRTC, obj->channelId,
+        SYSRTC_CHANNEL_CTL_ACTIVE_NOTACTIVE);
+    SYSRTC_setInterruptMask(SYSRTC, obj->channelId,
+        SYSRTC_CHANNEL_INT_EVENT_IMASK_EVT_CLR);
 }
 
 /*
@@ -310,8 +453,8 @@ Void Timer_setPeriod(Timer_Object *obj, UInt32 period)
  */
 Bool Timer_setPeriodMicroSecs(Timer_Object *obj, UInt32 period)
 {
-    /* not implemented for this timer */
-    return (FALSE);
+    obj->period = period;
+    return (TRUE);
 }
 
 /*
@@ -319,7 +462,6 @@ Bool Timer_setPeriodMicroSecs(Timer_Object *obj, UInt32 period)
  */
 Void Timer_trigger(Timer_Object *obj, UInt32 insts)
 {
-    /* not implemented for this timer */
 }
 
 /*
@@ -335,17 +477,7 @@ UInt32 Timer_getPeriod(Timer_Object *obj)
  */
 UInt32 Timer_getCount(Timer_Object *obj)
 {
-//    return(HWREG(AON_RTC_BASE + AON_RTC_O_SUBSEC));
-    return (0);
-}
-
-/*
- *  ======== Timer_getCount64 ========
- */
-UInt64 Timer_getCount64(Timer_Object *obj)
-{
-//    return(AONRTCCurrent64BitValueGet());
-    return (0);
+    return(SYSRTC_getUTIME(SYSRTC));
 }
 
 /*
@@ -353,38 +485,18 @@ UInt64 Timer_getCount64(Timer_Object *obj)
  */
 Void Timer_dynamicStub(UArg arg)
 {
-    Timer_Object *obj;
-
-    obj = Timer_module->handle;
-
-    /* clear the RTC event */
-//    AONRTCEventClear(AON_RTC_CH0);
-
-    /* call the tick function */
-    obj->tickFxn(obj->arg);
 }
 
 /*
- *  ======== Timer_dynamicMultiStub ========
+ *  ======== Timer_oneShotStub ========
  */
-Void Timer_dynamicMultiStub(UArg arg)
+Void Timer_oneShotStub(UArg arg)
 {
     Timer_Object *obj;
 
-    obj = Timer_module->handle;
-
-    /* if a hook is configured for CH1... */
-    if (Timer_funcHookCH1) {
-    }
-
-    /* if a hook is configured for CH2... */
-    if (Timer_funcHookCH2) {
-    }
-
-    /* now check if CH0 has a Timer event... */
-//    if (AONRTCEventGet(AON_RTC_CH0)) {
-        obj->tickFxn(obj->arg);
-//   }
+    obj = Timer_module->handles[(UInt)arg];
+    Timer_stop(obj);
+    obj->tickFxn(obj->arg);
 }
 
 /*
@@ -392,34 +504,14 @@ Void Timer_dynamicMultiStub(UArg arg)
  */
 Void Timer_periodicStub(UArg arg)
 {
-    UInt64 newThreshold;
     Timer_Object *obj;
-    Bool wrap = FALSE;
-    UInt32 next;
 
-    obj = Timer_module->handle;
+    obj = Timer_module->handles[(UInt)arg];
 
-    /* clear the RTC event */
-//    AONRTCEventClear(AON_RTC_CH0);
-
-    /* calculate new 64-bit RTC count for next interrupt */
-    newThreshold = (UInt64) obj->nextThreshold + (UInt64) obj->period64;
-
-    /* isolate the new 32-bit compare value to write to RTC */
-    next = (UInt32) ((UInt64) newThreshold >> 16);
-
-    /* check to see if wrapping into upper 16-bits of SEC */
-    if ((newThreshold & 0xFFFFFFFFFFFF) <
-        (obj->prevThreshold & 0xFFFFFFFFFFFF)) {
-        wrap = TRUE;
-    }
-
-    /* set the compare threshold at the RTC */
-    Timer_setThreshold(obj, next, wrap);
-
-    /* update threshold counters saved in timer obj */
+    /* compute and save thresholds, set compare value to start channel */
     obj->prevThreshold = obj->nextThreshold;
-    obj->nextThreshold = newThreshold;
+    obj->nextThreshold = obj->prevThreshold + obj->period;
+    SYSRTC_setUTIMEVAL(SYSRTC, obj->channelId, obj->nextThreshold);
 
     /* call the tick function */
     obj->tickFxn(obj->arg);
@@ -450,23 +542,7 @@ UInt64 Timer_getExpiredCounts64(Timer_Object *obj)
  */
 UInt32 Timer_getCurrentTick(Timer_Object *obj, Bool saveFlag)
 {
-    UInt64 tick, currCount;
-
-    currCount = (UInt64) Timer_getCount64(obj);
-
-    tick = currCount / obj->period64;
-
-    /* 
-     * to avoid accumulating drift, make currCount be an integer
-     * multiple of timer periods
-     */
-    currCount = tick * obj->period64;
-    
-    if (saveFlag != 0) {
-        obj->savedCurrCount = currCount;
-    }        
-
-    return ((UInt32) tick);
+    return (0);
 }
 
 /*
@@ -484,8 +560,8 @@ UInt32 Timer_getExpiredTicks(Timer_Object *obj, UInt32 tickPeriod)
  */
 Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
 {
-    freq->lo = obj->frequency.lo;
-    freq->hi = obj->frequency.hi;
+    freq->lo = obj->extFreq.lo;
+    freq->hi = obj->extFreq.hi;
 }
 
 /*
@@ -511,18 +587,6 @@ Void Timer_setFunc(Timer_Object *obj, Timer_FuncPtr fxn, UArg arg)
  */
 Void Timer_initDevice(Timer_Object *obj)
 {
-//    AONRTCDisable();
-//    AONRTCReset();
-
-//    HWREG(AON_RTC_BASE + AON_RTC_O_SYNC) = 1;
-//    /* read sync register to complete reset */
-//    HWREG(AON_RTC_BASE + AON_RTC_O_SYNC);
-
-//    AONRTCEventClear(AON_RTC_CH0);
-//    IntPendClear(INT_AON_RTC_COMB);
-
-//    HWREG(AON_RTC_BASE + AON_RTC_O_SYNC);
-
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,6 +120,69 @@ module MemoryProtect
     const UInt32 MPPA_SW    = 0x00000010;   /*! Supervisor mode may write   */
     const UInt32 MPPA_SR    = 0x00000020;   /*! Supervisor mode read        */
     const UInt32 MPPA_LOCAL = 0x00000100;   /*! Local CPU may access        */
+
+    /*!
+     *  ======== numXMCRegions ========
+     */
+    const UInt numXMCRegions = 16;
+
+    /*!
+     *  ======== RegionSize ========
+     */
+    enum RegionSize {
+        RegionSize_4K   = 0x0B,
+        RegionSize_8K   = 0x0C,
+        RegionSize_16K  = 0x0D,
+        RegionSize_32K  = 0x0E,
+        RegionSize_64K  = 0x0F,
+        RegionSize_128K = 0x10,
+        RegionSize_256K = 0x11,
+        RegionSize_512K = 0x12,
+        RegionSize_1M   = 0x13,
+        RegionSize_2M   = 0x14,
+        RegionSize_4M   = 0x15,
+        RegionSize_8M   = 0x16,
+        RegionSize_16M  = 0x17,
+        RegionSize_32M  = 0x18,
+        RegionSize_64M  = 0x19,
+        RegionSize_128M = 0x1A,
+        RegionSize_256M = 0x1B,
+        RegionSize_512M = 0x1C,
+        RegionSize_1G   = 0x1D,
+        RegionSize_2G   = 0x1E,
+        RegionSize_4G   = 0x1F
+    };
+
+    /*!
+     *  ======== setXMCRegion ========
+     *  Set XMC region mapping and permission attributes
+     *
+     *  The C66 CorePac XMC (eXtended Memory Controller) controls access to
+     *  L2 SRAM.  It contains 16 MPAX registers that define memory translations
+     *  and address extensions along with their associated permission
+     *  attributes.  Regions can overlap one another, with higher numbered
+     *  regions taking priority over lower ones.  Regions 0 & 1 are
+     *  automatically populated by XMC with power up configuratoin values
+     *  which map the entire 4GB logical address space to the corresponding
+     *  physical address space.  These region mappings allow safe fallback
+     *  handling for addresses that are not otherwise mapped in higher MPAX
+     *  registers.
+     *
+     *  Addresses < 0x0C000000 do not reach the XMC, so baseAddr should be
+     *  greater than or equal to 0x0C000000.
+     *
+     *  @param(regionId)      XMC region (segment) number
+     *  @param(baseAddr)      XMC region logical address
+     *  @param(size)          XMC region size
+     *  @param(rAddr35_12)    XMC region translated/extended address bits 35:12
+     *  @param(paMask)        XMC region permission bits
+     *
+     *  @b(returns)  if baseAddr < 0x0C000000 or regionId >= numXMCRegions
+     *               then FALSE, othersize TRUE and the region is mapped with
+     *               permission attributes paMask.
+     */
+    Bool setXMCRegion(Int8 id, Ptr baseAddr, RegionSize size, Ptr rAddr35_12,
+                     UInt32 paMask);
 
     /*!
      *  ======== getPA ========

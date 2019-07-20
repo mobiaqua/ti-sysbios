@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,13 +46,12 @@ var Startup = null;
 
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
-        "SIMMAXWELL": {
+        "AM65.*": {
             numCores         : 4
         }
     };
 
-    deviceTable["AM65.*"] = deviceTable["SIMMAXWELL"];
-    deviceTable["J7ES"]   = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]   = deviceTable["AM65.*"];
 }
 
 /*
@@ -174,6 +173,22 @@ function module$static$init(mod, params)
 
     mod.notifyLock = false;
     mod.startupCalled = false;
+}
+
+/*
+ *  ======== module$validate ========
+ */
+function module$validate()
+{
+    /* enforce valid numCores setting */
+    if ((Core.numCores != 2) && (Core.numCores != 4)) {
+        Core.$logError("Core.numCores must be 2 or 4!", Core, "numCores");
+    }
+
+    /* enable assembly code references to hwiStack_2 and hwiStack_3 */
+    if (Core.numCores == 4) {
+        Build.ccArgs.$add("-Dti_sysbios_family_arm_v8a_smp_Core_fourCores__D");
+    }
 
     /* add -D to compile line to optimize exception code */
     Build.ccArgs.$add("-Dti_sysbios_family_arm_v8a_smp_Core_initStackFlag__D=" +

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -309,6 +309,13 @@ module Semaphore
      */
     config Bool supportsPriority = true;
 
+    /*!
+     *  ======== testStaticInlines ========
+     *  @_nodoc
+     *  Used for code coverage testing.
+     */
+    Void testStaticInlines();
+
 instance:
 
     /*!
@@ -407,7 +414,7 @@ instance:
      *  @a(Event Object Note)
      *  If the Semaphore object has been configured with an embedded Event
      *  object, then prior to returning from this function, the Event object's
-     *  state is updated to reflect the new value of 'count'. 
+     *  state is updated to reflect the new value of 'count'.
      *  If 'count' is zero, then the configured Event_Id is cleared in the
      *  Event object. If 'count' is non-zero, then the configured Event_Id
      *  is set in the Event object.

@@ -114,7 +114,7 @@ var settings = {
             clockTickPeriod : 1000,
             targets : [ "ti.targets.elf.C674" ]
         },
-        "J7ES": {
+        "J721E": {
             hwiDelegate : "ti.sysbios.family.c64p.Hwi",
             timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
             clockTimerDelegate : "ti.sysbios.timers.dmtimer.Timer",
@@ -130,6 +130,7 @@ var settings = {
     }
 }
 
+settings.device["J7ES"]         = settings.device["J721E"];
 settings.device["Kepler"]         = settings.device["TMS320C6670"];
 settings.device["TMS320TCI6634"]  = settings.device["TMS320C6670"];
 settings.device["TMS320TCI6636"]  = settings.device["TMS320C6670"];

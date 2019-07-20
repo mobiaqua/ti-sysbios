@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,14 +60,12 @@ function getAsmFiles(targetName)
 
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
-        "SIMFLEMING": {
+        "AM65.*": {
             timerFrequency     : 200000000
         }
     };
 
-    deviceTable["SIMMAXWELL"] = deviceTable["SIMFLEMING"];
-    deviceTable["AM65.*"]     = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"]       = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"] = deviceTable["AM65.*"];
 }
 
 /*

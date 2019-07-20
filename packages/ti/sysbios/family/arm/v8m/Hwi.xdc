@@ -600,6 +600,14 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     // Errors
 
     /*!
+     *  Error raised if an attempt is made to create a Hwi
+     *  with an interrupt number greater than Hwi_NUM_INTERRUPTS - 1.
+     */
+    config Error.Id E_badIntNum = {
+        msg: "E_badIntNum, intnum: %d is out of range"
+    };
+
+    /*!
      *  Error raised when Hwi is already defined
      */
     config Error.Id E_alreadyDefined = {
@@ -1393,6 +1401,9 @@ internal:   /* not for client use */
     /* Low Level Interrupt Dispatcher Wrapper */
     Void dispatch();
 
+    /* provide an extern declaration for ramVectors array */
+    extern UInt32 ramVectors[];
+
     /*
      *  ======== romInitNVIC ========
      *  Fix for SDOCM00114681: broken Hwi_initNVIC() function.
@@ -1452,8 +1463,8 @@ internal:   /* not for client use */
         Char            *taskSP;            // Temporary storage of interrupted
                                             // Task's SP during ISR execution
         Bool            excActive;          // TRUE if an exception has occurred
-        ExcContext      *excContext;      // Exception context
-        Ptr             excStack;         // Exception thread stack
+        ExcContext      *excContext;        // Exception context
+        Ptr             excStack;           // Exception thread stack
         Ptr             isrStack;           // Points to isrStack address
         Ptr             isrStackBase;       // = __TI_STACK_BASE
         Ptr             isrStackSize;       // = Program.stack

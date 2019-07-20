@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -285,7 +285,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
             Clock_removeI(elem.tpElem.clockHandle);
             elem.tpElem.clockHandle = NULL;
         }
-        
+
         elem.tpElem.taskHandle->pendElem = NULL;
 
         Hwi_restore(hwiKey);
@@ -361,7 +361,7 @@ Void Semaphore_post(Semaphore_Object *sem)
         return;
     }
 
-    
+
     /* dequeue tsk from semaphore queue */
     elem = (Semaphore_PendElem *)Queue_dequeue(pendQ);
 
@@ -419,4 +419,15 @@ void Semaphore_registerEvent(Semaphore_Object *sem, Event_Handle event, UInt eve
         sem->eventId = eventId;
         Hwi_restore(hwiKey);
     }
+}
+
+/*
+ *  ======== Semaphore_testStaticInlines ========
+ */
+Void Semaphore_testStaticInlines()
+{
+    Semaphore_Params semParams;
+
+    Semaphore_Params_init(NULL);
+    Semaphore_Params_init(&semParams);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,8 @@
  */
 MEMORY
 {
-   /* BEGIN is used for the "boot to SARAM" bootloader mode */
-   BEGIN            : origin = 0x000000, length = 0x000002
+   /* BEGIN is used for the "boot to Flash" bootloader mode */
+   BEGIN            : origin = 0x080000, length = 0x000002
 
    /* Part of M0, BOOT rom will use this for stack */
    BOOT_RSVD        : origin = 0x000002, length = 0x0001AE
@@ -78,7 +78,7 @@ MEMORY
    RAMGS15          : origin = 0x01C000, length = 0x001000
 
    /* Flash sectors */
-   FLASH0           : origin = 0x080000, length = 0x002000 /* on-chip Flash */
+   FLASH0           : origin = 0x080002, length = 0x001FFE /* on-chip Flash */
    FLASH1           : origin = 0x082000, length = 0x002000 /* on-chip Flash */
    FLASH2           : origin = 0x084000, length = 0x002000 /* on-chip Flash */
    FLASH3           : origin = 0x086000, length = 0x002000 /* on-chip Flash */
@@ -135,9 +135,9 @@ SECTIONS
                         FLASH6 | FLASH7 | FLASH8 | FLASH9 | FLASH10 | FLASH11 |
                         FLASH12 | FLASH13
 
-   .data            : >> RAMGS0 | RAMGS1 | RAMGS2 |RAMGS3 | RAMGS4 | RAMGS5
+   .data            : >> RAMGS0 | RAMGS1 | RAMGS2 |RAMGS3 | RAMGS4
 
-   .sysmem          : >> RAMGS0 | RAMGS1 | RAMGS2 |RAMGS3 | RAMGS4 | RAMGS5
+   .sysmem          : >> RAMGS0 | RAMGS1 | RAMGS2 |RAMGS3 | RAMGS4
 
    .binit           : > FLASH0 | FLASH1
 

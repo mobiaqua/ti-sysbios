@@ -36,6 +36,7 @@
 
 var MemoryProtect;
 var Exception;
+var Cache;
 var Hwi;
 
 /*
@@ -307,6 +308,7 @@ function module$use()
 
     Hwi = xdc.useModule("ti.sysbios.hal.Hwi");
     Exception = xdc.useModule("ti.sysbios.family.c64p.Exception");
+    Cache = xdc.useModule("ti.sysbios.family.c66.Cache");
 
     /* enable external exception processing */
     Exception.enableExternalMPC = true;

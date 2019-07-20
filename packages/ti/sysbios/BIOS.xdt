@@ -1,7 +1,7 @@
 
 %%{
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,18 +39,18 @@
 %var BIOS = xdc.module("ti.sysbios.BIOS");
 %var BIOS_module = '(&ti_sysbios_BIOS_Module__state__V)';
 %
-Void ti_sysbios_BIOS_atExitFunc__I(Int);
+Void ti_sysbios_BIOS_atExitFunc__I(Int stat);
 
 %var len = BIOS.startupFxns.length;
 %for (var i = 0; i < len; i++) {
 %    var cname = BIOS.startupFxns[i].$name;
 %    cname = cname.replace(/\./g,'_');
-extern Void `cname`();
+extern Void `cname`(Void);
 %}
 %if (len != 0) {
 
 %}
-Void ti_sysbios_BIOS_startFunc__I()
+Void ti_sysbios_BIOS_startFunc__I(Void)
 {
     /*
      *  Check if XDC runtime startup functions have been called. If not, then
@@ -61,7 +61,7 @@ Void ti_sysbios_BIOS_startFunc__I()
         ti_sysbios_BIOS_linkedWithIncorrectBootLibrary();
     }
 
-    xdc_runtime_System_atexit(
+    (void)xdc_runtime_System_atexit(
         (xdc_runtime_System_AtexitHandler)ti_sysbios_BIOS_atExitFunc__I);
 %/* 
 % * Invoke BIOS.startupFxns, (mostly Timer_start() calls
@@ -101,9 +101,9 @@ Void ti_sysbios_BIOS_atExitFunc__I(Int notused)
     ti_sysbios_knl_Swi_disable();
 %}
 %if ((BIOS.taskEnabled == true) && (xdc.om['ti.sysbios.knl'].Task.$used >0)) {
-    ti_sysbios_knl_Task_disable();
+    (void)ti_sysbios_knl_Task_disable();
 %}
-    ti_sysbios_BIOS_setThreadType(ti_sysbios_BIOS_ThreadType_Main);
+    (void)ti_sysbios_BIOS_setThreadType(ti_sysbios_BIOS_ThreadType_Main);
 
 %if (Program.build.target.$name.match(/ti/)) {
     if (`mobj`->rtsGate != NULL) {
@@ -122,7 +122,7 @@ Void ti_sysbios_BIOS_atExitFunc__I(Int notused)
  *  ======== BIOS_rtsLock ========
  *  Called by rts _lock() function
  */
-Void ti_sysbios_BIOS_rtsLock()
+Void ti_sysbios_BIOS_rtsLock(Void)
 {
     IArg key;
 %if (BIOS.mpeEnabled) {
@@ -130,7 +130,7 @@ Void ti_sysbios_BIOS_rtsLock()
 %}
 
     key = ti_sysbios_BIOS_RtsGateProxy_enter(`BIOS_module`->rtsGate);
-    if (`BIOS_module`->rtsGateCount == 0) {
+    if (`BIOS_module`->rtsGateCount == 0U) {
         `BIOS_module`->rtsGateKey = key;
     }
     /* Increment need not be atomic */
@@ -144,7 +144,7 @@ Void ti_sysbios_BIOS_rtsLock()
  *  ======== BIOS_rtsUnLock ========
  *  Called by rts _unlock() function
  */
-Void ti_sysbios_BIOS_rtsUnlock()
+Void ti_sysbios_BIOS_rtsUnlock(Void)
 {
 %if (BIOS.mpeEnabled) {
     ti_sysbios_hal_SysCall_enterPrivMode();
@@ -155,7 +155,7 @@ Void ti_sysbios_BIOS_rtsUnlock()
 %}
     `BIOS_module`->rtsGateCount--;
 
-    if (`BIOS_module`->rtsGateCount == 0) {
+    if (`BIOS_module`->rtsGateCount == 0U) {
         ti_sysbios_BIOS_RtsGateProxy_leave(`BIOS_module`->rtsGate, `BIOS_module`->rtsGateKey);
     }
 %if (BIOS.mpeEnabled) {
@@ -166,7 +166,7 @@ Void ti_sysbios_BIOS_rtsUnlock()
 /*
  *  ======== BIOS_nullFunc ========
  */
-Void ti_sysbios_BIOS_nullFunc__I()
+Void ti_sysbios_BIOS_nullFunc__I(Void)
 {
 }
 
@@ -206,7 +206,7 @@ Void ti_sysbios_BIOS_exitFunc(Int stat)
 %    }
 %}
     /* force thread type to 'Main' */
-    ti_sysbios_BIOS_setThreadType(ti_sysbios_BIOS_ThreadType_Main);
+    (void)ti_sysbios_BIOS_setThreadType(ti_sysbios_BIOS_ThreadType_Main);
 
     xdc_runtime_System_exit(stat);
 }
@@ -219,17 +219,18 @@ Void ti_sysbios_BIOS_errorRaiseHook(xdc_runtime_Error_Block *eb)
     /*
      * If this is an Assert thread, defang Gate threadtype check
      */
+%if (xdc.module('xdc.runtime.Assert').$used) {
     if (eb->id == xdc_runtime_Assert_E_assertFailed) {
-%if (Program.build.target.$name.match(/ti/)) {
-%    if (BIOS.rtsGateType != BIOS.NoLocking) {
+%    if (Program.build.target.$name.match(/ti/)) {
+%        if (BIOS.rtsGateType != BIOS.NoLocking) {
         /* remove the RTS lock */
         ti_sysbios_BIOS_removeRTSLock();
+%        }
 %    }
-%}
         /* force thread type to 'Main' */
         ti_sysbios_BIOS_setThreadType(ti_sysbios_BIOS_ThreadType_Main);
     }
-
+%} // if Assert used
 %if (BIOS.installedErrorHook != null) {
     /* Call the installed Error.raiseHook */
     ti_sysbios_BIOS_installedErrorHook(eb);

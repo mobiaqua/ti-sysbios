@@ -35,6 +35,11 @@
  */
 
 
+function getSects()
+{
+    return "ti/sysbios/family/c7x/linkcmd.xdt";
+}
+
 /*
  *  ======== Package.getLibs ========
  *  This function is called when a program's configuration files are

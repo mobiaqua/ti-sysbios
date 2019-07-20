@@ -51,6 +51,7 @@ package ti.sysbios.family.c7x [2,0,0,0] {
     module Exception;
     module Hwi;
     module IntrinsicsSupport;
+    module Mmu;
     module Settings;
     module TaskSupport;
     module TimestampProvider;

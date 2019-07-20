@@ -70,8 +70,8 @@ function getCFiles(targetName)
 
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
-        "J7ES": {
-            INTRMUX1Address : 0x08020104
+        "J7.*": {
+            INTCAddress : 0x08020000,
         },
     }
 }
@@ -121,6 +121,26 @@ function module$meta$init()
         Hwi.interrupt[intNum].fxn = null;
         Hwi.interrupt[intNum].pfxn = null;
         Hwi.interrupt[intNum].name = "";
+    }
+
+    var deviceName;
+    var found = false;
+    for (deviceName in deviceTable) {
+        if (deviceName == Program.cpu.deviceName) {
+            /* exact match */
+            found = true;
+            break;
+        }
+        else if (Program.cpu.deviceName.match(deviceName)) {
+            /* wildcard match */
+            found = true;
+            break;
+        }
+    }
+
+    if (found) {
+        /* override default value */
+        Hwi.INTCAddress = deviceTable[deviceName].INTCAddress;
     }
 }
 
@@ -201,24 +221,8 @@ function module$use()
         Program.sectMap[".resetVector"].loadAddress = Hwi.resetVectorAddress;
     }
 
-    var deviceName;
-    var found = false;
-    for (deviceName in deviceTable) {
-        if (deviceName == Program.cpu.deviceName) {
-            /* exact match */
-            found = true;
-            break;
-        }
-        else if (Program.cpu.deviceName.match(deviceName)) {
-            /* wildcard match */
-            found = true;
-            break;
-        }
-    }
-
-    if (found) {
-        /* override default value */
-        Hwi.INTRMUX1Address = deviceTable[deviceName].INTRMUX1Address;
+    if (!Hwi.$written("INTRMUX1Address")) {
+        Hwi.INTRMUX1Address = Hwi.INTCAddress + 0x104;
     }
 }
 

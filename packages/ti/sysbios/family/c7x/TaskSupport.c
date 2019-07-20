@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
  */
 
 #include <xdc/std.h>
+#include <xdc/runtime/Assert.h>
 #include <xdc/runtime/Error.h>
 
 #define ti_sysbios_knl_Task__internalaccess
@@ -106,6 +107,13 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
     Char *sptr;
     Task_Object *tsk = (Task_Object *)(currTsk);
 
+    Assert_isTrue((tsk->stackSize >= Task_defaultStackSize),
+                  TaskSupport_A_stackSizeTooSmall);
+
+    if (tsk->stackSize < Task_defaultStackSize) {
+        return (NULL);
+    }
+
     if (Task_initStackFlag) {
         sptr = (Char *)tsk->stack;
         size = tsk->stackSize;
@@ -163,15 +171,7 @@ SizeT TaskSupport_stackUsed(Char *stack, SizeT size)
 }
 
 /*
- *  ======== getDefaultStackSize ========
- */
-SizeT TaskSupport_getDefaultStackSize()
-{
-    return (TaskSupport_defaultStackSize);
-}
-
-/*
- *  ======== getDefaultStackAlignment ========
+ *  ======== TaskSupport_getStackAlignment ========
  */
 UInt TaskSupport_getStackAlignment()
 {

@@ -375,6 +375,7 @@ internal:
     const UInt EVTDMCCMPA = 122;        /* DMC memory protection fault event */
     const UInt EVTUMCCMPA = 124;        /* UMC memory protection fault event */
     const UInt EVTEMCCMPA = 126;        /* EMC memory protection fault event */
+    const UInt EVTXMCCMPA = 110;        /* XMC memory protection fault event */
 
     /*!
      *  handler - The high-level dispatcher, called by dispatch().

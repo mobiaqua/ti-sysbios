@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, Texas Instruments Incorporated
+ * Copyright (c) 2014-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,28 @@ var deviceTable = {
         },
     },
     "ti.catalog.arm.cortexa53": {
-        "SIMFLEMING": {
+        "AM65x": {
+            hwiDelegate : "ti.sysbios.family.arm.gicv3.Hwi",
+            timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
+            clockTimerDelegate : "ti.sysbios.family.arm.v8a.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.a15.TimerSupport",
+            timestampDelegate : "ti.sysbios.family.arm.v8a.TimestampProvider",
+            timestampDelegateSmp : "ti.sysbios.timers.dmtimer.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.v8a.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
+            cacheDelegate : "ti.sysbios.family.arm.v8a.Cache",
+            cacheDelegateSmp : "ti.sysbios.family.arm.v8a.Cache",
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : null,
+            coreDelegate : null,
+            coreDelegateSmp : "ti.sysbios.family.arm.v8a.smp.Core",
+            mmuModule : "ti.sysbios.family.arm.v8a.Mmu",
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "gnu.targets.arm.A53F" ]
+        },
+        "J721E": {
             hwiDelegate : "ti.sysbios.family.arm.gicv3.Hwi",
             timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
             clockTimerDelegate : "ti.sysbios.family.arm.v8a.Timer",
@@ -318,7 +339,25 @@ var deviceTable = {
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.M3", "iar.targets.arm.M3" ]
         },
-        "SIMMAXWELL": {
+        "AM65x": {
+            hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
+            timerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7m.keystone3.TimerSupport",
+            clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
+            mmuModule : null,
+            cacheDelegate : null,
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : "ti.sysbios.family.arm.v7m.SysCall",
+            coreDelegate : null,
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.M3" ]
+        },
+        "J721E": {
             hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
             timerDelegate : "ti.sysbios.family.arm.m3.Timer",
             timerSupportDelegate : "ti.sysbios.family.arm.v7m.keystone3.TimerSupport",
@@ -452,7 +491,7 @@ var deviceTable = {
             hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
             timerDelegate : "ti.sysbios.family.arm.m3.Timer",
             clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
-            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
+            timestampDelegate : "ti.sysbios.family.arm.f2838x.TimestampProvider",
             taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
             mmuModule : null,
@@ -479,7 +518,7 @@ var deviceTable = {
             powerDelegate : "ti.sysbios.family.arm.v8m.Power",
             secondsDelegate : null,
             syscallDelegate : null,
-            coreDelegate : null,
+            coreDelegate : "ti.sysbios.family.arm.v8m.mtl.Core",
             bootModule : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.clang.M33F",
@@ -503,9 +542,9 @@ var deviceTable = {
             syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.tms570.Core",
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.arm.elf.R5F" ]
+            targets : [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
         },
-        "SIMFLEMING": {
+        "AM65x": {
             hwiDelegate : "ti.sysbios.family.arm.v7r.keystone3.Hwi",
             timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
             timerSupportDelegate : "ti.sysbios.family.arm.v7r.keystone3.TimerSupport",
@@ -521,7 +560,25 @@ var deviceTable = {
             syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.arm.elf.R5F" ]
+            targets : [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
+        },
+        "J721E": {
+            hwiDelegate : "ti.sysbios.family.arm.v7r.keystone3.Hwi",
+            timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7r.keystone3.TimerSupport",
+            clockTimerDelegate: "ti.sysbios.timers.dmtimer.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.a15.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
+            bootModule : null,
+            mmuModule : "ti.sysbios.family.arm.MPU",
+            cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : null,
+            coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
         },
     },
     "ti.catalog.arm.cortexr4": {
@@ -622,26 +679,24 @@ deviceTable["ti.catalog.arm.cortexa15"]["TCI6630K2L"] = deviceTable["ti.catalog.
 deviceTable["ti.catalog.arm.cortexa15"]["TCI6638K2K"] = deviceTable["ti.catalog.arm.cortexa15"]["TCI6636K2H"];
 deviceTable["ti.catalog.arm.cortexa15"]["TCI66AK2G02"] = deviceTable["ti.catalog.arm.cortexa15"]["TCI6636K2H"];
 
-deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"] = deviceTable["ti.catalog.arm.cortexa53"]["SIMFLEMING"];
-deviceTable["ti.catalog.arm.cortexa53"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
-deviceTable["ti.catalog.arm.cortexa53"]["J7ES"] = deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+deviceTable["ti.catalog.arm.cortexa53"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexa53"]["AM65x"];
+deviceTable["ti.catalog.arm.cortexa53"]["J7.*"] = deviceTable["ti.catalog.arm.cortexa53"]["J721E"];
 
 deviceTable["ti.catalog.arm.cortexa8"]["AM335.*"]  = deviceTable["ti.catalog.arm.cortexa8"]["TI81XX"];
 
 /* Avoid duplicate entries in delegates.html file */
 delete(deviceTable["ti.catalog.arm.cortexa8"]["TMS320C3430"]);
 
-deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMFLEMING"];
-deviceTable["ti.catalog.arm.cortexr5"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
-deviceTable["ti.catalog.arm.cortexr5"]["J7.*"] = deviceTable["ti.catalog.arm.cortexr5"]["SIMMAXWELL"];
+deviceTable["ti.catalog.arm.cortexr5"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexr5"]["AM65x"];
+deviceTable["ti.catalog.arm.cortexr5"]["J7.*"] = deviceTable["ti.catalog.arm.cortexr5"]["J721E"];
 
 deviceTable["ti.catalog.arm.cortexm3"]["CortexM3"] = deviceTable["ti.catalog.arm"]["CortexM3"];
 deviceTable["ti.catalog.arm.cortexm3"]["OMAP5430"]  = deviceTable["ti.catalog.arm.cortexm3"]["OMAP4430"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC2538.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2538SF53"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC26.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2650"];
 deviceTable["ti.catalog.arm.cortexm3"]["CC13.*"]  = deviceTable["ti.catalog.arm.cortexm3"]["CC2650"];
-deviceTable["ti.catalog.arm.cortexm3"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexm3"]["SIMMAXWELL"];
-deviceTable["ti.catalog.arm.cortexm3"]["J7.*"] = deviceTable["ti.catalog.arm.cortexm3"]["SIMMAXWELL"];
+deviceTable["ti.catalog.arm.cortexm3"]["AM65.*"] = deviceTable["ti.catalog.arm.cortexm3"]["AM65x"];
+deviceTable["ti.catalog.arm.cortexm3"]["J7.*"] = deviceTable["ti.catalog.arm.cortexm3"]["J721E"];
 
 /* CC3220 M4 devices */
 deviceTable["ti.catalog.arm.cortexm4"]["CC32.*"] = deviceTable["ti.catalog.arm.cortexm4"]["CC3200"];
@@ -676,6 +731,8 @@ deviceTable["ti.catalog.arm.cortexm4"]["MSP432P.*"] = deviceTable["ti.catalog.ar
 
 /* Cortex-M33 devices */
 deviceTable["ti.catalog.arm.cortexm33"]["MTL1_VSOC"] = deviceTable["ti.catalog.arm.cortexm33"]["FVP_MPS2"];
+deviceTable["ti.catalog.arm.cortexm33"]["MTL1_CORE0"] = deviceTable["ti.catalog.arm.cortexm33"]["FVP_MPS2"];
+deviceTable["ti.catalog.arm.cortexm33"]["MTL1_CORE1"] = deviceTable["ti.catalog.arm.cortexm33"]["FVP_MPS2"];
 
 var armSettings = xdc.loadCapsule("armSettings.xs");
 

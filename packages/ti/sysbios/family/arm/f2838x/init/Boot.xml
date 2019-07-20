@@ -3,7 +3,7 @@
 <page name="Basic" title="Boot/Startup Options">
 <html><body><table>
   <tr><td colspan="2">
-    <control type="checkbox" label="Add TMS320F2838X Boot management to my configuration" value="value:this.$used" bold="true"/></td>
+    <control type="checkbox" label="Add F2838X Boot management to my configuration" value="value:this.$used" bold="true"/></td>
   </tr>
   <tr></tr>
   <tr>
@@ -12,9 +12,49 @@
         <table>
         <tr>
           <td><control type="checkbox"
-                       label="Disable Watchdog"
+                       label="Disable the watchdog timer"
                        value="value:this.disableWatchdog"
                        tooltip="value:this.disableWatchdog.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Configure Flash controller"
+                       value="value:this.configureFlashController"
+                       tooltip="value:this.configureFlashController.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Configure Flash wait states"
+                       value="value:this.configureFlashWaitStates"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.configureFlashWaitStates.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable Flash program cache"
+                       value="value:this.enableFlashProgramCache"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.enableFlashProgramCache.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable Flash data cache"
+                       value="value:this.enableFlashDataCache"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.enableFlashDataCache.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="PLL is sourced from an internal oscillator (INTOSC1 or INTOSC2)"
+                       value="value:this.pllSourcedINTOSC"
+                       enabled="value:this.configureFlashController"
+                       tooltip="value:this.pllSourcedINTOSC.$summary"/></td>
+        </tr>
+        <tr>
+          <td><control type="checkbox"
+                       label="Enable boot from Flash"
+                       value="value:this.bootFromFlash"
+                       tooltip="value:this.bootFromFlash.$summary"/></td>
         </tr>
       </table>
     </td>

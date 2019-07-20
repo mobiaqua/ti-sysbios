@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,18 +58,14 @@ function getAsmFiles(targetName)
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "ti.catalog.arm.cortexa53": {
-            "SIMMAXWELL": {
+            "AM65.*": {
                 intNum  : 23
             }
         }
     };
 
-    deviceTable["ti.catalog.arm.cortexa53"]["SIMFLEMING"] =
-        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
-    deviceTable["ti.catalog.arm.cortexa53"]["AM65.*"] =
-        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
-    deviceTable["ti.catalog.arm.cortexa53"]["J7ES"] =
-        deviceTable["ti.catalog.arm.cortexa53"]["SIMMAXWELL"];
+    deviceTable["ti.catalog.arm.cortexa53"]["J7.*"] =
+        deviceTable["ti.catalog.arm.cortexa53"]["AM65.*"];
 }
 
 /*

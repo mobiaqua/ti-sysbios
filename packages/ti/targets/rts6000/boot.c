@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
@@ -186,7 +186,7 @@ extern void __interrupt c_int00()
 }
 
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 12-18-2018 16:06:30; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-18-2019 17:45:17; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

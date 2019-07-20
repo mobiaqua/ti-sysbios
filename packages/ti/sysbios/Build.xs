@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2019 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ var custom28xOpts = " -q -mo ";
 var custom6xOpts = " -q -mi10 -mo -pdr -pden -pds=238 -pds=880 -pds1110 ";
 var customARP32xOpts = " -q --gen_func_subsections ";
 var customArmOpts = " -q -ms --opt_for_speed=2 ";
+var customArmClangM33Opts = " ";
 var customArmClangM33FOpts = " ";
 var customArmClangM3Opts = " ";
 var customArmClangM4Opts = " ";
@@ -74,7 +75,9 @@ var ccOptsList = {
     "ti.targets.arm.elf.R4F"                    : customArmOpts,
     "ti.targets.arm.elf.R4Ft"                   : customArmOpts,
     "ti.targets.arm.elf.R5F"                    : customArmOpts,
+    "ti.targets.arm.elf.R5Ft"                   : customArmOpts,
     "ti.targets.arm.elf.R5F_big_endian"         : customArmOpts,
+    "ti.targets.arm.clang.M33"                  : customArmClangM33Opts,
     "ti.targets.arm.clang.M33F"                 : customArmClangM33FOpts,
     "ti.targets.arm.clang.M3"                   : customArmClangM3Opts,
     "ti.targets.arm.clang.M4"                   : customArmClangM4Opts,
@@ -408,7 +411,9 @@ function getDefaultCustomCCOpts()
          * for more info.
          */
         customCCOpts += " -O3 ";
-        //customCCOpts += " -O3 -g ";
+        /* add any target unique CC options provided in config.bld */
+        customCCOpts = Program.build.target.ccOpts.prefix + " " + customCCOpts;
+        customCCOpts += Program.build.target.ccOpts.suffix + " ";
     }
     else {
         /* ti targets do program level compile */
@@ -434,7 +439,7 @@ function getDefaultCustomCCOpts()
             customCCOpts = customCCOpts.replace("-Ohz","--debug");
         }
         else if (Program.build.target.$name.match(/clang/)) {
-            customCCOpts = customCCOpts.replace(" -O3","");
+            customCCOpts = customCCOpts.replace(" -O3","-gdwarf-3");
         }
         else {
             customCCOpts = customCCOpts.replace(" -o3","");
@@ -474,11 +479,15 @@ function getDefs()
                + " -Dti_sysbios_knl_Task_objectCheckFlag__D=" + (Task.objectCheckFlag ? "TRUE" : "FALSE");
 
     if (xdc.module(HwiDelegate).hooks.length == 0) {
-        defs += " -Dti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS";
+        if (!(BIOS.codeCoverageEnabled)) {
+            defs += " -Dti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS";
+        }
     }
 
     if (Swi.hooks.length == 0) {
-        defs += " -Dti_sysbios_knl_Swi_DISABLE_ALL_HOOKS";
+        if (!(BIOS.codeCoverageEnabled)) {
+            defs += " -Dti_sysbios_knl_Swi_DISABLE_ALL_HOOKS";
+        }
     }
 
     defs += " -Dti_sysbios_BIOS_smpEnabled__D="
@@ -503,7 +512,9 @@ function getDefs()
         }
 
         if (Task.hooks.length == 0) {
-            defs += " -Dti_sysbios_knl_Task_DISABLE_ALL_HOOKS";
+            if (!(BIOS.codeCoverageEnabled)) {
+                defs += " -Dti_sysbios_knl_Task_DISABLE_ALL_HOOKS";
+            }
         }
 
         /*

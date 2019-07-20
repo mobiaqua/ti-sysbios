@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ module Boot
         UInt OSCCLK;
         UInt SPLLIMULT;
         String SPLLFMULT;
-        String SYSCLKDIVSEL;
+        UInt SYSCLKDIVSEL;
         Bool bootCPU2;
     }
 

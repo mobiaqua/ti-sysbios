@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -622,7 +622,7 @@ Void Mmu_initFuncDefault()
     Mmu_initMapAttrs(&attrs);
 
     attrs.attrIndx = Mmu_AttrIndx_MAIR0;
-    ret = Mmu_map(0x01800000, 0x01800000, 0x00100000, &attrs); /* gicv3       */
+    ret = Mmu_map(0x01800000, 0x01800000, 0x00200000, &attrs); /* gicv3       */
     if (!ret) {
         goto fail;
     }

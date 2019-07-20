@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
@@ -49,7 +49,7 @@ void _exit(int code)
     while(1) {};
 }
 /*
- *  @(#) gnu.targets.arm.rtsv8A; 1, 0, 0,0; 12-18-2018 16:05:14; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) gnu.targets.arm.rtsv8A; 1, 0, 0,0; 4-18-2019 17:44:23; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

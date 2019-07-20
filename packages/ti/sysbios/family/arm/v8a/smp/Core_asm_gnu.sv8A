@@ -172,18 +172,18 @@ _c_int00:
     isb                         /* Synchronize processor context */
 
     /* point to core's isr stack */
-    cmp     x8, #1              /* core 1? */
-    bne     5f
     ldr     x0, =ti_sysbios_family_arm_gicv3_Hwi_Module_State_0_hwiStack_1__A
-    b       7f
-5:
-    cmp     x8, #2              /* core 2? */
-    bne     6f    
+#if defined(ti_sysbios_family_arm_v8a_smp_Core_fourCores__D)
+    cmp     x8, #1              /* core 1? */
+    beq     5f
+
     ldr     x0, =ti_sysbios_family_arm_gicv3_Hwi_Module_State_0_hwiStack_2__A
-    b       7f
-6:
+    cmp     x8, #2              /* core 2? */
+    beq     5f
+
     ldr     x0, =ti_sysbios_family_arm_gicv3_Hwi_Module_State_0_hwiStack_3__A
-7:
+5:
+#endif
     ldr     x1, =ti_sysbios_family_arm_gicv3_Hwi_isrStackSize__C
     ldr     x1, [x1]
     add     x0, x0, x1

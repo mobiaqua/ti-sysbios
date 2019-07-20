@@ -53,6 +53,7 @@ function getAsmFiles(targetName)
         case "ti.targets.arm.elf.R4F":
         case "ti.targets.arm.elf.R4Ft":
         case "ti.targets.arm.elf.R5F":
+        case "ti.targets.arm.elf.R5Ft":
             return (["Exception_asm.asm"]);
             break;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,4 +42,6 @@ requires ti.sysbios.interfaces;
  *  SYS/BIOS functions.
  */
 package ti.sysbios.family.arm.f2838x [1,0,0,0] {
+    module TimestampProvider;
+    module Timer;
 }

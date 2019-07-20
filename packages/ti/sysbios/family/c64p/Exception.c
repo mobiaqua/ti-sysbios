@@ -56,6 +56,9 @@
 #define DMC_MPFAR (UInt32 *)0x0184AC00
 #define DMC_MPFSR (UInt32 *)0x0184AC04
 #define DMC_MPFCR (UInt32 *)0x0184AC08
+#define XMC_MPFAR (UInt32 *)0x08000200
+#define XMC_MPFSR (UInt32 *)0x08000204
+#define XMC_MPFCR (UInt32 *)0x08000208
 
 #define MPPA_UX         0x00000001      // User eXecute
 #define MPPA_UW         0x00000002      // User Write
@@ -119,15 +122,21 @@ Int Exception_Module_startup(Int phase)
         mpfcr = UMC_MPFCR;
         *mpfcr = 1;
 
+        /* write 1 to MPFCR to clear MPFSR & MPFAR registers */
+        mpfcr = XMC_MPFCR;
+        *mpfcr = 1;
+
         /* clear MPC masked exceptions */
         Exception_evtEvtClear(Exception_EVTPMCCMPA);
         Exception_evtEvtClear(Exception_EVTDMCCMPA);
         Exception_evtEvtClear(Exception_EVTUMCCMPA);
+        Exception_evtEvtClear(Exception_EVTXMCCMPA);
 
         /* enable MPC masked exceptions */
         Exception_evtExpMaskEnable(Exception_EVTPMCCMPA);
         Exception_evtExpMaskEnable(Exception_EVTDMCCMPA);
         Exception_evtExpMaskEnable(Exception_EVTUMCCMPA);
+        Exception_evtExpMaskEnable(Exception_EVTXMCCMPA);
     }
 
     /* enable EXCEP input to generate an NMI interrupt */
@@ -390,6 +399,15 @@ Void Exception_externalHandler(Void)
                 Exception_decodeMpfsr(mpfsr);
             }
             *UMC_MPFCR = 1;
+        }
+        mpfsr = *XMC_MPFSR;
+        if (mpfsr != 0) {
+            if (Exception_enablePrint) {
+                System_printf("XMC Exception MPFAR=0x%x MPFSR=0x%x\n",
+                    *XMC_MPFAR, mpfsr);
+                Exception_decodeMpfsr(mpfsr);
+            }
+            *XMC_MPFCR = 1;
         }
     }
 

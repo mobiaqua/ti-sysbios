@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
@@ -148,7 +148,7 @@ metaonly module A15F inherits gnu.targets.arm.ITarget {
     };
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,2; 12-17-2018 15:56:44; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-18-2019 17:32:46; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

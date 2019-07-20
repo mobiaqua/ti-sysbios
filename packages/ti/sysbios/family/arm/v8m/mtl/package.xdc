@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,8 @@ requires ti.sysbios.interfaces;
  *  ======== ti.sysbios.family.arm.v8m.mtl ========
  */
 package ti.sysbios.family.arm.v8m.mtl [2,0,0,0] {
+    module Core;
     module EvtMan;
     module Timer;
+    module TimestampProvider;
 }

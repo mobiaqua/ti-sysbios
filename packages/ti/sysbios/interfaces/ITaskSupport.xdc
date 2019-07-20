@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -122,15 +122,6 @@ interface ITaskSupport
      *  b(returns) stackAlignment for this target
      */
     UInt getStackAlignment();
-
-    /*!
-     *  ======== getDefaultStackSize ========
-     *  @_nodoc
-     *  Returns the target-specific defaultStackSize
-     *
-     *  b(returns) defaultStackSize for this target
-     */
-    SizeT getDefaultStackSize();
 
     /*!
      *  ======== stackUsed$view ========

@@ -46,7 +46,8 @@ var objList = [
 
 var trgFilter = {
     field: "$name",
-    list: [ "ti.targets.arm.elf.R5F" ]      /* build for all R5 targets ... */
+    /* build for all R5 targets ... */
+    list: [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
 };
 
 /* generate makefiles */

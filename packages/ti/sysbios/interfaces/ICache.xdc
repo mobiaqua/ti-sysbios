@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,15 @@ interface ICache
         Type_ALLD = 0xA,        /*! All Data caches */
         Type_ALL = 0x7fff       /*! All caches */
     };
+
+    /*!
+     *  ======== enableCache ========
+     *  Enable supported caches during startup
+     *
+     *  Not implemented by all architectures.  Refer to specific
+     *  architecture Cache module for details.
+     */
+    config Bool enableCache = true;
 
     /*!
      *  ======== enable ========

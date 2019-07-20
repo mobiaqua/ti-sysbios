@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -272,7 +272,7 @@ module Cache inherits ti.sysbios.interfaces.ICache
      *  Enabling the Cache at startup will force
      *  {@link #configureCache configuring} the Cache at startup.
      */
-    config Bool enableCache = false;
+    override config Bool enableCache = false;
 
     /*!
      *  Maximum buffer size to use discrete cache line operations with.

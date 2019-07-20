@@ -225,7 +225,15 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     metaonly config Ptr resetVectorAddress;
 
-    config Ptr INTRMUX1Address = 0x01800104;
+    /*!
+     *  Interrupt Controller base address
+     */
+    config Ptr INTCAddress = 0x01800000;
+
+    /*!
+     *  Interrupt Multiplexer register 1 base address
+     */
+    config Ptr INTRMUX1Address;
 
     /*!
      *  Error raised when Hwi is already defined

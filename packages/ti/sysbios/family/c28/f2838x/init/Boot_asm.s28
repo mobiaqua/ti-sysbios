@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2018, Texas Instruments Incorporated
+;  Copyright (c) 2019, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,18 @@
 
     .ref _c_int00
     .global ti_sysbios_family_c28_f2838x_init_Boot_entry
+    .global ti_sysbios_family_c28_f2838x_init_Boot_delay
 
     .sect ".ti_sysbios_family_c28_f2838x_init_begin"
-
 ti_sysbios_family_c28_f2838x_init_Boot_entry:
     .asmfunc
     lb _c_int00
+    .endasmfunc
+
+    .sect ".text:ti_sysbios_family_c28_f2838x_init_Boot_delay_s"
+ti_sysbios_family_c28_f2838x_init_Boot_delay:
+    .asmfunc
+    sub ACC, #1
+    bf ti_sysbios_family_c28_f2838x_init_Boot_delay, GEQ
+    lretr
     .endasmfunc

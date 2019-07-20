@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,32 @@
 
 #define Boot_disableWatchdog \
     ti_sysbios_family_arm_f2838x_init_Boot_disableWatchdog
+#define Boot_initFlash ti_sysbios_family_arm_f2838x_init_Boot_initFlash
 
-#define HWREGH(x)   (*((volatile uint16_t *)(x)))
+#if defined(__ti__)
+#pragma CODE_SECTION(Boot_disableWatchdog, ".text:.bootCodeSection")
+#pragma CODE_SECTION(Boot_initFlash, ".text:ti_sysbios_family_arm_f2838x_init_Boot_flashfuncs")
+#endif
 
+#define REG(x)   (*(volatile UInt32 *)(x))
+#define REGH(x)  (*((volatile uint16_t *)(x)))
+#define NOP      asm(" ");
+#define NOPS     8
+
+/* Flash controller defines */
+#define FRDCNTL_REG             0x400FA000
+#define FBFALLBACK_REG          0x400FA040
+#define FPAC1_REG               0x400FA048
+#define FRD_INTF_CTRL_REG       0x400FA300
+/* bit masks */
+#define FPAC1_PMPPWR_M               0x1
+#define FBFALLBACK_BNKPWR0_M         0x3
+#define FRD_INTF_CTRL_PREFETCHEN_M   0x1
+#define FRD_INTF_CTRL_DATACACHEEN_M  0x2
+#define FRDCNTL_RWAIT_M              0xF00
+#define FRDCNTL_RWAIT_S              8
+
+/* Watchdog defines */
 #define WD_BASE              0x40080000U
 #define WWD_O_WDCR           0xCU
 #define WWD_WDCR_WDDIS       0x40U
@@ -51,5 +74,47 @@
  */
 Void ti_sysbios_family_arm_f2838x_init_Boot_disableWatchdog()
 {
-    HWREGH(WD_BASE + WWD_O_WDCR) |= SYSCTL_WD_CHKBITS | WWD_WDCR_WDDIS;
+    REGH(WD_BASE + WWD_O_WDCR) |= SYSCTL_WD_CHKBITS | WWD_WDCR_WDDIS;
+}
+
+/*
+ *  ======== Boot_initFlash ========
+ */
+void Boot_initFlash(Bool configWaitStates, UInt waitStates,
+    Bool enableProgramCache, Bool enableDataCache)
+{
+    UInt cacheEnable = 0;
+    Int i;
+
+    /* power up flash bank and pump */
+    REG(FPAC1_REG) |= FPAC1_PMPPWR_M;
+
+    /* set fallback mode to active */
+    REG(FBFALLBACK_REG) |= FBFALLBACK_BNKPWR0_M;
+
+    /* disable prefetch and data cache */
+    REG(FRD_INTF_CTRL_REG) = 0;
+
+    /* set wait states */
+    if (configWaitStates) {
+        REG(FRDCNTL_REG) = (waitStates << FRDCNTL_RWAIT_S) & FRDCNTL_RWAIT_M;
+    }
+
+    /* enable prefetch? */
+    if (enableProgramCache) {
+        cacheEnable |= FRD_INTF_CTRL_PREFETCHEN_M;
+    }
+
+    /* enable data cache? */
+    if (enableDataCache) {
+        cacheEnable |= FRD_INTF_CTRL_DATACACHEEN_M;
+    }
+
+    /* write to read interface control register */
+    REG(FRD_INTF_CTRL_REG) = cacheEnable;
+
+    /* flush pipeline before returning from RAM function */
+    for (i = 0; i < (NOPS - 1); i++) {
+        NOP;
+    }
 }

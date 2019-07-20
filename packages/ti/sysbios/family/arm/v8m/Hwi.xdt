@@ -153,12 +153,12 @@ Ptr _vtable_base_address;
 /* place holder for RAM vector table */
 UInt32 ti_sysbios_family_arm_v8m_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`] __attribute__((section(".vtable")));
 % }
-%else if (Program.build.target.$name.match(/iar/)) {
+% else if (Program.build.target.$name.match(/iar/)) {
 
 /* place holder for RAM vector table */
 #pragma location=`Hwi.vectorTableAddress`
 __root __no_init UInt32 ti_sysbios_family_arm_v8m_Hwi_ramVectors[`Hwi.NUM_INTERRUPTS`];
-%}
+% }
 % else {
 %    if (Program.build.target.$name.match(/clang/)) {
 /* place holder for RAM vector table */

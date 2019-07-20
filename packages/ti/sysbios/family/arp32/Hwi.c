@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -818,7 +818,7 @@ Void Hwi_dispatchCore(Int vectorNum)
         }
 #endif
 
-        Log_write4(Hwi_LM_begin, (IArg)hwi, (IArg)fxn,
+        Log_write5(Hwi_LM_begin, (IArg)hwi, (IArg)fxn, (IArg)prevThreadType,
                   (IArg)vectorNum, Hwi_module->irp[vectorNum]);
 
         /* call the user's isr */

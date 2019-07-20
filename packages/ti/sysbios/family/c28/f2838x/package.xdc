@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,4 +39,5 @@
  *
  */
 package ti.sysbios.family.c28.f2838x [1,0,0,0]{
+    module TimestampProvider;
 }

@@ -1,10 +1,10 @@
 /*
- *  Copyright 2018 by Texas Instruments Incorporated.
+ *  Copyright 2019 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,12 +53,22 @@
 #include xdc__local_include(xdc_target_name__)
 #endif
 
+/*
+ *  clang compiler has a builtin __ti__
+ *  use ours provided in ti/targets/std.h
+ */
+#ifdef __ti__
+#undef __ti__
+#endif
+
 /* "inherit" (i.e., include) all ti.targets standard types */
 #include <ti/targets/std.h>
+#undef __ti__sect
+#undef __ti__align
 
 #endif /* ti_targets_arm_clang_STD_ */
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,2; 12-17-2018 15:57:21; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 4-18-2019 17:33:10; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

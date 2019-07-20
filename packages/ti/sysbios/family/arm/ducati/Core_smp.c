@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,6 +163,12 @@ Void Core_core1Startup()
 
     /* initialize our NVIC */
     Hwi_initNVIC();
+
+    /*
+     * Sync NVIC with SW copy setup by core 0.
+     * Relies on vnvicFlushRequired bit 1 set by Hwi_Module_startup().
+     */
+    Hwi_flushVnvic();
 
     /* split thread and handler stacks */
     Hwi_initStacks(&Core_module->core1HwiStack[Core_core1HwiStackSize - 1]);

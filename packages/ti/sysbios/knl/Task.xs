@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,7 +117,7 @@ function module$use()
     Task.SupportProxy = xdc.module(Settings.getDefaultTaskSupportDelegate());
 
     /* only useModule(Memory) if needed */
-    var Defaults = xdc.useModule('xdc.runtime.Defaults');
+    var Defaults = xdc.module('xdc.runtime.Defaults');
     if (Defaults.common$.memoryPolicy ==
         xdc.module("xdc.runtime.Types").STATIC_POLICY) {
         Memory = xdc.module('xdc.runtime.Memory');
@@ -126,8 +126,14 @@ function module$use()
         Memory = xdc.useModule('xdc.runtime.Memory');
     }
 
-    xdc.useModule('xdc.runtime.Log');
-    xdc.useModule('xdc.runtime.Assert');
+    if (!(BIOS.libType == BIOS.LibType_Custom && BIOS.logsEnabled == false)) {
+        xdc.useModule('xdc.runtime.Log');
+    }
+    if (!(BIOS.libType == BIOS.LibType_Custom
+        && BIOS.assertsEnabled == false)) {
+        xdc.useModule('xdc.runtime.Assert');
+    }
+
     xdc.useModule("ti.sysbios.knl.Idle");
     xdc.useModule("ti.sysbios.knl.Intrinsics");
     xdc.useModule("ti.sysbios.knl.Task_SupportProxy");
@@ -1419,9 +1425,8 @@ function viewGetReadyQs(priorityNodes, readyQs, coreId, numPris, affinity)
                     var taskView = Program.scanHandleView('ti.sysbios.knl.Task', elem.next, 'Basic');
                 }
                 catch (e) {
-                    taskElemView.$status["Address"] = "Bad Task object address: " +
-                                                Number(elem.next).toString(16) +
-                                                ": " + e.toString();
+                    taskElemView.$status["Address"] = "Bad Task object address: "
+                        + Number(elem.next).toString(16) + ": " + e.toString();
                     break;
                 }
 
@@ -1498,8 +1503,8 @@ function viewGetReadyQs(priorityNodes, readyQs, coreId, numPris, affinity)
 
                 /*
                  * Add the address to a map so we can check for loops.
-                 * The value 'true' is just a placeholder to make sure the address
-                 * is in the map.
+                 * The value 'true' is just a placeholder to make sure the
+                 * address is in the map.
                  */
                 addrs[elem.$addr] = true;
             }
@@ -1559,7 +1564,7 @@ function viewInitCallStack()
             var nullArray = new Array();
             obj["0x" + Number(taskView.$addr).toString(16) +
             ",  Uninitialized Task object"] = nullArray;
-            return (obj);
+            continue;
         }
 
         /* determine Task state */

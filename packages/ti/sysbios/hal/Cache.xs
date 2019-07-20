@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Texas Instruments Incorporated
+ * Copyright (c) 2014-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,33 @@ function module$use()
             if (Cache.CacheProxy.delegate$.$$scope != -1) {
                 Cache.CacheProxy.delegate$.common$[dl] = Cache.common$[dl];
             }
+        }
+    }
+
+    /*
+     * Ensure hal.Cache.enableCache and delegate Cache.enableCache are same.
+     */
+    if (Cache.CacheProxy.delegate$.enableCache != Cache.enableCache) {
+        if (Cache.$written("enableCache")) {
+            if (Cache.CacheProxy.delegate$.$written("enableCache")) {
+                this.$logWarning(Cache.$name + ".enableCache and " +
+                    Cache.CacheProxy.delegate$.$name + ".enableCache have " +
+                    "both been set.  Using " + Cache.$name + ".enableCache = " +
+                    Cache.enableCache,
+                    this, "enableCache");
+            }
+
+            /* hal.Cache.enableCache has been assigned, use it */
+            Cache.CacheProxy.delegate$.enableCache = Cache.enableCache;
+        }
+        else {
+            /*
+             * hal.Cache.enableCache has not been written to and is different
+             * than the delegate Cache.enableCache, use delegate's value
+             * (which may have been written to, or may just have a different
+             * default value).
+             */
+            Cache.enableCache = Cache.CacheProxy.delegate$.enableCache;
         }
     }
 }

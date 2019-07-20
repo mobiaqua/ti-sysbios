@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -485,6 +485,7 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     /*! @_nodoc */
     metaonly struct ModuleView {
         String      options[4];
+        String      processorState;
         String      activeInterrupt;
         String      pendingInterrupt;
         String      exception;
@@ -580,6 +581,14 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     };
 
     // Errors
+
+    /*!
+     *  Error raised if an attempt is made to create a Hwi
+     *  with an interrupt number greater than Hwi_NUM_INTERRUPTS - 1.
+     */
+    config Error.Id E_badIntNum = {
+        msg: "E_badIntNum, intnum: %d is out of range"
+    };
 
     /*!
      *  Error raised when Hwi is already defined
@@ -1178,6 +1187,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     Void flushVnvic();
 
+    /*!
+     *  @_nodoc
+     *  ======== testStaticInlines ========
+     *  test function that calls static inline function for code coverage
+     */
+    Void testStaticInlines();
+
 instance:
 
     /*!
@@ -1299,6 +1315,7 @@ internal:   /* not for client use */
      * dispatcherTaskSupport is false.
      */
     config UInt (*swiDisable)();
+    config Void (*swiRestore)(UInt);
     config Void (*swiRestoreHwi)(UInt);
     config UInt (*taskDisable)();
     config Void (*taskRestoreHwi)(UInt);
@@ -1425,6 +1442,18 @@ internal:   /* not for client use */
      *  ======== setStackLimit ========
      */
     Void setStackLimit(Ptr stackBase);
+
+    /*
+     *  ======== swiDisableNull ========
+     *  Empty Hwi_swiDisable()
+     */
+    UInt swiDisableNull();
+
+    /*
+     *  ======== swiRestoreNull ========
+     *  Empty Hwi_swiRestore()
+     */
+    Void swiRestoreNull(UInt key);
 
     /*! Hwi vector function type definition. */
     typedef Void (*HandlerFuncPtr)(Handle, UInt);

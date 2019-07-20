@@ -171,7 +171,7 @@ metaonly interface IArm inherits ti.targets.ITarget {
     override config String binaryParser = "ti.targets.omf.elf.Elf32";
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,2; 12-17-2018 15:57:02; /db/ztree/library/trees/xdctargets/xdctargets-s02/src/ xlibrary
+ *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 4-18-2019 17:32:58; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

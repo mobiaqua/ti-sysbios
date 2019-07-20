@@ -93,6 +93,7 @@ function getAsmFiles(targetName)
         case "ti.targets.arm.elf.R4F":
         case "ti.targets.arm.elf.R4Ft":
         case "ti.targets.arm.elf.R5F":
+        case "ti.targets.arm.elf.R5Ft":
             if ((Core.id == 0) && (!Hwi.lockstepDevice)) {
                 return (["Hwi_asm.sv7R", "Hwi_asm_vecs.sv7R",
                          "Hwi_asm_switch.sv7R"]);

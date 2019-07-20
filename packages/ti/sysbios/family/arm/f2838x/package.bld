@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,17 +36,18 @@
 var BiosBuild = xdc.loadCapsule("ti/sysbios/Build.xs");
 
 var objList = [
+    "TimestampProvider", "Timer"
 ];
 
 var trgFilter = {
-    field: "isa",
-    list: [ "v7M4" ]      /* build for all M4 targets ... */
+    field: "$name",
+    list: [ "ti.targets.arm.elf.M4" ]
 };
 
 /* generate makefiles */
 BiosBuild.buildLibs(objList, undefined, trgFilter, arguments);
 
-Pkg.otherFiles = ["package.bld"];
+Pkg.otherFiles = ["package.bld", "TimestampProvider.xml", "Timer.xml"];
 
 /* include source files in the release package */
 Pkg.attrs.exportSrc = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -210,7 +210,7 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     config Log.Event LM_begin = {
         mask: Diags.USER1 | Diags.USER2,
-        msg: "LM_begin: hwi: 0x%x, func: 0x%x, intNum: %d, irp: 0x%x"
+        msg: "LM_begin: hwi: 0x%x, func: 0x%x, preThread: %d, intNum: %d, irp: 0x%x"
     };
 
     /*!

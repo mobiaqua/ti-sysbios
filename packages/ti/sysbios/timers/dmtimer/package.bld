@@ -79,6 +79,7 @@ var trgFilter = {
             "ti.targets.arm.elf.A8F",
             "ti.targets.arm.elf.A8Fnv",
             "ti.targets.arm.elf.R5F",
+            "ti.targets.arm.elf.R5Ft",
           ]
 };
 

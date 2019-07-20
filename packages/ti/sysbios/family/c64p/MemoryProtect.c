@@ -1,4 +1,35 @@
 /*
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/*
  *  ======== MemoryProtect.c ========
  *
  */
@@ -6,6 +37,7 @@
 #include <xdc/std.h>
 #include <xdc/runtime/Startup.h>
 #include <ti/sysbios/hal/Hwi.h>
+#include <ti/sysbios/family/c66/Cache.h>
 #include <ti/sysbios/family/c64p/Exception.h>
 
 #include "package/internal/MemoryProtect.xdc.h"
@@ -18,6 +50,13 @@
  */
 #define EXTRACTBITS(val, hibit, lobit) \
     ( _extu((val), 31 - (hibit), (31 - (hibit)) + (lobit)) )
+
+typedef struct {
+    UInt32 lo;
+    UInt32 hi;
+} MemoryProtect_MPAXRegister;
+
+MemoryProtect_MPAXRegister *MPAX = (MemoryProtect_MPAXRegister *)0x08000000;
 
 /*
  *************************************************************************
@@ -141,6 +180,39 @@ Bool MemoryProtect_setPA(Ptr addr, SizeT size, UInt32 paMask)
 
         return (TRUE);
     }
+}
+
+/*
+ *  ======== MemoryProtect_setXMCRegion ========
+ */
+Bool MemoryProtect_setXMCRegion(Int8 id, Ptr baseAddr,
+                               MemoryProtect_RegionSize size, Ptr rAddr35_12,
+                               UInt32 paMask)
+{
+    Cache_Size cacheSize, cacheSizeSave;
+    UInt key;
+
+    /* XMC doesn't even see addresses < 0x0C000000 */
+    if (baseAddr < (Ptr)0x0C000000 || id >= MemoryProtect_numXMCRegions) {
+        return (FALSE);
+    }
+
+    key = Hwi_disable();
+    Cache_getSize(&cacheSizeSave);
+
+    /* disable all caches */
+    cacheSize.l1pSize = Cache_L1Size_0K;
+    cacheSize.l1dSize = Cache_L1Size_0K;
+    cacheSize.l2Size = Cache_L2Size_0K;
+    Cache_setSize(&cacheSize);
+
+    MPAX[id].lo = ((UInt32)rAddr35_12 << 8) | (paMask & 0x3f);
+    MPAX[id].hi = ((UInt32)baseAddr & 0xFFFFF000) | size;
+
+    Cache_setSize(&cacheSizeSave);
+    Hwi_restore(key);
+
+    return (TRUE);
 }
 
 /*

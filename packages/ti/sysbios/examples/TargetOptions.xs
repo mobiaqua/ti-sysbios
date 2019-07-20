@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ var targetOptions = {
                             "RM4|TMS570LS|ARM7|ARM11|Generic|EVMDMRX45X" +
                             "|CC13|CC25|CM25|CC26|CC32|TMS470M|DM350|DM357|" +
                             "DM368|P401R|RM57D8|AM57|TDA2|TDA3|AWR14|AWR16|" +
-                            "IWR14|IWR16|AM65).*",
+                            "IWR14|IWR16|AM65|TMS320F2838|F2838).*",
                     }
                 }
             },
@@ -257,6 +257,13 @@ var targetOptions = {
                         platform: "",
                         linkerCommandFile: "",
                         productGroup: "Sitara"
+                    },
+                    "F2838X": {
+                        deviceId: ".*(TMS320F2838|F2838).*",
+                        platform: "ti.platforms.cortexM:TMS320F2838X",
+                        linkerCommandFile: "ti/platforms/cortexM/include/" +
+                            "TMS320F2838X.cmd",
+                        productGroup: "C2000"
                     }
                 }
             },
@@ -326,11 +333,11 @@ var targetOptions = {
                 productGroup: "C2000",
                 devices: {
                     "GENERIC": {
-                        deviceId: "~((.*(F28M3|Generic|G00883|" +
+                        deviceId: "~((.*(F28M3|F2838|Generic|G00883|" +
                             "TMS320C280|TMS320C281|TMS320C282|" +
                             "TMS320F2801|TMS320F2802|TMS320F2803|" +
-                            "TMS320F2804|TMS320F2823).*)|TMS320F2801|" +
-                            "TMS320F2802|TMS320F2806|TMS320F2808|" +
+                            "TMS320F2804|TMS320F2823|TMS320F2838).*)|" +
+                            "TMS320F2801|TMS320F2802|TMS320F2806|TMS320F2808|" +
                             "TMS320F2809|TMS320F2810|TMS320F2811|" +
                             "TMS320F2812)",
                         platform: "ti.platforms.tms320x28:$DeviceId$",
@@ -362,6 +369,28 @@ var targetOptions = {
                         platform: "ti.platforms.tms320x28:$DeviceId$",
                         linkerCommandFile: "ti/platforms/tms320x28/include/" +
                             "$DeviceId$.cmd",
+                    }
+                }
+            },
+            "C28_Float_ELF": {
+                cfgPrefix: "c28/",
+                target: "ti.targets.elf.C28_float",
+                compilerBuildOptions:
+                    " -ml --float_support=fpu32 --gen_func_subsections=on" +
+                    " --display_error_number --diag_warning=255" +
+                    " --diag_wrap=off" +
+                    " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",
+                linkerBuildOptions:
+                    " --warn_sections --display_error_number --diag_wrap=off" +
+                    " --rom_model",
+                productGroup: "C2000",
+                outputFormat: "ELF",
+                devices: {
+                    "GENERIC": {
+                        deviceId: ".*(TMS320F2838|F2838).*",
+                        platform: "ti.platforms.tms320x28:TMS320F2838X1",
+                        linkerCommandFile: "ti/platforms/tms320x28/include/" +
+                            "TMS320F2838X1.cmd",
                     }
                 }
             }

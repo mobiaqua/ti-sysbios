@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ function getAsmFiles(targetName)
 {
     switch(targetName) {
         case "gnu.targets.arm.M33F":
+        case "ti.targets.arm.clang.M33":
         case "ti.targets.arm.clang.M33F":
             return (["TaskSupport_asm_gnu.sv8M"]);
             break;

@@ -45,6 +45,7 @@ var trgFilter = {
     list: [ "ti.targets.arm.elf.A8Fnv",
             "ti.targets.arm.elf.R4F",
             "ti.targets.arm.elf.R5F",
+            "ti.targets.arm.elf.R5Ft",
             "gnu.targets.arm.A8F",
             "gnu.targets.arm.A9F",
             "gnu.targets.arm.A15F" ]       /* build for A8, A9, A15 & R5 */

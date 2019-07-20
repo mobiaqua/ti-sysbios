@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -202,7 +202,7 @@ module Cache inherits ti.sysbios.interfaces.ICache
      *  Data caching requires the MMU and the memory section/page
      *  descriptor cacheable attribute to be enabled.
      */
-    config Bool enableCache = true;
+    override config Bool enableCache = true;
 
     /*!
      *  Unlock all 8 L2 cache ways at startup, default is true.

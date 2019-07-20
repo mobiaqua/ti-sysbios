@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -203,7 +203,7 @@ if (xdc.om.$name == "cfg") {
             resetVectorAddress : 0x10000000,
             vectorTableAddress : 0x30000000,
         },
-        "SIMMAXWELL": {
+        "AM65.*": {
             numInterrupts : 16 + 64,            /* supports 80 interrupts */
             numPriorities : 8,
             resetVectorAddress : 0x00040000,
@@ -237,8 +237,7 @@ if (xdc.om.$name == "cfg") {
     deviceTable["CC13.*"]        = deviceTable["CC26.*"];
     deviceTable["CC32.*S"]       = deviceTable["CC3200"];
     deviceTable["CC32.*SF"]      = deviceTable["CC3220SF"];
-    deviceTable["AM65.*"]        = deviceTable["SIMMAXWELL"];
-    deviceTable["J7.*"]          = deviceTable["SIMMAXWELL"];
+    deviceTable["J7.*"]          = deviceTable["AM65.*"];
 }
 
 /*
@@ -416,17 +415,19 @@ function module$use()
 {
     Startup = xdc.useModule('xdc.runtime.Startup');
 
-    xdc.useModule('xdc.runtime.Log');
-
     BIOS = xdc.useModule("ti.sysbios.BIOS");
     Build = xdc.module("ti.sysbios.Build");
+
+    if (!(BIOS.libType == BIOS.LibType_Custom && BIOS.logsEnabled == false)) {
+        xdc.useModule('xdc.runtime.Log');
+    }
 
     if (BIOS.smpEnabled == true) {
         Core = xdc.module("ti.sysbios.hal.Core");
     }
 
     /* only useModule(Memory) if needed */
-    var Defaults = xdc.useModule('xdc.runtime.Defaults');
+    var Defaults = xdc.module('xdc.runtime.Defaults');
     if (Defaults.common$.memoryPolicy ==
         xdc.module("xdc.runtime.Types").STATIC_POLICY) {
         Memory = xdc.module('xdc.runtime.Memory');
@@ -445,6 +446,7 @@ function module$use()
         if (BIOS.swiEnabled) {
             xdc.useModule("ti.sysbios.knl.Swi");
             Hwi.swiDisable = '&ti_sysbios_knl_Swi_disable__E';
+            Hwi.swiRestore = '&ti_sysbios_knl_Swi_restore__E';
             Hwi.swiRestoreHwi = '&ti_sysbios_knl_Swi_restoreHwi__E';
         }
         else {
@@ -452,7 +454,8 @@ function module$use()
         }
     }
     else {
-        Hwi.swiDisable = null;
+        Hwi.swiDisable = '&ti_sysbios_family_arm_m3_Hwi_swiDisableNull';
+        Hwi.swiRestore = '&ti_sysbios_family_arm_m3_Hwi_swiRestoreNull';
         Hwi.swiRestoreHwi = null;
     }
 
@@ -751,6 +754,10 @@ function module$static$init(mod, params)
 function instance$static$init(obj, intNum, fxn, params)
 {
     var mod = this.$module.$object;
+
+    if (intNum >= Hwi.NUM_INTERRUPTS) {
+        Hwi.$logError("intnum " + intNum + " is out of range!", this, intNum);
+    }
 
     if (intNum < 15) {
         Hwi.$logError("Only intNums > = 15 can be created.", this, intNum);
@@ -1837,16 +1844,16 @@ function viewInitVectorTable(view)
         var vector = Program.newViewStruct('ti.sysbios.family.arm.m3.Hwi', 'Vector Table');
         vector.vectorNum = i;
         vector.vector = "0x" + Number(vectorTable[i]).toString(16);
-        var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
-                                      /* CCS elf reader always works with LSB = 0 */
+        /* try with the funcptr lsb set to 1 first (ROV2 likes this) */
+        var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]));
+        if (vectorLabel.length == 0) {
+            /* clear LSB if label not found with LSB set (legacy ROV likes this) */
+            vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
+        }
         if (vectorLabel.length > 1) {
-            vector.vectorLabel = vectorLabel[0] + " " + vectorLabel[1]; /* blow off FUNC16/32 */
+            vector.vectorLabel = vectorLabel[1]; /* blow off FUNC16/32 */
         }
         else {
-            if (vectorLabel[0] == undefined) {
-                vectorLabel = Program.lookupFuncName(Number(vectorTable[i]));
-                                      /* ROV2 elf reader likes LSB = 1 */
-            }
             vector.vectorLabel = vectorLabel[0];
         }
 
@@ -2040,12 +2047,27 @@ function viewInitVectorTable(view)
 function viewInitModule(view, mod)
 {
     var Program = xdc.useModule('xdc.rov.Program');
+    var CallStack = xdc.useModule('xdc.rov.CallStack');
+
+    CallStack.fetchRegisters(["CTRL_FAULT_BASE_PRI"]);
+    var ctrlFaultBasePri = CallStack.getRegister("CTRL_FAULT_BASE_PRI");
+
     var halHwiModCfg = Program.getModuleConfig('ti.sysbios.hal.Hwi');
     var hwiModCfg = Program.getModuleConfig('ti.sysbios.family.arm.m3.Hwi');
 
     viewNvicFetch(this);
+
     view.activeInterrupt = String(this.ICSR & 0xff);
     view.pendingInterrupt = String((this.ICSR & 0xff000) >> 12);
+    if (view.activeInterrupt != "0") {
+        view.processorState = "Handler";
+    }
+    else if (ctrlFaultBasePri & 0x01000000) {
+        view.processorState = "Unpriv, Thread";
+    }
+    else {
+        view.processorState = "Priv, Thread";
+    }
 
     if ((view.activeInterrupt > 0) && (view.activeInterrupt < 14)) {
         view.exception = "Yes";

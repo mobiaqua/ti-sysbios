@@ -97,11 +97,12 @@ dispatchRet    .macro      ; epilog of dispatcher where we return
 
 
         movz    ar0,@sp
+        and     ar0,#0xfffe     ; align to even address
 
     .if (.TMS320C2800_FPU32 == 1)
-        subb    xar0, #13       ; point to IER on stack
+        subb    xar0, #12       ; point to IER on stack
     .else
-        subb    xar0, #11       ; point to IER on stack
+        subb    xar0, #10       ; point to IER on stack
     .endif
                                 ; Note: if we change order of items
                                 ;       pushed on stack, double check

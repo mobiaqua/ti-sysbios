@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,8 +49,10 @@ var family = {
     "ti.targets.arm.elf.M4" :                   "arm",
     "ti.targets.arm.elf.M4F" :                  "arm",
     "ti.targets.arm.elf.R5F" :                  "arm",
+    "ti.targets.arm.elf.R5Ft" :                 "arm",
     "ti.targets.arm.elf.R4F" :                  "arm",
     "ti.targets.arm.elf.R4Ft" :                 "arm",
+    "ti.targets.arm.clang.M33" :                "arm",
     "ti.targets.arm.clang.M33F" :               "arm",
     "ti.targets.arm.clang.M3" :                 "arm",
     "ti.targets.arm.clang.M4" :                 "arm",

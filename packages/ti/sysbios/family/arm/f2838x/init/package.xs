@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,4 +57,12 @@ function getLibs(prog)
 
     /* use shared getLibs() */
     return (Build.getLibs(this));
+}
+
+/*
+ *  ======== Package.getSects ========
+ */
+function getSects()
+{
+    return "ti/sysbios/family/arm/f2838x/init/linkcmd.xdt";
 }

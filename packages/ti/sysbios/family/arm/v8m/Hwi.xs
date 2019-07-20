@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,10 +47,18 @@ var Build = null;
  */
 function getAsmFiles(targetName)
 {
+    var BIOS = xdc.module('ti.sysbios.BIOS');
+
     switch(targetName) {
         case "gnu.targets.arm.M33F":
+        case "ti.targets.arm.clang.M33":
         case "ti.targets.arm.clang.M33F":
-            return (["Hwi_asm_gnu.sv8M", "Hwi_asm_switch_gnu.sv8M"]);
+            if (BIOS.psaEnabled == true) {
+                return (["Hwi_asm_gnu_tfm.sv8M", "Hwi_asm_switch_gnu.sv8M"]);
+            }
+            else {
+                return (["Hwi_asm_gnu.sv8M", "Hwi_asm_switch_gnu.sv8M"]);
+            }
             break;
 
         case "iar.targets.arm.M33":
@@ -76,16 +84,28 @@ function getCFiles(targetName)
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "FVP_MPS2": {
-            numInterrupts : 16 + 55,            /* supports 71 interrupts */
+            numInterrupts : 115,            /* supports 115 interrupts */
             numPriorities : 8,
             resetVectorAddress : 0x10000000,
             vectorTableAddress : 0x30000000,
         },
         "MTL1_VSOC": {
-            numInterrupts : 16 + 55,            /* supports 71 interrupts */
+            numInterrupts : 115,            /* supports 115 interrupts */
             numPriorities : 8,
             resetVectorAddress : 0x2C400000,
             vectorTableAddress : 0x2C400000,
+        },
+        "MTL1_CORE0": {
+            numInterrupts : 115,            /* supports 115 interrupts */
+            numPriorities : 8,
+            resetVectorAddress : 0x2C400000,
+            vectorTableAddress : 0x2C400000,
+        },
+        "MTL1_CORE1": {
+            numInterrupts : 115,            /* supports 115 interrupts */
+            numPriorities : 8,
+            resetVectorAddress : 0x2C830000,
+            vectorTableAddress : 0x2C830000,
         },
     }
 }
@@ -469,7 +489,12 @@ function module$static$init(mod, params)
         Startup.firstFxns.$add(Hwi.initNVIC);
     }
 
-    mod.vectorTableBase = Hwi.vectorTableAddress;
+    if (Hwi.resetVectorAddress == Hwi.vectorTableAddress) {
+        mod.vectorTableBase = Hwi.vectorTableAddress;
+    }
+    else {
+        mod.vectorTableBase = Hwi.ramVectors;
+    }
 
     if (Hwi.vectorTableAddress > 0x3fffc000) {
         Hwi.$logError("Vector Table must be placed at or below 0x3FFFFC00",
@@ -491,6 +516,20 @@ function module$static$init(mod, params)
              this, "dispatchTableSize");
         }
     }
+
+    if (BIOS.psaEnabled) {
+        /* initialize the NS->S lock if used */
+        Startup.firstFxns.$add('&tfm_ns_lock_init');
+
+        /* Add non-secure partition management hook functions */
+        var Task = xdc.module('ti.sysbios.knl.Task');
+        Task.addHookSet({
+            registerFxn: '&nspmRegisterHook',
+            createFxn: '&nspmCreateHook',
+            switchFxn: '&nspmSwitchHook',
+            deleteFxn: '&nspmDeleteHook',
+        });
+    }
 }
 
 /*
@@ -499,6 +538,10 @@ function module$static$init(mod, params)
 function instance$static$init(obj, intNum, fxn, params)
 {
     var mod = this.$module.$object;
+
+    if (intNum >= Hwi.NUM_INTERRUPTS) {
+        Hwi.$logError("intnum " + intNum + " is out of range!", this, intNum);
+    }
 
     if (intNum < 15) {
         Hwi.$logError("Only intNums > = 15 can be created.", this, intNum);
@@ -1602,8 +1645,12 @@ function viewInitVectorTable(view)
         var vector = Program.newViewStruct('ti.sysbios.family.arm.v8m.Hwi', 'Vector Table');
         vector.vectorNum = i;
         vector.vector = "0x" + Number(vectorTable[i]).toString(16);
-        var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
-
+        /* try with the funcptr lsb set to 1 first (ROV2 likes this) */
+        var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]));
+        if (vectorLabel.length == 0) {
+            /* clear LSB if label not found with LSB set (legacy ROV likes this) */
+            vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
+        }
         if (vectorLabel.length > 1) {
             vector.vectorLabel = vectorLabel[1]; /* blow off FUNC16/32 */
         }
@@ -1801,13 +1848,28 @@ function viewInitVectorTable(view)
 function viewInitModule(view, mod)
 {
     var Program = xdc.useModule('xdc.rov.Program');
+    var CallStack = xdc.useModule('xdc.rov.CallStack');
+
+    CallStack.fetchRegisters(["CTRL_FAULT_BASE_PRI"]);
+    var ctrlFaultBasePri = CallStack.getRegister("CTRL_FAULT_BASE_PRI");
+
     var halHwiModCfg = Program.getModuleConfig('ti.sysbios.hal.Hwi');
     var hwiModCfg = Program.getModuleConfig('ti.sysbios.family.arm.v8m.Hwi');
 
     viewNvicFetch(this);
+
     view.activeInterrupt = String(this.ICSR & 0xff);
     view.pendingInterrupt = String((this.ICSR & 0xff000) >> 12);
-    view.processorState = (this.DSCSR & 0x10000) ? "Secure" : "Non Secure";
+    view.processorState = (this.DSCSR & 0x10000) ? "Secure, " : "Non Secure, ";
+    if (view.activeInterrupt != "0") {
+        view.processorState += "Handler";
+    }
+    else if (ctrlFaultBasePri & 0x01000000) {
+        view.processorState += "Unpriv, Thread";
+    }
+    else {
+        view.processorState += "Priv, Thread";
+    }
 
     if ((view.activeInterrupt > 0) && (view.activeInterrupt < 14)) {
         view.exception = "Yes";
