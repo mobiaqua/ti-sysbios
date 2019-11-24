@@ -496,6 +496,10 @@ module BIOS
      *  - Runtime calls to Task_create will trigger an assertion violation
      *    via {@link xdc.runtime.Assert#isTrue}.
      *  @p
+     *
+     *  @a(note)
+     *  {@link #taskEnabled BIOS.taskEnabled} must be true when in SMP mode.
+     *  See {@link #smpEnabled BIOS.smpEnabled}.
      */
     config Bool taskEnabled = true;
 
@@ -513,6 +517,10 @@ module BIOS
      *  - Runtime calls to Swi_create will trigger an assertion violation
      *    via {@link xdc.runtime.Assert#isTrue}.
      *  @p
+     *
+     *  @a(note)
+     *  {@link #swiEnabled BIOS.swiEnabled} must be true when in SMP mode.
+     *  See {@link #smpEnabled BIOS.smpEnabled}.
      */
     config Bool swiEnabled = true;
 
@@ -774,7 +782,7 @@ module BIOS
      *  Example: A macro hex value of 0x64501 implies that the SYS/BIOS
      *  product version number is 6.45.01
      */
-    const UInt32 version = 0x67601;
+    const UInt32 version = 0x67603;
 
     /*!
      *  ======== addUserStartupFunction ========

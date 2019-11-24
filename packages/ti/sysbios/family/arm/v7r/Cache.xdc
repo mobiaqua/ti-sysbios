@@ -165,8 +165,41 @@ module Cache inherits ti.sysbios.interfaces.ICache
      *
      *  Data caching requires the MMU and the memory section/page
      *  descriptor cacheable attribute to be enabled.
+     *
+     *  NOTE: this flag is not used when {@link #skipEarlyCacheStartup}
+     *  is true.
      */
     override config Bool enableCache = true;
+
+    /*!
+     *  Don't install Cache_startup() during boot
+     *
+     *  The Cache_startup() function will normally be called during
+     *  the early boot Reset functions array.  Cache_startup() also
+     *  starts the MPU via the MPU_startup() function.  Both these
+     *  functions disable the caches at one point or another, which
+     *  can have undesired consequences when the R5 is operating in
+     *  certain states or modes.
+     *
+     *  In addition to above, some systems set up the cache and MPU
+     *  before loading/running the SYS/BIOS application, in which case
+     *  SYS/BIOS should not do additional setup that might conflict with
+     *  or undo pre-SYS/BIOS system setup.
+     *
+     *  NOTE: when set to true, the {@link #enableCache} setting becomes
+     *  "don't care" as it is not used when skipEarlyCacheStartup is true.
+     */
+    config Bool skipEarlyCacheStartup = false;
+
+    /*!
+     *  Enable ACTLR FWT (Force Write Thru) bit during Cache_startup()
+     *
+     *  "Force write-thru" forces write-thru behavior for write-back regions.
+     *
+     *  NOTE: this flag is not used when {@link #skipEarlyCacheStartup}
+     *  is true or {@link #enableCache} is false.
+     */
+    config Bool enableForceWrThru = false;
 
     /*!
      *  ======== disable ========
@@ -291,6 +324,12 @@ internal:
      *      1 = L1P
      */
     Bits32 getCacheLevelInfo(UInt level);
+
+    /*
+     *  ======== configForceWrThru ========
+     *  Configure ACTLR FWT bit
+     */
+    Void configForceWrThru(Bool enable);
 
     struct Module_State {
         UInt32  l1dCacheLineSize;   // Size of L1D cache line in bytes

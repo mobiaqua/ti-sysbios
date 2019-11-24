@@ -39,7 +39,8 @@
 %%}
 
 %var Mmu = xdc.module("ti.sysbios.family.c7x.Mmu");
-%var memory = Program.platform.dataMemory;
+%if (Mmu.tableMemory != "") {
+%var memory = Mmu.tableMemory;
 
 SECTIONS
 {
@@ -47,3 +48,5 @@ SECTIONS
     .data.ti_sysbios_family_c7x_Mmu_tableArraySlot > `memory`, type=NOINIT
     .data.ti_sysbios_family_c7x_Mmu_level1Table > `memory`, type=NOINIT
 }
+
+%}

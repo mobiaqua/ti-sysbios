@@ -54,8 +54,7 @@ Int TimestampProvider_Module_startup( Int phase )
     * Part of runtime. Called during first pass.
     * All APIs need to be ready after first pass.
     */
-   /* start TSC */
-//   __TSC = 0;
+   /* TSC already started by firmware, nothing to do here */
 
    return Startup_DONE;
 }
@@ -65,8 +64,7 @@ Int TimestampProvider_Module_startup( Int phase )
  */
 Bits32 TimestampProvider_get32()
 {
-//    return (Bits32)__TSC;
-return 0;
+    return (Bits32)__TSC;
 }
 
 /*
@@ -74,11 +72,9 @@ return 0;
  */
 Void TimestampProvider_get64(Types_Timestamp64 *result)
 {
-//    UInt key;
     UInt64 time;
 
-//    time = __TSC;
-time = 0;
+    time = __TSC;
     result->lo = (Bits32)time;
     result->hi = (Bits32)(time >> 32);
 }

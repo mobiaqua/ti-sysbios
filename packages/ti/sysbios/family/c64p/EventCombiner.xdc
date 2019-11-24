@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -207,30 +207,6 @@ module EventCombiner
         FuncPtr fxn;
         UArg arg;
     };
-
-    /*!
-     *  Event Combiner registers template
-     */
-    struct Registers {
-        UInt EVTFLAG[4];
-        UInt hole1[4];
-        UInt EVTSET[4];
-        UInt hole2[4];
-        UInt EVTCLR[4];
-        UInt hole3[12];
-        UInt EVTMASK[4];
-        UInt hole4[4];
-        UInt MEVTFLAG[4];
-        UInt hole5[4];
-        UInt EXPMASK[4];
-        UInt hole6[4];
-        UInt MEXPMASK[4];
-    };
-
-    /*!
-     *  Event Combiner registers base address
-     */
-    config Registers *EVTRegs;
 
     /*!
      *  Assert raised when an invalid event id number is specified

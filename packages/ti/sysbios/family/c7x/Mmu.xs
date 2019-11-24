@@ -44,7 +44,7 @@ var Memory = null;
 function getAsmFiles(targetName)
 {
     switch(targetName) {
-        case "ti.targets.elf.nda.C71":
+        case "ti.targets.elf.C71":
             return (["Mmu_asm.s71"]);
             break;
 

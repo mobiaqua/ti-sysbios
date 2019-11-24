@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,14 +68,6 @@ function getCFiles(targetName)
     return (["Hwi.c", "Hwi_startup.c"]);
 }
 
-if (xdc.om.$name == "cfg") {
-    var deviceTable = {
-        "J7.*": {
-            INTCAddress : 0x08020000,
-        },
-    }
-}
-
 /*
  *  ======== module$meta$init ========
  */
@@ -121,26 +113,6 @@ function module$meta$init()
         Hwi.interrupt[intNum].fxn = null;
         Hwi.interrupt[intNum].pfxn = null;
         Hwi.interrupt[intNum].name = "";
-    }
-
-    var deviceName;
-    var found = false;
-    for (deviceName in deviceTable) {
-        if (deviceName == Program.cpu.deviceName) {
-            /* exact match */
-            found = true;
-            break;
-        }
-        else if (Program.cpu.deviceName.match(deviceName)) {
-            /* wildcard match */
-            found = true;
-            break;
-        }
-    }
-
-    if (found) {
-        /* override default value */
-        Hwi.INTCAddress = deviceTable[deviceName].INTCAddress;
     }
 }
 
@@ -219,10 +191,6 @@ function module$use()
     if (Hwi.resetVectorAddress !== undefined) {
         Program.sectMap[".resetVector"] = new Program.SectionSpec();
         Program.sectMap[".resetVector"].loadAddress = Hwi.resetVectorAddress;
-    }
-
-    if (!Hwi.$written("INTRMUX1Address")) {
-        Hwi.INTRMUX1Address = Hwi.INTCAddress + 0x104;
     }
 }
 

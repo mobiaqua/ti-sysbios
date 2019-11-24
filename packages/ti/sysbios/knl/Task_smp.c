@@ -474,24 +474,32 @@ Int Task_setPri(Task_Object *tsk, Int priority)
             Task_module->workFlag |= otherCoreMask;
             Core_interruptCore(curCoreId);
 
-            /* Wait for scheduler to run */
-            while ((Task_module->workFlag & otherCoreMask) != 0) {
-                Task_enableOtherCores();
+            /*
+             * Do not wait for the other scheduler to run
+             * when Task_setPri() is called from a Hwi because
+             * the Swi scheduler is locked and the other core
+             * will not be able to obtain the inter-core lock.
+             */
+            if (BIOS_getThreadType() != BIOS_ThreadType_Hwi) {
+                /* Wait for scheduler to run */
+                while ((Task_module->workFlag & otherCoreMask) != 0) {
+                    Task_enableOtherCores();
 
-                /*
-                 * Only other cores' task schedulers will run here.
-                 * Leave window open long enough for other core to
-                 * grab the intercore lock.
-                 */
-                for (i = 0; i < 20; i++) {
-                    if ((Task_module->workFlag & otherCoreMask) == 0) {
-                        break;
+                    /*
+                     * Only other cores' task schedulers will run here.
+                     * Leave window open long enough for other core to
+                     * grab the intercore lock.
+                     */
+                    for (i = 0; i < 20; i++) {
+                        if ((Task_module->workFlag & otherCoreMask) == 0) {
+                            break;
+                        }
                     }
-                }
 
-                Task_disable();
-                Core_hwiRestore(hwiKey); /* local interrupt latency reduction */
-                hwiKey = Core_hwiDisable();
+                    Task_disable();
+                    Core_hwiRestore(hwiKey); /* local interrupt latency reduction */
+                    hwiKey = Core_hwiDisable();
+                }
             }
         }
     }
@@ -1342,8 +1350,8 @@ Void Task_sleep(UInt32 timeout)
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
-        /* add Clock event */
-        Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Task_sleepTimeout, timeout, (UArg)&elem);
+        /* init Clock object */
+        Clock_initI(Clock_handle(&clockStruct), (Clock_FuncPtr)Task_sleepTimeout, timeout, (UArg)&elem);
         elem.clockHandle = Clock_handle(&clockStruct);
     }
 
@@ -1373,6 +1381,7 @@ Void Task_sleep(UInt32 timeout)
      * references in the custom library
      */
     if (BIOS_clockEnabled) {
+        Clock_enqueueI(elem.clockHandle);
         Clock_startI(elem.clockHandle);
     }
 
@@ -1707,7 +1716,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
                     Clock_removeI(tsk->pendElem->clockHandle);
                 }
             }
-       }
+        }
 
         if (tsk->mode == Task_Mode_BLOCKED) {
             Assert_isTrue(tsk->pendElem != NULL, Task_A_noPendElem);
@@ -1884,31 +1893,52 @@ UInt Task_getAffinity(Task_Object *tsk)
  */
 Task_Mode Task_getMode(Task_Object *tsk)
 {
-    UInt hwiKey;
+    UInt hwiKey, tskKey;
     Task_Mode mode;
     UInt tskCoreId;
 
+    tskKey = Task_disable();
+    hwiKey = Hwi_disable();
+
+    /* Fetch the mode the task says it's in */
+    mode = tsk->mode;
+
+    /*
+     * Speculatively set mode to INACTIVE
+     * if priority is -1. The task's 'mode' value
+     * will be whatever mode the task was in
+     * when its priority was set to -1
+     */
     if (tsk->priority == -1) {
-        return (Task_Mode_INACTIVE);
+        mode = Task_Mode_INACTIVE;
     }
-    else {
-        hwiKey = Hwi_disable();
-        mode = tsk->mode;
-        tskCoreId = tsk->curCoreId;
-        if (tskCoreId != Core_numCores) {
-            /*
-             * Under certain transient conditions (ie within Task_exit()),
-             * a running task's mode may not be RUNNING.
-             * Always return RUNNING if the task is currently
-             * running on it's respective core.
-             */
-            if (Task_module->smpCurTask[tskCoreId] == tsk) {
-                mode = Task_Mode_RUNNING;
-            }
+
+    tskCoreId = tsk->curCoreId;
+
+    /*
+     * A running task's 'mode' value may not be
+     * Task_Mode_RUNNING.
+     *
+     * If a task is the currently running task
+     * but in a transient state such as executing within
+     * Task_exit(), or after Task_setPri() has been called
+     * from a Hwi/Swi and the affected task is the running
+     * task on the other core, the task 'mode' may not
+     * accurately reflect its current state.
+     *
+     * Always return RUNNING if the task is the currently
+     * running task on its respective core.
+     */
+    if (tskCoreId != Core_numCores) {
+        if (Task_module->smpCurTask[tskCoreId] == tsk) {
+            mode = Task_Mode_RUNNING;
         }
-        Hwi_restore(hwiKey);
-        return (mode);
     }
+
+    Hwi_restore(hwiKey);
+    Task_restore(tskKey);
+
+    return (mode);
 }
 
 /*
@@ -1918,7 +1948,7 @@ Void Task_stat(Task_Object *tsk, Task_Stat *statbuf)
 {
     UInt hwiKey;
 
-    /* collect a coherent set */    
+    /* collect a coherent set */
     hwiKey = Hwi_disable();
 
     statbuf->priority = tsk->priority;

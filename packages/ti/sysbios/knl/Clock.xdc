@@ -847,6 +847,24 @@ instance:
 
     /*!
      *  @_nodoc
+     *  ======== initI ========
+     *  Lightweight One-Shot Clock create for internal SYS/BIOS timeout APIs
+     *  Does NOT start the timeout (ie requires Clock_startI() to be called)
+     *  Does NOT assume Hwis are disabled
+     *  Does NOT add Clock object to Clock Q.
+     */
+    Void initI(FuncPtr clockFxn, UInt32 timeout, UArg arg);
+
+    /*!
+     *  @_nodoc
+     *  ======== enqueueI ========
+     *  Add Clock object to Clock Q.
+     *  Assumes Hwis are disabled
+     */
+    Void enqueueI();
+
+    /*!
+     *  @_nodoc
      *  ======== removeI ========
      *  Lightweight Clock delete for internal SYS/BIOS timeout APIs
      *  Assumes Hwis are disabled

@@ -89,8 +89,11 @@ function module$use()
     Reset = xdc.useModule('xdc.runtime.Reset');
     Startup = xdc.useModule('xdc.runtime.Startup');
 
-    /* Enable cache early */
-    Reset.fxns[Reset.fxns.length++] = Cache.startup;
+    if (Cache.skipEarlyCacheStartup == false) {
+        /* Enable cache early */
+        Reset.fxns[Reset.fxns.length++] = Cache.startup;
+    }
+
     Startup.firstFxns.$add(Cache.initModuleState);
 }
 

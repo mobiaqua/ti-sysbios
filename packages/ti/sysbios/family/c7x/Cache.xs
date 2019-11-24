@@ -50,7 +50,7 @@ var origSizes = {
 function getAsmFiles(targetName)
 {
     switch(targetName) {
-        case "ti.targets.elf.nda.C71":
+        case "ti.targets.elf.C71":
             return (["Cache_asm.s71"]);
             break;
 

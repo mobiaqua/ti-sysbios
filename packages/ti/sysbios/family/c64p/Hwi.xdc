@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -224,16 +224,6 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *  @p
      */
     metaonly config Ptr resetVectorAddress;
-
-    /*!
-     *  Interrupt Controller base address
-     */
-    config Ptr INTCAddress = 0x01800000;
-
-    /*!
-     *  Interrupt Multiplexer register 1 base address
-     */
-    config Ptr INTRMUX1Address;
 
     /*!
      *  Error raised when Hwi is already defined

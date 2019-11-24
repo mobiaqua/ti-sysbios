@@ -577,6 +577,16 @@ function module$validate()
         default:
             break;
     }
+
+    if ((BIOS.smpEnabled == true) && (BIOS.swiEnabled == false)) {
+        BIOS.$logError("Swis are required when SMP is enabled.",
+                         BIOS, "swiEnabled");
+    }
+
+    if ((BIOS.smpEnabled == true) && (BIOS.taskEnabled == false)) {
+        BIOS.$logError("Tasks are required when SMP is enabled.",
+                         BIOS, "taskEnabled");
+    }
 }
 
 /*

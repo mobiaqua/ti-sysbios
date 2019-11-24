@@ -36,27 +36,6 @@
 
         .cdecls C,NOLIST,"package/internal/Hwi.xdc.h"
 
-	.global Hwi_testAsm
-Hwi_testAsm:
-	.asmfunc
-
-	mvc.s1 rp, a8
-||	std.d1 a8, *d15(8)
-	addd.d1 d15, -8, d15
-
-        addkpc.d1 $PCR_OFFSET(calla_fxn), a3
-        calla.s1     a3
-
-	mvc.s1 a8, rp
-	ldd.d1 *d15(0x10), a8
-	addd.d1 d15, 0x8, d15
-||	ret.b1
-
-calla_fxn:
-	ret.b1
-
-	.endasmfunc
-
 ;
 ; The following are double word offsets (offset must be < 32 for A-reg access)
 ;
@@ -192,20 +171,8 @@ evt:
 ti_sysbios_family_c7x_Hwi_dispatchAlways:
         .asmfunc
 
-	.if 0
-
-        std.d1    a0, *ECSP[0x200]
-||      std.d2x   a1, *ECSP[0x201]
-        ldd.d1    *ECSP[0], a0
-||      ldd.d2    *ECSP[1], a1
-        rete.s1   a0, a1
-||      ldd.d1    *ECSP[0x200], a0
-||      ldd.d2    *ECSP[0x201], a1
-
-	.else
-
-        std.d1    a0, *ECSP[0x200]
-||      std.d2x   a1, *ECSP[0x201]
+        std.d1    a0, *ECSP[0x300]
+||      std.d2x   a1, *ECSP[0x301]
 
         addd.d1   SP, -Hwi_STACKFRAMESIZE*8, SP     ; alloc stack frame
 
@@ -450,9 +417,7 @@ ti_sysbios_family_c7x_Hwi_dispatchAlways:
         ldd.d1    *ECSP[0], a0
 ||      ldd.d2    *ECSP[1], a1
         rete.s1   a0, a1
-||      ldd.d1    *ECSP[0x200], a0
-||      ldd.d2    *ECSP[0x201], a1
-
-	.endif
+||      ldd.d1    *ECSP[0x300], a0
+||      ldd.d2    *ECSP[0x301], a1
 
         .endasmfunc

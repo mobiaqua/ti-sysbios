@@ -28,7 +28,7 @@ package ti.targets.arm.elf [1,0,0] {
     interface IM3, IM4;
     module Arm9;
     module M3, M4, M4F;
-    module R4Ft, R5F, R5Ft;
+    module R4F, R4Ft, R5F, R5Ft;
 }
 /*
 

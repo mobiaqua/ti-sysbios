@@ -62,10 +62,11 @@ if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "AM65.*": {
             timerFrequency     : 200000000
+        },
+        "J7.*": {
+            timerFrequency     : 250000000
         }
     };
-
-    deviceTable["J7.*"] = deviceTable["AM65.*"];
 }
 
 /*

@@ -34,6 +34,7 @@
  */
 
 #include <xdc/std.h>
+#include <xdc/runtime/Assert.h>
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/Memory.h>
 #include <xdc/runtime/Startup.h>
@@ -177,6 +178,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
     }
 
     Hwi_module->dispatchTable[intNum] = hwi;
+
 // There is no vector table on C7x.  Instead, all interrupts vector to
 // ESTP + 0x800, where a dispatcher needs to look at AHPEE for interrupt
 // number in service and call the configured ISR.
@@ -219,6 +221,12 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
 Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
 {
     Int i;
+
+    if (hwi->priority < 1 || hwi->priority > 7) {
+        Error_raise(eb, Hwi_E_invalidPriority, hwi->priority, 0);
+
+        return (-1);
+    }
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
     for (i = 0; i < Hwi_hooks.length; i++) {
@@ -392,6 +400,8 @@ ULong Hwi_restoreIER(ULong mask)
  */
 Void Hwi_setPriority(UInt intNum, UInt priority)
 {
+    Assert_isTrue(priority >= 1U && priority <= 7U, Hwi_A_invalidPriority);
+
     __set_indexed(__EPRI, intNum, priority << 5);
 }
 

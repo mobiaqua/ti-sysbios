@@ -185,12 +185,12 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
      *  This significantly reduces latency.
      */
 
-    /* add Clock event if timeout is not FOREVER nor NO_WAIT */
+    /* init Clock object if timeout is not FOREVER nor NO_WAIT */
     if ((BIOS_clockEnabled != 0U)
             /* MISRA.ETYPE.INAPPR.OPERAND.UNOP.2012 */
             && (timeout != BIOS_WAIT_FOREVER)
             && (timeout != BIOS_NO_WAIT)) {
-        Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Semaphore_pendTimeout, timeout, (UArg)&elem);
+        Clock_initI(Clock_handle(&clockStruct), (Clock_FuncPtr)Semaphore_pendTimeout, timeout, (UArg)&elem);
         elem.tpElem.clockHandle = Clock_handle(&clockStruct);
         elem.pendState = Semaphore_PendState_CLOCK_WAIT;
     }
@@ -263,6 +263,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
         /* start Clock if appropriate */
         if ((BIOS_clockEnabled != FALSE) &&
                 (elem.pendState == Semaphore_PendState_CLOCK_WAIT)) {
+            Clock_enqueueI(elem.tpElem.clockHandle);
             Clock_startI(elem.tpElem.clockHandle);
         }
 
@@ -307,12 +308,6 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
         if ((Semaphore_supportsEvents != FALSE) && (sem->event != NULL)) {
             /* synchronize Event state */
             Semaphore_eventSync(sem->event, sem->eventId, sem->count);
-        }
-
-        /* remove Clock object from Clock Q */
-        if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != NULL)) {
-            Clock_removeI(elem.tpElem.clockHandle);
-            elem.tpElem.clockHandle = NULL;
         }
 
         Hwi_restore(hwiKey);

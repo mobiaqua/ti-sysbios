@@ -221,7 +221,7 @@ Void Mmu_enable()
  */
 Void Mmu_enableI()
 {
-    asm("\t mvk64.l1    0x8000000000000001LL, a2 \n"
+    asm("\t mvk64.l1    0x80000000000000C1LL, a2 \n"
         "\t mvc.s1      SCR, a3                  \n"
         "\t nop                                  \n"
         "\t ord.l1      a2, a3, a3               \n"
@@ -541,20 +541,16 @@ Void Mmu_initFuncDefault()
         goto fail;
     }
 
-#if 1
-    attrs.attrIndx = Mmu_AttrIndx_MAIR7;
-    ret = Mmu_map(0x60000000, 0x60000000, 0x20000000, &attrs); /* msmc        */
+    ret = Mmu_map(0x78000000, 0x78000000, 0x08000000, &attrs); /* clec        */
     if (!ret) {
         goto fail;
     }
 
-#if 0
-    ret = Mmu_map(0x70000000, 0x70000000, 0x00200000, &attrs); /* msmc        */
+    attrs.attrIndx = Mmu_AttrIndx_MAIR7;
+    ret = Mmu_map(0x60000000, 0x60000000, 0x18000000, &attrs); /* msmc        */
     if (!ret) {
         goto fail;
     }
-#endif
-#endif
 
     return;
 

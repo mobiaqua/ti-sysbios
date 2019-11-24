@@ -46,7 +46,7 @@ var settings = {
             intrinsicsSupportDelegate : "ti.sysbios.family.c7x.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c7x.Cache",
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.elf.nda.C71" ]
+            targets : [ "ti.targets.elf.C71" ]
         },
         "J7ES": {
             hwiDelegate : "ti.sysbios.family.c7x.Hwi",
@@ -58,7 +58,7 @@ var settings = {
             intrinsicsSupportDelegate : "ti.sysbios.family.c7x.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c7x.Cache",
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.elf.nda.C71" ]
+            targets : [ "ti.targets.elf.C71" ]
         },
         "J721E": {
             hwiDelegate : "ti.sysbios.family.c7x.Hwi",
@@ -70,7 +70,7 @@ var settings = {
             intrinsicsSupportDelegate : "ti.sysbios.family.c7x.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c7x.Cache",
             clockTickPeriod : 1000,
-            targets : [ "ti.targets.elf.nda.C71" ]
+            targets : [ "ti.targets.elf.C71" ]
         },
 /*
         "TMS320DA830": {

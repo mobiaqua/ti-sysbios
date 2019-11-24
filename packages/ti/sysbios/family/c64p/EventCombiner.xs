@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018, Texas Instruments Incorporated
+ * Copyright (c) 2012-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,6 @@ var Hwi = null;
 function module$use()
 {
     Hwi = xdc.useModule('ti.sysbios.family.c64p.Hwi');
-
-    if (!Ecm.$written("EVTRegs")) {
-        Ecm.EVTRegs = Hwi.INTCAddress;
-    }
 }
 
 /*

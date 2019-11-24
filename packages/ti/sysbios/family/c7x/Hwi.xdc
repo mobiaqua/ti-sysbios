@@ -38,6 +38,7 @@ package ti.sysbios.family.c7x;
 
 import xdc.rov.ViewInfo;
 
+import xdc.runtime.Assert;
 import xdc.runtime.Diags;
 import xdc.runtime.Error;
 import xdc.runtime.Log;
@@ -228,6 +229,14 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     metaonly config Ptr resetVectorAddress;
 
     /*!
+     *  ======== A_invalidPriority ========
+     *  Assert raised when priority is out of range
+     */
+    config xdc.runtime.Assert.Id A_invalidPriority = {
+        msg: "A_invalidPriority: proiority out of range (1-7)"
+    };
+
+    /*!
      *  Error raised when Hwi is already defined
      */
     config Error.Id E_alreadyDefined = {
@@ -261,6 +270,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     config Error.Id E_invalidIntNum = {
         msg: "E_invalidIntNum: Invalid interrupt number: intr# %d"
+    };
+
+    /*!
+     *  Error raised when an invalid priority is passed in
+     */
+    config Error.Id E_invalidPriority = {
+        msg: "E_invalidPriority: Invalid priority: %d (should be 1-7)"
     };
 
     /*!

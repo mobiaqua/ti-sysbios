@@ -385,6 +385,18 @@ module Mmu
     config InitFuncPtr initFunc = initFuncDefault;
 
     /*!
+     *  ======== tableMemory ========
+     *  Memory segment in which to place Mmu tables
+     *
+     *  If set to a non-empty string, this config param identifies the memory
+     *  segment in which the Mmu tables are placed.
+     *
+     *  To prevent placement of the Mmu tables altogether, set to empty
+     *  string "".
+     */
+    config String tableMemory = "MSMC";
+
+    /*!
      *  ======== tableArraySection ========
      *  Contains a table array and some state variables.
      *  This section is uninitialized.

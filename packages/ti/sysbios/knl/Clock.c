@@ -614,6 +614,29 @@ Void Clock_addI(Clock_Object *obj, Clock_FuncPtr func, UInt32 timeout, UArg arg)
 }
 
 /*
+ *  ======== Clock_initI ========
+ */
+Void Clock_initI(Clock_Object *obj, Clock_FuncPtr func, UInt32 timeout, UArg arg)
+{
+    obj->timeout = timeout;
+    obj->period = 0;
+    obj->fxn = func;
+    obj->arg = arg;
+    obj->active = FALSE;
+}
+
+/*
+ *  ======== Clock_enqueueI ========
+ */
+Void Clock_enqueueI(Clock_Object *obj)
+{
+    Queue_Handle clockQ;
+
+    clockQ = Clock_Module_State_clockQ();
+    Queue_enqueue(clockQ, &obj->elem);
+}
+
+/*
  *  ======== Clock_removeI ========
  */
 Void Clock_removeI(Clock_Object *obj)

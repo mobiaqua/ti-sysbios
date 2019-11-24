@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,6 +79,8 @@ Void Cache_startup()
     }
 
     if (Cache_enableCache) {
+         Cache_configForceWrThru(Cache_enableForceWrThru);
+
         /*
          * Cache_enable() code will invalidate the L1D and L1P caches.
          * Therefore, no need to explicitly invalidate the cache here.

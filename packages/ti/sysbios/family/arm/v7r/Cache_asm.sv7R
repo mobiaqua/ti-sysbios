@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2015-2018, Texas Instruments Incorporated
+;  Copyright (c) 2015-2019, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -551,6 +551,29 @@ getEnabledDone:
 ti_sysbios_family_arm_v7r_Cache_getCacheLevelInfo__I
         mcr     p15, #2, r0, c0, c0, #0 ; write to Cache Size Selection Reg
         mrc     p15, #1, r0, c0, c0, #0 ; read Cache Size Id Reg
+        bx      lr
+        .endasmfunc
+
+;
+; ======== Cache_configForceWrThru ========
+;
+        .sect ".text:ti_sysbios_family_arm_v7r_Cache_configForceWrThru__I"
+        .clink
+        .armfunc ti_sysbios_family_arm_v7r_Cache_configForceWrThru__I
+
+ti_sysbios_family_arm_v7r_Cache_configForceWrThru__I
+        mrc     p15, #0, r1, c1, c0, #1 ; fetch Auxiliary Ctrl Register into r1
+        cmp     r0, #0
+        beq     FWT_disable
+        orr     r1, r1, #(1 << 9)       ; set (enable) force write-thru bit
+        b       FWT_exit
+
+FWT_disable:
+        bic     r1, r1, #(1 << 9)       ; clear (disable) force write-thru bit
+
+FWT_exit:
+        mcr     p15, #0, r1, c1, c0, #1 ; write Auxiliary Ctrl Register
+
         bx      lr
         .endasmfunc
 

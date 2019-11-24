@@ -45,7 +45,7 @@ var instanceName = [];
 function getAsmFiles(targetName)
 {
     switch(targetName) {
-        case "ti.targets.elf.nda.C71":
+        case "ti.targets.elf.C71":
             return (["Hwi_asm.s71", "Hwi_asm_switch.s71", "Hwi_disp_always.s71"]);
             break;
 

@@ -149,11 +149,11 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
      * if it turns out that there is already an event match.
      */
 
-    /* add Clock event if timeout is not FOREVER nor NO_WAIT */
+    /* init Clock object if timeout is not FOREVER nor NO_WAIT */
     if ((BIOS_clockEnabled != FALSE)
             && (timeout != BIOS_WAIT_FOREVER)
             && (timeout != BIOS_NO_WAIT)) {
-        Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Event_pendTimeout, timeout, (UArg)&elem);
+        Clock_initI(Clock_handle(&clockStruct), (Clock_FuncPtr)Event_pendTimeout, timeout, (UArg)&elem);
         elem.tpElem.clockHandle = Clock_handle(&clockStruct);
         elem.pendState = Event_PendState_CLOCK_WAIT;
     }
@@ -179,14 +179,7 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
     matchingEvents = Event_checkEvents(event, andMask, orMask);
 
     if (matchingEvents != 0U) {
-        /* remove Clock object from Clock Q */
-        if ((BIOS_clockEnabled != FALSE) && (elem.tpElem.clockHandle != (Clock_Handle)NULL)) {
-            Clock_removeI(elem.tpElem.clockHandle);
-            elem.tpElem.clockHandle = NULL;
-        }
-
         Hwi_restore(hwiKey);
-
         return (matchingEvents);/* yes, then return with matching bits */
     }
 
@@ -220,6 +213,7 @@ UInt Event_pend(Event_Object *event, UInt andMask, UInt orMask, UInt32 timeout)
 
     if ((BIOS_clockEnabled != FALSE) &&
             (elem.tpElem.clockHandle != (Clock_Handle)NULL)) {
+        Clock_enqueueI(elem.tpElem.clockHandle);
         Clock_startI(elem.tpElem.clockHandle);
     }
 

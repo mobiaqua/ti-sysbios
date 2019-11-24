@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -205,11 +205,16 @@ function instance$meta$init(name)
         }
 
         if (this.deviceName.match(/^SIMMAXWELL/) ||
-            this.deviceName.match(/^J7/) ||
             this.deviceName.match(/^AM65/)) {
             this.CPU.catalogName = "ti.catalog.arm.cortexr5";
             this.CPU.deviceName = "CortexR";
             this.CPU.clockRate = 400;
+        }
+        
+        if (this.deviceName.match(/^J7/)) {
+            this.CPU.catalogName = "ti.catalog.arm.cortexr5";
+            this.CPU.deviceName = "CortexR";
+            this.CPU.clockRate = 1000;
         }
     }
 }

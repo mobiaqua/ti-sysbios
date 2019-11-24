@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 #include <ti/sysbios/hal/Hwi.h>
 #include <ti/sysbios/knl/Queue.h>
 #include <ti/sysbios/knl/Semaphore.h>
+#include <ti/sysbios/knl/Task.h>
 
 #include "package/internal/Mailbox.xdc.h"
 
@@ -278,7 +279,7 @@ Bool Mailbox_post(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
     Queue_Handle dataQue;
     Queue_Handle freeQue;
     Semaphore_Handle dataSem, freeSem;
-    UInt key;
+    UInt hwiKey, taskKey;
 
     dataQue = Mailbox_Instance_State_dataQue(obj);
     freeQue = Mailbox_Instance_State_freeQue(obj);
@@ -287,14 +288,14 @@ Bool Mailbox_post(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
 
     if (Semaphore_pend(freeSem, timeout)) {
         /* perform the dequeue and decrement numFreeMsgs atomically */
-        key = Hwi_disable();
+        hwiKey = Hwi_disable();
 
         /* get a message from the free queue */
         elem = Queue_dequeue(freeQue);
 
         /* Make sure that a valid pointer was returned. */
         if (elem == (Mailbox_MbxElem *)(freeQue)) {
-            Hwi_restore(key);
+            Hwi_restore(hwiKey);
             return (FALSE);
         }
 
@@ -302,17 +303,24 @@ Bool Mailbox_post(Mailbox_Object *obj, Ptr msg, UInt32 timeout)
         obj->numFreeMsgs--;
 
         /* re-enable ints */
-        Hwi_restore(key);
+        Hwi_restore(hwiKey);
 
         /* copy msg to elem */
         /* SV.BANNED.REQUIRED.COPY */
         (Void)memcpy(elem + 1, msg, obj->msgSize);
 
+        /* Make Queue_enqueue and Semaphore_post atomic */
+        taskKey = Task_disable();
+        hwiKey = Hwi_disable();
+
         /* put message on dataQueue */
-        Queue_put(dataQue, &(elem->elem));
+        Queue_enqueue(dataQue, &(elem->elem));
 
         /* post the semaphore */
         Semaphore_post(dataSem);
+
+        Hwi_restore(hwiKey);
+        Task_restore(taskKey);
 
         return (TRUE);          /* success */
     }

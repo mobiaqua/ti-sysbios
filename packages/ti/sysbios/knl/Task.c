@@ -585,9 +585,9 @@ Void Task_sleep(UInt32 timeout)
      * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
-    if (BIOS_clockEnabled) {
-        /* add Clock event */
-        Clock_addI(Clock_handle(&clockStruct), (Clock_FuncPtr)Task_sleepTimeout, timeout, (UArg)&elem);
+    if (BIOS_clockEnabled != FALSE) {
+        /* init Clock object */
+        Clock_initI(Clock_handle(&clockStruct), (Clock_FuncPtr)Task_sleepTimeout, timeout, (UArg)&elem);
         elem.clockHandle = Clock_handle(&clockStruct);
     }
 
@@ -615,7 +615,8 @@ Void Task_sleep(UInt32 timeout)
      * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
-    if (BIOS_clockEnabled) {
+    if (BIOS_clockEnabled != FALSE) {
+        Clock_enqueueI(elem.clockHandle);
         Clock_startI(elem.clockHandle);
     }
 

@@ -151,10 +151,10 @@ Void Boot_configurePllDivs(UInt16 pllIMULT, UInt16 pllREFDIV, UInt16 pllODIV,
     EALLOW;
 
     /* bypass the PLL */
-    REG(SYSPLLCTL1_REG) &= ~(SYSPLLCTL1_PLLCLKEN_M);
+    REG(SYSPLLCTL1_REG) &= ~((UInt32)SYSPLLCTL1_PLLCLKEN_M);
 
     /* power down the PLL */
-    REG(SYSPLLCTL1_REG) &= ~(SYSPLLCTL1_PLLEN_M);
+    REG(SYSPLLCTL1_REG) &= ~((UInt32)SYSPLLCTL1_PLLEN_M);
 
     /* wait for PLL power down */
     Boot_delay(5);

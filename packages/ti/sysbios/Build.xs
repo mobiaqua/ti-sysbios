@@ -55,6 +55,7 @@ var customGnuArmA8Opts = " ";
 var customGnuArmA15Opts = " ";
 var customGnuArmA53Opts = " ";
 var customIarArmOpts = " --silent ";
+var customC7xOpts = " ";
 
 var ccOptsList = {
     "ti.targets.C28_large"                      : custom28xOpts,
@@ -64,6 +65,7 @@ var ccOptsList = {
     "ti.targets.elf.C67P"                       : custom6xOpts,
     "ti.targets.elf.C66"                        : custom6xOpts,
     "ti.targets.elf.C66_big_endian"             : custom6xOpts,
+    "ti.targets.elf.C71"                        : customC7xOpts,
     "ti.targets.arp32.elf.ARP32"                : customARP32xOpts,
     "ti.targets.arp32.elf.ARP32_far"            : customARP32xOpts,
     "ti.targets.arm.elf.Arm9"                   : customArmOpts,
