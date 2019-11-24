@@ -186,7 +186,6 @@ extern void __interrupt c_int00()
 }
 
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-18-2019 17:45:17; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

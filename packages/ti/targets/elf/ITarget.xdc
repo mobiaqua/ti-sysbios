@@ -158,7 +158,6 @@ metaonly interface ITarget inherits ti.targets.ITarget {
     override config String binaryParser = "ti.targets.omf.elf.Elf32";
 }
 /*
- *  @(#) ti.targets.elf; 1, 0, 0,0; 4-18-2019 17:33:03; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

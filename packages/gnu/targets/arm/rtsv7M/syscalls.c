@@ -25,7 +25,6 @@ void _exit(int code)
     while(1){};
 }
 /*
- *  @(#) gnu.targets.arm.rtsv7M; 1, 0, 0,0; 4-18-2019 17:44:20; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

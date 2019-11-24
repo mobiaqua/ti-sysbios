@@ -106,7 +106,6 @@ function _mkCmds(target)
     return(tool2cmd);
 }
 /*
- *  @(#) gnu.targets; 1, 0, 1,0; 4-18-2019 17:32:43; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

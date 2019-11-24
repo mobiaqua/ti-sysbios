@@ -202,7 +202,6 @@ void __TI_cpp_init(void) { run_pinit(); }
 __asm("__TI_default_auto_init .set 1");
 #endif
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-18-2019 17:45:16; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

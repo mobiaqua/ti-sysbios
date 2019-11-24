@@ -25,7 +25,6 @@ requires xdc.runtime;
 package gnu.targets.rts86U [1,0,0] {
 }
 /*
- *  @(#) gnu.targets.rts86U; 1, 0, 0,0; 4-18-2019 17:44:33; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

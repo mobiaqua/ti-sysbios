@@ -60,7 +60,6 @@ function genConstCustom(names, types)
     return (sb.toString() + "");
 }
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 4-18-2019 17:33:10; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

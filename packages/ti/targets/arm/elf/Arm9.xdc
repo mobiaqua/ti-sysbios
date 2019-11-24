@@ -117,7 +117,6 @@ metaonly module Arm9 inherits ti.targets.arm.elf.IArm {
     };
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 4-18-2019 17:32:58; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

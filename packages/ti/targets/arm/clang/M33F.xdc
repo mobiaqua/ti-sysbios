@@ -142,7 +142,6 @@ metaonly module M33F inherits ti.targets.arm.elf.IArm {
     ];
 }
 /*
- *  @(#) ti.targets.arm.clang; 1, 0, 0,0; 4-18-2019 17:33:10; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

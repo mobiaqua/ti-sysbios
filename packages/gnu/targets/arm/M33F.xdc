@@ -104,7 +104,6 @@ metaonly module M33F inherits IM {
     override config string bspLib = "nosys";
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-18-2019 17:32:46; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

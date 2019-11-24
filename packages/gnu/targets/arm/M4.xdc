@@ -62,7 +62,6 @@ metaonly module M4 inherits IM {
     override config string includeOpts = "-I$(packageBase)/libs/install-native/$(GCCTARG)/include/newlib-nano -I$(packageBase)/libs/install-native/$(GCCTARG)/include";
 }
 /*
- *  @(#) gnu.targets.arm; 1, 0, 0,0; 4-18-2019 17:32:46; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

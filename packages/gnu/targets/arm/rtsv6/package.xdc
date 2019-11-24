@@ -26,7 +26,6 @@ requires xdc.runtime;
 package gnu.targets.arm.rtsv6 [1,0,0] {
 }
 /*
- *  @(#) gnu.targets.arm.rtsv6; 1, 0, 0,0; 4-18-2019 17:44:13; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

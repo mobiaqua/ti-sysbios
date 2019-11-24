@@ -129,7 +129,6 @@ function validate()
 
 }
 /*
- *  @(#) ti.targets; 1, 0, 3,0; 4-18-2019 17:32:56; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

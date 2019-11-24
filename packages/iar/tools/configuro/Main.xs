@@ -414,6 +414,5 @@ function mappings(cmdr)
     }
 }
 /*
- *  @(#) iar.tools.configuro; 1, 0, 0,3; 2-18-2019 11:02:57; /db/ztree/library/trees/xdctools/xdctools-h03/src/
  */
 

@@ -55,7 +55,6 @@
 #  endif
 #endif
 /*
- *  @(#) iar.targets; 1, 0, 1,0; 4-18-2019 17:32:48; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

@@ -29,7 +29,6 @@ function genElfSymbols(prog)
     return (res);
 }
 /*
- *  @(#) ti.targets.arm.elf; 1, 0, 0,0; 4-18-2019 17:32:58; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

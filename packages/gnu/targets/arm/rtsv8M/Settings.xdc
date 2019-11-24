@@ -60,7 +60,6 @@ module Settings {
     metaonly config Bool bootOnly = false;
 }
 /*
- *  @(#) gnu.targets.arm.rtsv8M; 1, 0, 0,0; 4-18-2019 17:44:26; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

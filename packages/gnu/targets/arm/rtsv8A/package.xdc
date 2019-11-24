@@ -56,7 +56,6 @@ package gnu.targets.arm.rtsv8A [1,0,0] {
     module Settings;
 }
 /*
- *  @(#) gnu.targets.arm.rtsv8A; 1, 0, 0,0; 4-18-2019 17:44:23; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

@@ -56,7 +56,6 @@ extern void _system_post_cinit(void);
    
 #endif
 /*
- *  @(#) ti.targets.rts6000; 1, 0, 0,0; 4-18-2019 17:45:17; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

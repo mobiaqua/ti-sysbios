@@ -19,7 +19,6 @@ package iar.targets.arm.rts [1,0,0] {
     module VectorTable;
 }
 /*
- *  @(#) iar.targets.arm.rts; 1, 0, 0,0; 4-18-2019 17:44:38; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

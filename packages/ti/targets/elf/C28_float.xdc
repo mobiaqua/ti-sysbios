@@ -186,7 +186,6 @@ metaonly module C28_float inherits ti.targets.ITarget {
         ti.targets.C28_float.bitsPerChar;
 }
 /*
- *  @(#) ti.targets.elf; 1, 0, 0,0; 4-18-2019 17:33:03; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

@@ -158,7 +158,6 @@ metaonly interface IARP32 inherits ti.targets.ITarget {
     override config String binaryParser = "ti.targets.omf.elf.Elf32";
 }
 /*
- *  @(#) ti.targets.arp32.elf; 1, 0, 0,0; 4-18-2019 17:33:01; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

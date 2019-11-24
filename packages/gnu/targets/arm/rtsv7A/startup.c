@@ -104,7 +104,6 @@ void __sync_synchronize()
     );
 }
 /*
- *  @(#) gnu.targets.arm.rtsv7A; 1, 0, 0,0; 4-18-2019 17:44:16; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 

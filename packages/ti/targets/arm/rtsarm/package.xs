@@ -63,7 +63,6 @@ function getSects() {
     }
 }
 /*
- *  @(#) ti.targets.arm.rtsarm; 1, 0, 0,0; 4-18-2019 17:44:49; /db/ztree/library/trees/xdctargets/xdctargets-t04/src/ xlibrary
 
  */
 
