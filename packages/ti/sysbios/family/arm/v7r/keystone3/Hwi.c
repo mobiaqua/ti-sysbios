@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -576,6 +576,7 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
     hwi->fxn = fxn;
     hwi->arg = params->arg;
     hwi->type = params->type;
+    hwi->triggerType = params->triggerType;
 
     if (params->priority == -1) {
         hwi->priority = Hwi_DEFAULT_INT_PRIORITY;
@@ -713,6 +714,8 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp)
     UInt intNum;
     Hwi_Object *hwi;
     BIOS_ThreadType prevThreadType;
+
+    Hwi_vim.IRQVECADDRESS;
 
     if (Hwi_vim.ACTIVEIRQ & 0x80000000) {
         intNum = Hwi_vim.ACTIVEIRQ & 0x3FF;

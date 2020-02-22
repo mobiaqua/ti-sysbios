@@ -141,8 +141,8 @@ ti_sysbios_family_arm_v7r_keystone3_Hwi_init__I:
         msr     cpsr_cf, r12    ;
 
         mrc     p15, #0, r12, c1, c0, #0
-        orr     r12, r12, #0x01000000
-        mcr     p15, #0, r12, c1, c0, #0    ; Enable vector enable (VE) bit
+        bic     r12, r12, #0x01000000
+        mcr     p15, #0, r12, c1, c0, #0    ; Disable vector enable (VE) bit
 
         bx      lr
         .endasmfunc

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,13 @@
 
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Swi.h>
+#include <ti/sysbios/hal/Cache.h>
 #include <ti/sysbios/hal/Core.h>
 #define ti_sysbios_knl_Task__internalaccess
 #include <ti/sysbios/knl/Task.h>
 #include <ti/sysbios/interfaces/IHwi.h>
+
+#include <string.h>
 
 #include "package/internal/Hwi.xdc.h"
 
@@ -75,14 +78,20 @@
  *  ======== Hwi_Module_startup ========
  *  must initialize IRQ (and SWI?) SPs (R13s)
  */
-Int Hwi_Module_startup (Int startupPhase)
+Int Hwi_Module_startup(Int startupPhase)
 {
     int i;
     Hwi_Object *hwi;
 
     /* must wait for these modules to initialize first */
     if (!Startup_rtsDone()) {
-        return Startup_NOTDONE;
+        return (Startup_NOTDONE);
+    }
+
+    if (Hwi_enableLPI) {
+        if (!Hwi_initLPI()) {
+            return (Startup_NOTDONE);
+        }
     }
 
     /* okay to proceed with initialization */
@@ -364,7 +373,7 @@ Void Hwi_initIntControllerCore0()
          *
          * Interrupt number lower than 32 are not routed using these registers.
          */
-        for (i = 32; i < Hwi_NUM_INTERRUPTS; i++) {
+        for (i = 32; i < Hwi_NUM_HWREG_INTERRUPTS; i++) {
             Hwi_gicd.IROUTER[i] =
                     ((UInt64)(Hwi_module->intAffinity[i].routingMode) << 31) |
                     ((UInt64)(Hwi_module->intAffinity[i].aff1) << 8) |
@@ -534,8 +543,12 @@ Void Hwi_post(UInt intNum)
     if (intNum < 32) {
         Hwi_gicMap[0].gics->ISPENDR0 = 1 << intNum;
     }
-    else if (intNum < Hwi_NUM_INTERRUPTS) {
+    else if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
         Hwi_gicd.ISPENDR[intNum >> 5] = 1 << (intNum & 0x1f);
+    }
+    else if (Hwi_enableLPI == TRUE &&
+             intNum >= 8192 && intNum < Hwi_NUM_INTERRUPTS) {
+        Error_raise(0, Hwi_E_cantPostLPI, intNum, 0);
     }
     else {
         Error_raise(0, Hwi_E_badIntNum, intNum, 0);
@@ -583,7 +596,7 @@ Void Hwi_raiseSGI(Hwi_SgiIntAffinity affinity, UInt intNum)
  */
 UInt Hwi_disableInterrupt(UInt intNum)
 {
-    UInt key, oldEnableState, index, mask;
+    UInt key, oldEnableState = 0, index, mask;
 
     key = Hwi_disable();
     mask = 1 << (intNum & 0x1f);
@@ -591,10 +604,17 @@ UInt Hwi_disableInterrupt(UInt intNum)
         oldEnableState = Hwi_gicMap[0].gics->ISENABLER0 & mask;
         Hwi_gicMap[0].gics->ICENABLER0 = mask;
     }
-    else {
+    else if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
         index = intNum / 32;
         oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
         Hwi_gicd.ICENABLER[index] = mask;
+    }
+    else if (Hwi_enableLPI == TRUE &&
+             intNum >= 8192 && intNum < Hwi_NUM_INTERRUPTS) {
+        oldEnableState = Hwi_disableInterruptLPI(intNum);
+    }
+    else {
+        Error_raise(0, Hwi_E_badIntNum, intNum, 0);
     }
     Hwi_restore(key);
 
@@ -606,7 +626,7 @@ UInt Hwi_disableInterrupt(UInt intNum)
  */
 UInt Hwi_enableInterrupt(UInt intNum)
 {
-    UInt key, oldEnableState, index, mask;
+    UInt key, oldEnableState = 0, index, mask;
 
     key = Hwi_disable();
     mask = 1 << (intNum & 0x1f);
@@ -614,10 +634,17 @@ UInt Hwi_enableInterrupt(UInt intNum)
         oldEnableState = Hwi_gicMap[0].gics->ISENABLER0 & mask;
         Hwi_gicMap[0].gics->ISENABLER0 = mask;
     }
-    else {
+    else if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
         index = intNum / 32;
         oldEnableState = Hwi_gicd.ISENABLER[index] & mask;
         Hwi_gicd.ISENABLER[index] = mask;
+    }
+    else if (Hwi_enableLPI == TRUE &&
+             intNum >= 8192 && intNum < Hwi_NUM_INTERRUPTS) {
+        oldEnableState = Hwi_enableInterruptLPI(intNum);
+    }
+    else {
+        Error_raise(0, Hwi_E_badIntNum, intNum, 0);
     }
     Hwi_restore(key);
 
@@ -625,7 +652,7 @@ UInt Hwi_enableInterrupt(UInt intNum)
 }
 
 /*
- *  ======== Hwi_RestoreInterrupt ========
+ *  ======== Hwi_restoreInterrupt ========
  */
 Void Hwi_restoreInterrupt(UInt intNum, UInt key)
 {
@@ -651,8 +678,12 @@ Void Hwi_clearInterrupt(UInt intNum)
     if (intNum < 32) {
         Hwi_gicMap[0].gics->ICPENDR0 = 1 << intNum;
     }
-    else if (intNum < Hwi_NUM_INTERRUPTS) {
+    else if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
         Hwi_gicd.ICPENDR[intNum >> 5] = 1 << (intNum & 0x1f);
+    }
+    else if (Hwi_enableLPI == TRUE &&
+             intNum >= 8192 && intNum < Hwi_NUM_INTERRUPTS) {
+        Error_raise(0, Hwi_E_cantClearLPI, intNum, 0);
     }
     else {
         Error_raise(0, Hwi_E_badIntNum, intNum, 0);
@@ -762,8 +793,12 @@ Void Hwi_setPriority(UInt intNum, UInt priority)
         Hwi_gicMap[0].gics->IPRIORITYR[intNum] = priority & 0xFF;
 #endif
     }
-    else if (intNum < Hwi_NUM_INTERRUPTS) {
+    else if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
         Hwi_gicd.IPRIORITYR[intNum] = priority & 0xFF;
+    }
+    else if (Hwi_enableLPI == TRUE &&
+             intNum >= 8192 && intNum < Hwi_NUM_INTERRUPTS) {
+        Hwi_setPriorityLPI(intNum, priority);
     }
     __asm__ __volatile__ (
         "dsb sy"
@@ -796,25 +831,27 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
     hwi->priority = params->priority;
     hwi->triggerSensitivity = params->triggerSensitivity;
 
-    if (Hwi_initGicd) {
-        /*
-         *  Disable interrupts before manipulating GIC registers.
-         *  The GIC registers go through a read-modify-write and
-         *  therefore the interrupts should be disabled in case
-         *  a task switch happens and another task tries to create
-         *  a hwi that attempts to modify the same set of registers.
-         */
-        hwiKey = Hwi_disable();
+    if (intNum < Hwi_NUM_HWREG_INTERRUPTS) {
+        if (Hwi_initGicd) {
+            /*
+             *  Disable interrupts before manipulating GIC registers.
+             *  The GIC registers go through a read-modify-write and
+             *  therefore the interrupts should be disabled in case
+             *  a task switch happens and another task tries to create
+             *  a hwi that attempts to modify the same set of registers.
+             */
+            hwiKey = Hwi_disable();
 
-        /* Set trigger sensitivity */
-        if (hwi->triggerSensitivity != ~(0)) {
-            shift = (intNum & 0xF) << 1;
-            mask  = 0x3 << shift;
-            Hwi_gicd.ICFGR[intNum >> 4] = (Hwi_gicd.ICFGR[intNum >> 4] & (~mask)) |
-                ((hwi->triggerSensitivity & 0x3) << shift);
+            /* Set trigger sensitivity */
+            if (hwi->triggerSensitivity != ~(0)) {
+                shift = (intNum & 0xF) << 1;
+                mask  = 0x3 << shift;
+                Hwi_gicd.ICFGR[intNum >> 4] = (Hwi_gicd.ICFGR[intNum >> 4] & (~mask)) |
+                    ((hwi->triggerSensitivity & 0x3) << shift);
+            }
+
+            Hwi_restore(hwiKey);
         }
-
-        Hwi_restore(hwiKey);
     }
 
     /*
@@ -1269,12 +1306,13 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp, Bool rootISR, Char *taskSP)
     intNum = Hwi_module->curIntId;
 
     /* Process only this pending interrupt */
-    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x3FF];
+    hwi = Hwi_module->dispatchTable[Hwi_module->curIntId & 0x0000FFFF];
 
     if (hwi == NULL) {
         Hwi_nonPluggedHwiHandler();
         /* Signal End of Interrupt */
         Hwi_writeSystemReg(s3_0_c12_c12_1, intNum); /* icc_eoir1_el1 */
+
         return;
     }
 
@@ -1338,3 +1376,374 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp, Bool rootISR, Char *taskSP)
         Hwi_module->taskSP[coreId] = NULL;
     }
 }
+
+#if defined(ti_sysbios_family_arm_gicv3_Hwi_enableLPI__D) && \
+    (ti_sysbios_family_arm_gicv3_Hwi_enableLPI__D == TRUE)
+/*
+ *  ======== Hwi_initLPI ========
+ */
+Bool Hwi_initLPI()
+{
+    UInt64 propbaser;
+    UInt64 pendbaser;
+    UInt64 baser;
+    UInt32 tableSize;
+    UInt32 LPIConfigSize;
+    UInt32 LPIPendSize;
+    Int core;
+    Int pageSize;
+    Int intIdBits;
+
+    /*
+     * Check that GICD_CTLR.ARE_NS == 1 (LPIs are only supported when
+     * GICD_CTLR.ARE_NS == 1).
+     */
+    if (!(Hwi_gicd.CTLR & 0x10)) {
+        Error_raise(0, Hwi_E_affRoutingNotEnabled, 0, 0);
+    }
+
+    /* Check that GICD_TYPER.LPIS == 1 */
+    if (!(Hwi_gicd.TYPER & 0x20000)) {
+        Error_raise(0, Hwi_E_LPISNotEnabled, 0, 0);
+    }
+
+    /*
+     * The GITS_TYPER reg indicates:
+     *    HCC (Hardware Collection Count): 9
+     *    DeviceID bits: 20
+     *    EventID bits: 16
+     *    ITT entry size: 4 bytes
+     */
+    Hwi_module->ittEntrySize = ((Hwi_gits.TYPER & 0xF0) >> 4) + 1;
+
+    switch (Hwi_DEV_TBL_PAGESIZE) {
+        case Hwi_DeviceTablePageSize_4KB:
+            pageSize = 0x1000;
+            break;
+        case Hwi_DeviceTablePageSize_16KB:
+            pageSize = 0x4000;
+            break;
+        case Hwi_DeviceTablePageSize_64KB:
+            pageSize = 0x10000;
+            break;
+    }
+    memset(Hwi_module->itsDeviceTable, 0, Hwi_DEV_TBL_NUMPAGES * pageSize);
+
+    /* GITS_BASER0 is Device Type with no Indirect support */
+    baser = Hwi_gits.BASER[0];
+    baser &= ~0x0000FFFFFFFFF000;
+    if (pageSize == 0x10000) {
+        baser |=  (UInt64)Hwi_module->itsDeviceTable & 0x0000FFFFFFFF0000;
+        baser |= ((UInt64)Hwi_module->itsDeviceTable & 0x000F000000000000) >> 36;
+    }
+    else {
+        baser |= (UInt64)Hwi_module->itsDeviceTable;
+    }
+    baser |= (Hwi_DEV_TBL_PAGESIZE << 8)| Hwi_DEV_TBL_NUMPAGES - 1;
+    baser |= 1ULL << 63;                    /* Valid bit */
+    baser |= (((UInt64)Hwi_itsTableAttrs.innerCache) << 59) |
+             (((UInt64)Hwi_itsTableAttrs.outerCache) << 53) |
+             (((UInt64)Hwi_itsTableAttrs.shareability) << 10);
+    Hwi_gits.BASER[0] = baser;
+
+    memset(Hwi_module->itsCommandQueue, 0, Hwi_NUM_ITS_CMD_PAGES * 0x1000);
+
+    Hwi_gits.CBASER = (UInt64)Hwi_module->itsCommandQueue |
+                      (1ULL << 63) | (Hwi_NUM_ITS_CMD_PAGES - 1) |
+                      (((UInt64)Hwi_itsTableAttrs.innerCache) << 59) |
+                      (((UInt64)Hwi_itsTableAttrs.outerCache) << 53) |
+                      (((UInt64)Hwi_itsTableAttrs.shareability) << 10);
+    Hwi_gits.CWRITER = (UInt64)0;
+
+    /*
+     * Allocate single LPI config table
+     *
+     * GICD_TYPER.IDbits (23:19) specifies max supported by GIC.
+     * GICR_PROPBASER.IDbits (4:0) can be set to a number smaller than
+     * this to reflect a chosen number (through config?).
+     *
+     * Should this instead be determined based on log2(Hwi_NUM_INTERRUPTS)?
+     */
+    intIdBits = ((Hwi_gicd.TYPER & 0x00F80000) >> 19) + 1;
+    tableSize = 1 << intIdBits;
+    LPIPendSize =  tableSize / 8;
+    LPIConfigSize =  tableSize - 8192;
+
+    memset(Hwi_module->itsLPIConfigTable, 0, LPIConfigSize);
+
+    for (core = 0; core < Core_numCores; core++) {
+        volatile Hwi_Gicr *gicr;
+
+        gicr = Hwi_gicMap[core].gicr;
+
+        /* assign redistributor's LPI config table to global one above */
+        propbaser = gicr->PROPBASER;
+        propbaser &= ~0x000FFFFFFFFFF000;
+        propbaser |= (UInt64)Hwi_module->itsLPIConfigTable | (intIdBits - 1) |
+                     ((UInt64)Hwi_itsTableAttrs.outerCache) << 56 |
+                     ((UInt64)Hwi_itsTableAttrs.shareability) << 10 |
+                     ((UInt64)Hwi_itsTableAttrs.innerCache) << 7;
+        gicr->PROPBASER = propbaser;
+
+        memset(Hwi_module->itsLPIPendTable[core], 0, LPIPendSize);
+
+        /* assign redistributor's LPI pending table to local one above */
+        pendbaser = gicr->PENDBASER;
+        pendbaser &= ~0x000FFFFFFFFF0000;
+        pendbaser |= (UInt64)Hwi_module->itsLPIPendTable[core];
+        pendbaser |= 1ULL << 62 |   /* PTZ bit */
+                     ((UInt64)Hwi_itsTableAttrs.outerCache) << 56 |
+                     ((UInt64)Hwi_itsTableAttrs.shareability) << 10 |
+                     ((UInt64)Hwi_itsTableAttrs.innerCache) << 7;
+        gicr->PENDBASER = pendbaser;
+
+        /* enable redistributor's LPIs */
+        gicr->CTLR |= 1;
+    }
+
+    /* do last */
+    Hwi_gits.CTLR = 1;    /* enable it */
+
+    return (TRUE);
+}
+
+/*
+ *  ======== Hwi_issueITSCommand ========
+ */
+Bool Hwi_issueITSCommand()
+{
+    Cache_wb(Hwi_module->curCmd, 32, Cache_Type_ALL, 0);
+
+    if (Hwi_module->curCmd == Hwi_module->lastCmd) {
+        Hwi_module->curCmd = Hwi_module->itsCommandQueue;
+    }
+    else {
+        Hwi_module->curCmd++;
+    }
+
+    Hwi_gits.CWRITER = (Hwi_module->curCmd - Hwi_module->itsCommandQueue) << 5;
+
+    return (TRUE);
+}
+
+/*
+ *  ======== Hwi_itsInv ========
+ */
+Bool Hwi_itsInv(Int deviceId, Int eventId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x0C;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = 0;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsInvall ========
+ */
+Bool Hwi_itsInvall(Int icId)
+{
+    Hwi_module->curCmd->words[0] = 0x0D;
+    Hwi_module->curCmd->words[1] = 0;
+    Hwi_module->curCmd->words[2] = icId;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsSync ========
+ */
+Bool Hwi_itsSync(Int cpuNum)
+{
+    Hwi_module->curCmd->words[0] = 0x05;
+    Hwi_module->curCmd->words[1] = 0;
+    Hwi_module->curCmd->words[2] = ((UInt64)cpuNum) << 16;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsMapDevice ========
+ */
+Bool Hwi_itsMapDevice(Int deviceId, Int nEvents, Int size)
+{
+    Void *itt;
+
+    itt = Memory_alloc(Hwi_Object_heap(), nEvents * Hwi_module->ittEntrySize,
+                       0x100, NULL);
+    if (itt == NULL) {
+        return FALSE;
+    }
+
+    memset(itt, 0, nEvents * Hwi_module->ittEntrySize);
+
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x08;
+    Hwi_module->curCmd->words[1] = size;
+    Hwi_module->curCmd->words[2] = 1ULL << 63 | (UInt64)itt;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsMapCollection ========
+ */
+Bool Hwi_itsMapCollection(Int icId, Int cpuNum)
+{
+    Hwi_module->curCmd->words[0] = 0x09;
+    Hwi_module->curCmd->words[1] = 0;
+    Hwi_module->curCmd->words[2] = 1ULL << 63 | ((UInt64)cpuNum) << 16 | icId;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+
+    Hwi_itsInvall(icId);
+}
+
+/*
+ *  ======== Hwi_itsMapInterrupt ========
+ */
+Bool Hwi_itsMapInterrupt(Int deviceId, Int eventId, Int icId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x0B;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = icId;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsMapTranslatedInterrupt ========
+ */
+Bool Hwi_itsMapTranslatedInterrupt(Int deviceId, Int eventId, Int icId, Int intId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x0A;
+    Hwi_module->curCmd->words[1] = ((UInt64)intId) << 32 | eventId;
+    Hwi_module->curCmd->words[2] = icId;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsMoveInterrupt ========
+ */
+Bool Hwi_itsMoveInterrupt(Int deviceId, Int eventId, Int icId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x01;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = icId;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsMoveAll ========
+ */
+Bool Hwi_itsMoveAll(Int fromCpuNum, Int toCpuNum)
+{
+    Hwi_module->curCmd->words[0] = 0x0E;
+    Hwi_module->curCmd->words[1] = 0;
+    Hwi_module->curCmd->words[2] = ((UInt64)fromCpuNum) << 16;
+    Hwi_module->curCmd->words[3] = ((UInt64)toCpuNum) << 16;
+
+    return (Hwi_issueITSCommand());
+
+    Hwi_itsInvall(fromCpuNum);
+    Hwi_itsInvall(toCpuNum);
+}
+
+/*
+ *  ======== Hwi_itsInt ========
+ */
+Bool Hwi_itsInt(Int deviceId, Int eventId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x03;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = 0;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsClear ========
+ */
+Bool Hwi_itsClear(Int deviceId, Int eventId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x04;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = 0;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_itsDiscard ========
+ */
+Bool Hwi_itsDiscard(Int deviceId, Int eventId)
+{
+    Hwi_module->curCmd->words[0] = ((UInt64)deviceId) << 32 | 0x0F;
+    Hwi_module->curCmd->words[1] = eventId;
+    Hwi_module->curCmd->words[2] = 0;
+    Hwi_module->curCmd->words[3] = 0;
+
+    return (Hwi_issueITSCommand());
+}
+
+/*
+ *  ======== Hwi_enableInterruptLPI ========
+ */
+UInt Hwi_enableInterruptLPI(Int intId)
+{
+    UInt8 *tableAddr;
+    UInt curState;
+
+    tableAddr = &Hwi_module->itsLPIConfigTable[intId - 8192];
+    curState = *tableAddr & 0x1;
+    *tableAddr |= 0x1;
+
+    Cache_wb(tableAddr, 1, Cache_Type_ALL, 0);
+
+    return (curState);
+}
+
+/*
+ *  ======== Hwi_disableInterruptLPI ========
+ */
+UInt Hwi_disableInterruptLPI(Int intId)
+{
+    UInt8 *tableAddr;
+    UInt curState;
+
+    tableAddr = &Hwi_module->itsLPIConfigTable[intId - 8192];
+    curState = *tableAddr & 0x1;
+    *tableAddr &= ~0x1;
+
+    Cache_wb(tableAddr, 1, Cache_Type_ALL, 0);
+
+    return (curState);
+}
+
+/*
+ *  ======== Hwi_setPriorityLPI ========
+ */
+Void Hwi_setPriorityLPI(Int intId, Int priority)
+{
+    UInt8 *tableAddr;
+    UInt8 enable;
+
+    tableAddr = &Hwi_module->itsLPIConfigTable[intId - 8192];
+    enable = *tableAddr & 0x1;
+    /* only bits 7:2 of priority are supported */
+    *tableAddr = enable | (priority & 0xFC);
+
+    Cache_wb(tableAddr, 1, Cache_Type_ALL, 0);
+}
+#endif

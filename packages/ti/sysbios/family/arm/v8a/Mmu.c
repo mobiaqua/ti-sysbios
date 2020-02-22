@@ -97,7 +97,7 @@ Void Mmu_addBlockEntry(UInt8 level, UInt64 *tablePtr, UInt16 tableIdx,
             ((UInt64)(mapAttrs->shareable & 0x3) << 8) |
             ((UInt64)(0x1) << 10) |  /* access flag */
             ((UInt64)(!(mapAttrs->global) & 0x1) << 11) | 
-            ((UInt64)(paddr & ~((1 << Mmu_configInfo.tableOffset[level]) - 1))) |
+            ((UInt64)(paddr & ~((1UL << Mmu_configInfo.tableOffset[level]) - 1))) |
             ((UInt64)(!(mapAttrs->privExecute) & 0x1) << 53) |
             ((UInt64)(!(mapAttrs->userExecute) & 0x1) << 54);
 
@@ -374,7 +374,7 @@ Void Mmu_readBlockEntry(UInt8 level, UInt64 *tablePtr, UInt16 tableIdx,
     mapAttrs->userExecute = !((desc >> 54) & 0x1);
 
     *paddr = desc & (UInt64)Mmu_PADDR_MASK &
-        ~((1 << Mmu_configInfo.tableOffset[level]) - 1);
+        ~((1UL << Mmu_configInfo.tableOffset[level]) - 1);
 }
 
 /*
@@ -518,7 +518,7 @@ Bool Mmu_tableWalk(UInt8 level, UInt64 *tablePtr, UInt64 *vaddr, UInt64 *paddr,
     UInt64 *nextLevelTablePtr;
 
     blockTranslation = TRUE;
-    blockSize = 1 << Mmu_configInfo.tableOffset[level];
+    blockSize = 1UL << Mmu_configInfo.tableOffset[level];
     if ((level == 0) ||
        ((level == 1) && (Mmu_granuleSize != Mmu_GranuleSize_4KB))) {
         blockTranslation = FALSE;
@@ -632,18 +632,23 @@ Void Mmu_initFuncDefault()
         goto fail;
     }
 
-    ret = Mmu_map(0x02800000, 0x02800000, 0x00001000, &attrs); /* uart        */
+    ret = Mmu_map(0x02800000, 0x02800000, 0x00010000, &attrs); /* uart        */
     if (!ret) {
         goto fail;
     }
 
-    ret = Mmu_map(0x2A430000, 0x2A430000, 0x00001000, &attrs); /* systimer    */
+    ret = Mmu_map(0x2A430000, 0x2A430000, 0x00010000, &attrs); /* systimer    */
     if (!ret) {
         goto fail;
     }
 
     attrs.attrIndx = Mmu_AttrIndx_MAIR7;
     ret = Mmu_map(0x70000000, 0x70000000, 0x00200000, &attrs); /* msmc        */
+    if (!ret) {
+        goto fail;
+    }
+
+    ret = Mmu_map(0x80000000, 0x80000000, 0x01000000, &attrs); /* ddr         */
     if (!ret) {
         goto fail;
     }

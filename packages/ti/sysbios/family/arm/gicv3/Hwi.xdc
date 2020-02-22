@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,14 @@ import ti.sysbios.interfaces.IHwi;
  *   - Interrupt numbers 32-1019 are used for Shared Peripheral Interrupts
  *     or SPIs.
  *   - Interrupt numbers 1020-1023 are reserved.
+ *  When {@link #enableLPI} is set to 'true', this Hwi module supports an
+ *  additional set of interrupts, numbered starting from 8192, named
+ *  Locality-specific Peripheral Interrupts or LPIs.  LPIs are driven by the
+ *  GICv3 Interrupt Translation Service or ITS.  The ITS requires a number of
+ *  SW-allocated tables, as does each CPU interface block when LPIs are in use.
+ *  In addition to these LPI-related tables, general tables used by the Hwi
+ *  dispatcher increase in size by a significant amount due to the much larger
+ *  interrupt ID space that is available when LPIs are enabled.
  *
  *  @a(NOTE)
  *  In the SoC Technical Reference Manual, the MPU IRQs 0 to N map to
@@ -141,6 +149,19 @@ import ti.sysbios.interfaces.IHwi;
  *  @a(NOTE)
  *  This module is written for GIC v2.0, however it is backwards compatible
  *  with GIC v1.0
+ *
+ *  @a(LPI INTERRUPTS)
+ *  In order to generate LPI interrupt IDs the ITS needs to be programmed,
+ *  using the Hwi_its*() APIs.  The Hwi_its*() APIs are C language
+ *  implementations of the raw ITS commadns.  A typical sequence might be:
+ *  @p(code)
+ *      Hwi_itsMapDevice(0, 4, 2);
+ *      Hwi_itsMapCollection(0, 0);
+ *      Hwi_itsMapTranslatedInterrupt(0, 0, 0, 0x2000);
+ *  @p
+ *  The Hwi_its*() APIs are only available when {@link #enableLPI} = true.
+ *
+ *  See ARM GIC Architecture documentation for more details.
  */
 
 @ModuleStartup          /* generates call to Hwi_Module_startup at startup */
@@ -152,9 +173,128 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     // -------- Module Constants --------
 
     /*!
-     *  Number of interrupts implemented in GIC
+     *  Number of interrupts implemented in GIC HW registers.  This is
+     *  basically the number of SGI/PPI/SPI interrupts.
+     *  
      */
-    const UInt NUM_INTERRUPTS = 992;
+    const UInt NUM_HWREG_INTERRUPTS = 992;
+
+    /*!
+     *  Number of interrupts implemented in GIC in total.  This includes
+     *  the SGI/PPI/SPI interrupts, plus LPI if {@link #enableLPI} is true.
+     *
+     *  NUM_INTERRUPTS increases significantly if {@link #enableLPI} is true.
+     */
+    config UInt NUM_INTERRUPTS = NUM_HWREG_INTERRUPTS;
+
+    /*!
+     *  ======== enableLPI ========
+     *  Enable LPI message-based interrupts
+     *
+     *  This setting enables the use of LPIs with the GIC.  LPIs use the ITS
+     *  to translate DeviceID/EventID to an INTID in the LPI INTID space
+     *  (8192 -> (<# supported INTIDs> - 1).
+     *
+     *  Enabling LPIs incurs a significant memory cost due to the much larger
+     *  INTID space and the need for large SW-allocated tables.
+     *  {@link #NUM_INTERRUPTS} becomes significantly larger when LPIs are
+     *  enabled.
+     */
+    config Bool enableLPI = false;
+
+    /*!
+     *  Number of 4KB pages to allocate for the ITS command queue
+     *
+     *  The ITS command queue is used for performing ITS operations.
+     */
+    config Int NUM_ITS_CMD_PAGES = 1;
+
+    /*!
+     *  Enumeration of possible page sizes for the Device table
+     */
+    enum DeviceTablePageSize {
+        DeviceTablePageSize_4KB,
+        DeviceTablePageSize_16KB,
+        DeviceTablePageSize_64KB
+    };
+
+    /*!
+     *  Page size for ITS DeviceID table
+     */
+    config DeviceTablePageSize DEV_TBL_PAGESIZE = DeviceTablePageSize_4KB;
+
+    /*!
+     *  Number of pages of size {@link #DEV_TBL_PAGESIZE} for the ITS
+     *  Device table
+     */
+    config Int DEV_TBL_NUMPAGES = 16;
+
+    /*!
+     *  Linker section to use for ITS/LPI table allocations
+     */
+    metaonly config String itsTableSection = ".itsTables";
+
+    /*!
+     *  Memory segment to use for ITS/LPI table allocations
+     */
+    metaonly config String itsTableMemory = "DDR";
+
+    /*!
+     *  Attributes for all ITS/LPI tables
+     */
+    struct ItsTableAttrs {
+        UInt8 innerCache;
+        UInt8 outerCache;
+        UInt8 shareability;
+    };
+
+    /*!
+     *  Enumeration of all possible ITS table inner cache settings
+     */
+    enum InnerCache {
+        InnerCache_Device,           /*! Device-nGnRnE */
+        InnerCache_NonCacheable,     /*! Normal Inner Non-cacheable */
+        InnerCache_CacheableRAWT,    /*! Normal Inner Cacheable RA, WT */
+        InnerCache_CacheableRAWB,    /*! Normal Inner Cacheable RA, WB */
+        InnerCache_CacheableWAWT,    /*! Normal Inner Cacheable WA, WT */
+        InnerCache_CacheableWAWB,    /*! Normal Inner Cacheable WA, WB */
+        InnerCache_CacheableRAWAWT,  /*! Normal Inner Cacheable RA, WA, WT */
+        InnerCache_CacheableRAWAWB   /*! Normal Inner Cacheable RA, WA, WB */
+    };
+
+    /*!
+     *  Enumeration of all possible ITS table outer cache settings
+     */
+    enum OuterCache {
+        OuterCache_SameAsInner,      /*! Same setting as InnerCache */
+        OuterCache_NonCacheable,     /*! Normal Outer Non-cacheable */
+        OuterCache_CacheableRAWT,    /*! Normal Outer Cacheable RA, WT */
+        OuterCache_CacheableRAWB,    /*! Normal Outer Cacheable RA, WB */
+        OuterCache_CacheableWAWT,    /*! Normal Outer Cacheable WA, WT */
+        OuterCache_CacheableWAWB,    /*! Normal Outer Cacheable WA, WB */
+        OuterCache_CacheableRAWAWT,  /*! Normal Outer Cacheable RA, WA, WT */
+        OuterCache_CacheableRAWAWB   /*! Normal Outer Cacheable RA, WA, WB */
+    };
+
+    /*
+     *  Enumeration of all possible ITS table shareability settings
+     *
+     *  Shareability field might be a fixed, read-only value.
+     */
+    enum Shareability {
+        NonShareable,
+        InnerShareable,
+        OuterShareable
+    };
+
+    /*!
+     *  Default settings for ITS tables
+     */
+    config ItsTableAttrs itsTableAttrs = {
+        innerCache: InnerCache_CacheableWAWB,
+        outerCache: OuterCache_SameAsInner,
+        shareability: NonShareable,
+    };
 
     /*!
      *  ======== enableSecureMode ========
@@ -509,12 +649,12 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
     struct Gicr {
         UInt32 CTLR;            /*! 0x0000 Redistributor Control Register */
         UInt32 IIDR;            /*! 0x0004 Implementor Id Register */
-        UInt32 TYPER[2];        /*! 0x0008 Redistributor Type Register */
+        UInt64 TYPER;           /*! 0x0008 Redistributor Type Register */
         UInt32 hole0;           /*! 0x0010 */
         UInt32 WAKER;           /*! 0x0014 Power Management Control Register */
         UInt32 hole1[22];       /*! 0x0018-0x006C */
-        UInt32 PROPBASER[2];    /*! 0x0070 LPI Config Table Base Register */
-        UInt32 PENDBASER[2];    /*! 0x0078 LPI Pending Table Base Register */
+        UInt64 PROPBASER;       /*! 0x0070 LPI Config Table Base Register */
+        UInt64 PENDBASER;       /*! 0x0078 LPI Pending Table Base Register */
     };
 
     /*!
@@ -572,6 +712,27 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
         UInt32 hole3[960];      /*! 0x0100-0x0FFC */
         UInt32 DIR;             /*! 0x1000 Deactivate Interrupt Register */
     };
+
+    /*!
+     * Generic Interrupt Controller ITS Interface. Symbol "Hwi_gits" is
+     * a physical device.
+     */
+    struct Gits {
+        UInt32 CTLR;            /*! 0x00000 ITS control register */
+        UInt32 IIDR;            /*! 0x00004 ITS ID register */
+        UInt64 TYPER;           /*! 0x00008 ITS Type register */
+        UInt32 hole0[28];       /*! 0x00010-0x0007C */
+        UInt64 CBASER;          /*! 0x00080 ITS Command Queue Descriptor */
+        UInt64 CWRITER;         /*! 0x00088 ITS Write register */
+        UInt64 CREADR;          /*! 0x00090 ITS Read register */
+        UInt32 hole1[26];       /*! 0x00098-0x000FC */
+        UInt64 BASER[8];        /*! 0x00100 ITS Translation Table Descriptors */
+        UInt32 hole2[944];      /*! 0x00140-0x0FFFC */
+        UInt32 hole3[16];       /*! 0x10000-0x1003C */
+        UInt32 TRANSLATER;      /*! 0x10040 ITS Translation Register */
+    };
+
+    extern volatile Gits gits;
 
     // -------- Module Parameters --------
 
@@ -687,6 +848,36 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     config Error.Id E_exception = {
         msg: "E_exception: A hardware exception has occurred."
+    };
+
+    /*!
+     *  Error raised if {@link #post post()} is called for an LPI
+     */
+    config Error.Id E_cantPostLPI = {
+        msg: "E_cantPostLPI: intNum %d is an LPI and can't be posted.  Use Hwi_itsInt() instead."
+    };
+
+    /*!
+     *  Error raised if {@link #clearInterrupt clearInterrupt()} is called for
+     *  an LPI
+     */
+    config Error.Id E_cantClearLPI = {
+        msg: "E_cantClearLPI: intNum %d is an LPI and can't be cleared. Use Hwi_itsClear() instead."
+    };
+
+    /*!
+     *  Error raised if {@link #enableLPI} = true and Affinity Routing is
+     *  not enabled
+     */
+    config Error.Id E_affRoutingNotEnabled = {
+        msg: "E_affRoutingNotEnabled: "
+    };
+
+    /*!
+     *  Error raised if {@link #enableLPI} = true and LPIs are not enabled
+     */
+    config Error.Id E_LPISNotEnabled = {
+        msg: "E_LPISNotEnabled: "
     };
 
     /*!
@@ -933,6 +1124,79 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     Void setPriority(UInt intNum, UInt priority);
 
+    /*!
+     *  ======== itsInv ========
+     *  Implements ITS command INV
+     */
+    Bool itsInv(Int deviceId, Int eventId);
+
+    /*!
+     *  ======== itsInvall ========
+     *  Implements ITS command INVALL
+     */
+    Bool itsInvall(Int icId);
+
+    /*!
+     *  ======== itsSync ========
+     *  Implements ITS command SYNC
+     */
+    Bool itsSync(Int cpuNum);
+
+    /*!
+     *  ======== itsMapDevice ========
+     *  Implements ITS command MAPD
+     */
+    Bool itsMapDevice(Int deviceId, Int nEvents, Int size);
+
+    /*!
+     *  ======== itsMapCollection ========
+     *  Implements ITS command MAPC
+     */
+    Bool itsMapCollection(Int icId, Int cpuNum);
+
+    /*!
+     *  ========  itsMapInterrupt ========
+     *  Implements ITS command MAPI
+     */
+    Bool itsMapInterrupt(Int deviceId, Int eventId, Int icId);
+
+    /*!
+     *  ======== itsMapTranslatedInterrupt ========
+     *  Implements ITS command MAPTI
+     */
+    Bool itsMapTranslatedInterrupt(Int deviceId, Int eventId, Int icId,
+                                   Int intId);
+
+    /*!
+     *  ======== istMoveInterrupt ========
+     *  Implements ITS command MOVI
+     */
+    Bool itsMoveInterrupt(Int deviceId, Int eventId, Int icId);
+
+    /*!
+     *  ======== itsMoveAll ========
+     *  Implements ITS command MOVALL
+     */
+    Bool itsMoveAll(Int fromCpuNum, Int toCpuNum);
+
+    /*!
+     *  ======== itsInt ========
+     *  Implements ITS command INT
+     */
+    Bool itsInt(Int deviceId, Int eventId);
+
+    /*!
+     *  ======== itsClear ========
+     *  Implements ITS command CLEAR
+     */
+    Bool itsClear(Int deviceId, Int eventId);
+
+    /*!
+     *  ======== itsDiscard ========
+     *  Implements ITS command DISCARD
+     */
+    Bool itsDiscard(Int deviceId, Int eventId);
+
 instance:
 
     /*!
@@ -1087,6 +1351,38 @@ internal:   /* not for client use */
      */
     Int postInit(Object *hwi, Error.Block *eb);
 
+    /*
+     *  ======== initLPI ========
+     */
+    Bool initLPI();
+
+    /*
+     *  ======== issueITSCommand ========
+     */
+    Bool issueITSCommand();
+
+    /*
+     *  ======== enableInterruptLPI ========
+     */
+    UInt enableInterruptLPI(Int intId);
+
+    /*
+     *  ======== disableInterruptLPI ========
+     */
+    UInt disableInterruptLPI(Int intId);
+
+    /*
+     *  ======== setPriorityLPI ========
+     */
+    Void setPriorityLPI(Int intId, Int priority);
+
+    /*
+     *  ======== ItsCmdStruct ========
+     */
+    struct ItsCmd {
+        UInt64 words[4];
+    };
+
     /*!
      *  const array to hold all HookSet objects.
      */
@@ -1114,6 +1410,12 @@ internal:   /* not for client use */
      * GIC Redistributor base address
      */
     metaonly config Ptr gicrBaseAddress;
+
+    /*!
+     * GIC ITS base address
+     */
+    metaonly config Ptr gitsBaseAddress;
+
 
     struct Instance_State {
         Type        type;             /* Interrupt Type */
@@ -1147,5 +1449,14 @@ internal:   /* not for client use */
         IntAffinity   intAffinity[];  /* smp int-to-coreId mappings */
         Bool          excActive[];    /* TRUE if an exception has occurred */
         ExcContext   *excContext[];   /* Exception context */
+        /* ITS/LPI tables */
+        Char          itsDeviceTable[];
+        ItsCmd        itsCommandQueue[];
+        Char          itsLPIConfigTable[];
+        Char          itsLPIPendTable[][];
+        ItsCmd        *curCmd;
+        ItsCmd        *lastCmd;
+        Int           ittEntrySize;
     };
+
 }

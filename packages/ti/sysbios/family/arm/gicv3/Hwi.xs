@@ -66,6 +66,7 @@ if (xdc.om.$name == "cfg") {
             binaryPointReg     : 3,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
+            gitsBaseAddress    : 0x01820000,
             gicrBaseAddress    : 0x01900000,
             icfgrInit          :
             [
@@ -89,6 +90,7 @@ if (xdc.om.$name == "cfg") {
             binaryPointReg     : 3,
             numPriorityBits    : 4,
             gicdBaseAddress    : 0x01800000,
+            gitsBaseAddress    : 0x01820000,
             gicrBaseAddress    : 0x01880000,
             icfgrInit          :
             [
@@ -196,27 +198,19 @@ function module$meta$init()
     /* set fxntab default */
     Hwi.common$.fxntab = false;
 
+    Hwi.intAffinity.length = Hwi.NUM_INTERRUPTS;
+    Hwi.intRouting.length = Hwi.NUM_INTERRUPTS;
+
     var device = deviceSupportCheck();
 
     Hwi.BPR = deviceTable[device].binaryPointReg;
     Hwi.NUM_PRIORITY_BITS = deviceTable[device].numPriorityBits;
-    Hwi.NUM_GICD_ENABLE_REGS = Hwi.NUM_INTERRUPTS / 32;
+    Hwi.NUM_GICD_ENABLE_REGS = Hwi.NUM_HWREG_INTERRUPTS / 32;
     Hwi.gicdBaseAddress = deviceTable[device].gicdBaseAddress;
+    Hwi.gitsBaseAddress = deviceTable[device].gitsBaseAddress;
     Hwi.gicrBaseAddress = deviceTable[device].gicrBaseAddress;
     IcfgrInitArr = deviceTable[device].icfgrInit;
     Hwi.enableSecureMode = deviceTable[device].enableSecureMode;
-
-    /*
-     * Initialize meta-only Hwi object array
-     */
-    Hwi.interrupt.length = Hwi.NUM_INTERRUPTS;
-    Hwi.intAffinity.length = Hwi.NUM_INTERRUPTS;
-    Hwi.intRouting.length = Hwi.NUM_INTERRUPTS;
-
-    for (var intNum = 0; intNum < Hwi.NUM_INTERRUPTS; intNum++) {
-        Hwi.interrupt[intNum].used = false;
-        Hwi.interrupt[intNum].fxn = null;
-    }
 
     var maxNumCores = 4;
     Hwi.gicMap.length = maxNumCores;
@@ -249,6 +243,24 @@ function module$use()
     BIOS = xdc.useModule('ti.sysbios.BIOS');
     Build = xdc.useModule('ti.sysbios.Build');
     Reset = xdc.useModule('xdc.runtime.Reset');
+
+    if (Hwi.enableLPI) {
+        if (!Hwi.$written("NUM_INTERRUPTS")) {
+            Hwi.NUM_INTERRUPTS = 32768;
+        }
+    }
+
+    /*
+     * Initialize meta-only Hwi object array
+     */
+    Hwi.interrupt.length = Hwi.NUM_INTERRUPTS;
+    Hwi.intAffinity.length = Hwi.NUM_INTERRUPTS;
+    Hwi.intRouting.length = Hwi.NUM_INTERRUPTS;
+
+    for (var intNum = 0; intNum < Hwi.NUM_INTERRUPTS; intNum++) {
+        Hwi.interrupt[intNum].used = false;
+        Hwi.interrupt[intNum].fxn = null;
+    }
 
     /* Install Hwi_init as a reset function */
     Reset.fxns[Reset.fxns.length++] = "&ti_sysbios_family_arm_gicv3_Hwi_init__E";
@@ -355,6 +367,12 @@ function module$use()
             "-Dti_sysbios_family_arm_gicv3_Hwi_gicdBaseAddress__D=" +
             Hwi.gicdBaseAddress);
         Build.ccArgs.$add(
+            "-Dti_sysbios_family_arm_gicv3_Hwi_gitsBaseAddress__D=" +
+            Hwi.gitsBaseAddress);
+        Build.ccArgs.$add(
+            "-Dti_sysbios_family_arm_gicv3_Hwi_enableLPI__D=" +
+            (Hwi.enableLPI ? "TRUE" : "FALSE"));
+        Build.ccArgs.$add(
             "-Dti_sysbios_family_arm_gicv3_Hwi_gicrBaseAddress__D=" +
             Hwi.gicrBaseAddress);
     }
@@ -404,6 +422,7 @@ function module$static$init(mod, params)
     mod.hwiStack.length = Core.numCores;
     mod.excActive.length = Core.numCores;
     mod.excContext.length = Core.numCores;
+    mod.ittEntrySize = 0;    /* must be set during run-time */
 
     for (var idx = 0; idx < Core.numCores; idx++) {
         mod.taskSP[idx] = null;
@@ -422,7 +441,7 @@ function module$static$init(mod, params)
         mod.excContext[idx] = $addr(Hwi.excContextBuffer[idx]);
     }
 
-    mod.icfgr.length = Hwi.NUM_INTERRUPTS / 16;
+    mod.icfgr.length = IcfgrInitArr.length;
     for (var i = 0; i < mod.icfgr.length; i++) {
         mod.icfgr[i] = IcfgrInitArr[i];
     }
@@ -460,6 +479,57 @@ function module$static$init(mod, params)
     Build.ccArgs.$add(
         "-Dti_sysbios_family_arm_gicv3_Hwi_initGicd__D=" +
         (Hwi.initGicd ? "TRUE" : "FALSE"));
+
+    if (Hwi.enableLPI) {
+        var pageSize;
+        var align = 0x1000;
+        switch (Hwi.DEV_TBL_PAGESIZE) {
+            case Hwi.DeviceTablePageSize_4KB:
+                pageSize = 0x1000;
+                break;
+            case Hwi.DeviceTablePageSize_16KB:
+                pageSize = 0x4000;
+                break;
+            case Hwi.DeviceTablePageSize_64KB:
+                pageSize = 0x10000;
+                align = 0x10000;
+                break;
+        }
+
+        mod.itsDeviceTable.length = pageSize * Hwi.DEV_TBL_NUMPAGES;
+        Memory.staticPlace(mod.itsDeviceTable, align, Hwi.itsTableSection);
+
+        mod.itsCommandQueue.length = Hwi.NUM_ITS_CMD_PAGES * 0x1000 /
+                                     Hwi.ItsCmd.$sizeof();
+        Memory.staticPlace(mod.itsCommandQueue, 0x10000, Hwi.itsTableSection);
+
+        mod.curCmd = mod.itsCommandQueue.$addrof(0);
+        mod.lastCmd =
+            mod.itsCommandQueue.$addrof(mod.itsCommandQueue.length - 1);
+
+        /*
+         * No Math.log2() support, but:
+         *     Math.log(x)/Math.log(2) === Math.log2(x)
+         */
+        var LPITableSize = Math.log(Hwi.NUM_INTERRUPTS)/Math.log(2) * 0x1000;
+        mod.itsLPIConfigTable.length = LPITableSize - 8192;
+        Memory.staticPlace(mod.itsLPIConfigTable, 0x1000, Hwi.itsTableSection);
+
+        mod.itsLPIPendTable.length = Core.numCores;
+        for (var core = 0; core < Core.numCores; core++) {
+            mod.itsLPIPendTable[core].length = LPITableSize / 8192;
+            Memory.staticPlace(mod.itsLPIPendTable[core], 0x10000,
+                               Hwi.itsTableSection);
+        }
+
+        Program.sectMap[Hwi.itsTableSection] = new Program.SectionSpec();
+        Program.sectMap[Hwi.itsTableSection].loadSegment = Hwi.itsTableMemory;
+        Program.sectMap[Hwi.itsTableSection].type = "NOLOAD";
+    }
+    else {
+        mod.curCmd = 0;
+        mod.lastCmd = 0;
+    }
 }
 
 /*
@@ -517,13 +587,15 @@ function instance$static$init(obj, intNum, fxn, params)
 
     var shift, mask;
 
-    /* Set interrupt trigger sensitivity */
-    if (obj.triggerSensitivity != (~0)) {
-        shift = (intNum & 0xF) << 1;
-        mask = 0x3 << shift;
-        var newIcfgr = mod.icfgr[intNum >>> 4] & (~mask);
-        mod.icfgr[intNum >>> 4] = newIcfgr |
-            ((obj.triggerSensitivity & 0x3) << shift);
+    if (intNum < Hwi.NUM_HWREG_INTERRUPTS) {
+        /* Set interrupt trigger sensitivity */
+        if (obj.triggerSensitivity != (~0)) {
+            shift = (intNum & 0xF) << 1;
+            mask = 0x3 << shift;
+            var newIcfgr = mod.icfgr[intNum >>> 4] & (~mask);
+            mod.icfgr[intNum >>> 4] = newIcfgr |
+                ((obj.triggerSensitivity & 0x3) << shift);
+        }
     }
 
     if (params.priority == -1) {

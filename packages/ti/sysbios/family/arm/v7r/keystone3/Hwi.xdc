@@ -633,6 +633,15 @@ internal:   /* not for client use */
     };
 
     /*
+     * VIM registers needed for ROV Hwi Basic view
+     *
+     * This is needed to avoid reading IRQ/FIQVECADDRESS.
+     */
+    struct VIM_GROUP {
+        InterruptGroup GROUP[32]; /*! 0x0400-0x07FF Interrupt Group M Regs */
+    };
+
+    /*
      *  ======== vim ========
      *  Symbol "Hwi_vim" is a physical device
      */
