@@ -57,6 +57,18 @@ Pkg.otherFiles = [
     "ccs/sys/time.h",
     "ccs/sys/types.h",
 
+    "ticlang/errno.h",
+    "ticlang/mqueue.h",
+    "ticlang/pthread.h",
+    "ticlang/sched.h",
+    "ticlang/semaphore.h",
+    "ticlang/signal.h",
+    "ticlang/time.h",
+    "ticlang/unistd.h",
+    "ticlang/sys/_internal.h",
+    "ticlang/sys/time.h",
+    "ticlang/sys/types.h",
+
     "gcc/errno.h",
     "gcc/mqueue.h",
     "gcc/pthread.h",

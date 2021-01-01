@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Texas Instruments Incorporated
+ * Copyright (c) 2018-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,11 @@
 #include <ti/sysbios/hal/SysCall.h>
 
 #include "package/internal/TimestampProvider.xdc.h"
+
+Bits32 ti_sysbios_family_arm_m3_TimestampProvider_get32_SVC(Void);
+Void ti_sysbios_family_arm_m3_TimestampProvider_get64_SVC(Types_Timestamp64 *result);
+Void ti_sysbios_family_arm_m3_TimestampProvider_getFreq_SVC(Types_FreqHz *freq);
+
 
 /*
  *  ======== ti_sysbios_family_arm_m3_TimestampProvider_get32_SVC ========

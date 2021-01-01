@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,6 +91,28 @@ extern __FAR__ char _stack[0x10001];
  */
 #define HWI_ECSP_SIZE (0x10000)
 
+#if ti_sysbios_family_c7x_Hwi_bootToNonSecure__D
+extern Void ti_sysbios_family_c7x_Hwi_switchToNS__E();
+#endif
+
+Void Hwi_secureStart()
+{
+#if ti_sysbios_family_c7x_Hwi_bootToNonSecure__D
+    /* Initialize the vector table pointer, ESTP */
+    __ESTP_S = (ULong)Hwi_vectorTableBase;
+    __ESTP_SS = (ULong)Hwi_vectorTableBase_SS;
+
+    __ECSP_S = (UInt64)_stack;
+    __ECSP_SS = (UInt64)_stack;
+    __TCSP = (UInt64)(_stack + HWI_ECSP_SIZE);
+
+    /* start with a clean slate */
+    __set_indexed(__EFCLR, 0, 0xFFFFFFFFFFFFFFFFUL);
+
+    ti_sysbios_family_c7x_Hwi_switchToNS__E();
+#endif
+}
+
 /*
  *  ======== Hwi_Module_startup ========
  */
@@ -111,8 +133,11 @@ Int Hwi_Module_startup(Int phase)
 #endif
 
     /* Initialize the vector table pointer, ESTP */
-    __ESTP_S = (ULong)Hwi_module->vectorTableBase;
-    __ESTP_SS = (ULong)Hwi_module->vectorTableBase;
+    __ESTP_S = (ULong)Hwi_vectorTableBase;
+
+    if (ti_sysbios_family_c7x_Hwi_getCXM__E() == Hwi_TSR_CXM_SecureSupervisor) {
+        __ESTP_SS = (ULong)Hwi_vectorTableBase_SS;
+    }
 
     /*
      * Initialize the pointer to the isrStack. These symbols are part of the
@@ -123,8 +148,11 @@ Int Hwi_Module_startup(Int phase)
      */
     Hwi_module->isrStack = Hwi_getIsrStackAddress() - 16;
     __ECSP_S = (UInt64)_stack;
-    __ECSP_SS = (UInt64)_stack;
     __TCSP = (UInt64)(_stack + HWI_ECSP_SIZE);
+
+    if (ti_sysbios_family_c7x_Hwi_getCXM__E() == Hwi_TSR_CXM_SecureSupervisor) {
+        __ECSP_SS = (UInt64)_stack;
+    }
 
     /* signal that we're executing on the ISR stack */
     Hwi_module->taskSP = (Char *)-1;
@@ -152,7 +180,7 @@ Int Hwi_Module_startup(Int phase)
         }
     }
 
-    ti_sysbios_family_c7x_Hwi_setCOP__E(7);
+    ti_sysbios_family_c7x_Hwi_setCOP__E(0xff);
 
     return (Startup_DONE);
 }
@@ -402,6 +430,10 @@ Void Hwi_setPriority(UInt intNum, UInt priority)
 {
     Assert_isTrue(priority >= 1U && priority <= 7U, Hwi_A_invalidPriority);
 
+    if (ti_sysbios_family_c7x_Hwi_getCXM__E() != Hwi_TSR_CXM_SecureSupervisor) {
+        return;
+    }
+
     __set_indexed(__EPRI, intNum, priority << 5);
 }
 
@@ -600,9 +632,16 @@ Bool Hwi_getStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth)
     Char *isrSP;
     Bool stackOverflow;
 
-    /* Copy the stack base address and size */
-    stkInfo->hwiStackSize = (SizeT)_symval(&__TI_STACK_SIZE) - HWI_ECSP_SIZE;
-    stkInfo->hwiStackBase = _stack + HWI_ECSP_SIZE;
+    /*
+     * Copy the stack base address and size.
+     *
+     * Adjust for HW ECSP/TCSP portions.  TCSP only temporarily occupies
+     * 0x2000 bytes of stack starting at _stack + HWI_ECSP_SIZE, until
+     * the first Task switch.
+     */
+    stkInfo->hwiStackSize = (SizeT)_symval(&__TI_STACK_SIZE) -
+                            (HWI_ECSP_SIZE + 0x2000);
+    stkInfo->hwiStackBase = _stack + HWI_ECSP_SIZE + 0x2000;
 
     isrSP = stkInfo->hwiStackBase;
 
@@ -725,8 +764,8 @@ Void Hwi_dispatchCore(Int intNum)
     }
 #endif
 
-//    Log_write5(Hwi_LM_begin, (IArg)hwi, (IArg)hwi->fxn,
-//               (IArg)prevThreadType, (IArg)intNum, hwi->irp);
+    Log_write5(Hwi_LM_begin, (IArg)hwi, (IArg)hwi->fxn,
+              (IArg)prevThreadType, (IArg)intNum, hwi->irp);
 
     /* call the user's isr */
     if (Hwi_dispatcherAutoNestingSupport) {
@@ -744,7 +783,7 @@ Void Hwi_dispatchCore(Int intNum)
         (fxn)(arg);
     }
 
-//    Log_write1(Hwi_LD_end, (IArg)hwi);
+    Log_write1(Hwi_LD_end, (IArg)hwi);
 
 #ifndef ti_sysbios_hal_Hwi_DISABLE_ALL_HOOKS
     /* call the end hooks */
@@ -756,7 +795,7 @@ Void Hwi_dispatchCore(Int intNum)
 #endif
 
     /* open up interrupt priorities */
-    ti_sysbios_family_c7x_Hwi_setCOP__E(7);
+    ti_sysbios_family_c7x_Hwi_setCOP__E(0xff);
 
     /* Run Swi scheduler */
     if (Hwi_dispatcherSwiSupport) {

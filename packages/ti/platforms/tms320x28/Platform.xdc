@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,12 @@ package ti.platforms.tms320x28;
  *  @p(code)
  *  Pkg.addExecutable("test", target, "ti.platforms.tms320x28:TMS320C2812");
  *  @p
+ *
+ *  This platform does not generate a complete linker command file. It can add
+ *  a linker command file to the build, if the configuration parameter
+ *  `includeLinkCmdFile' is used. Otherwise, either a user or an IDE (CCS, for
+ *  example) must add a linker command file that contains the memory map and
+ *  section allocations for commonly used sections.
  */
 metaonly module Platform inherits xdc.platform.IPlatform
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -109,8 +109,32 @@ if (xdc.om.$name == "cfg") {
                 0x00000000, 0x00000000
             ],
             enableSecureMode   : false
-        }
-    };
+        },
+        "AM64.*": {
+            binaryPointReg     : 3,
+            numPriorityBits    : 4,
+            gicdBaseAddress    : 0x01800000,
+            gitsBaseAddress    : 0x01820000,
+            gicrBaseAddress    : 0x01840000,
+            icfgrInit          :
+            [
+                0xAAAAAAAA, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+                0x00000000, 0x00000000
+            ],
+            enableSecureMode   : false
+        },
+    }
 }
 
 

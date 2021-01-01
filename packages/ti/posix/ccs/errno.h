@@ -38,9 +38,19 @@
 #define ti_posix_ccs_errno__include
 
 /* compiler vendor check */
+/* short-term migration warning; ticlang users should migrate away */
+#if defined(__clang__)
+#warning ticlang users should migrate to the ti/posix/ticlang include path
+#endif
+
 #if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
+#endif
+
+/* CODEGEN-6425 work-around; remove when bug is fixed */
+#if defined(__clang__) && defined(__ti_version__)
+#pragma clang system_header
 #endif
 
 /*  Determine which TI toolchain is in use (ARM, C6x, ...) because
@@ -171,12 +181,28 @@ extern "C" {
 #define EAFNOSUPPORT            106
 #endif
 
+#ifndef EALREADY
+#define EALREADY                120
+#endif
+
+#ifndef ECONNABORTED
+#define ECONNABORTED            113
+#endif
+
 #ifndef ECONNREFUSED
 #define ECONNREFUSED            111
 #endif
 
+#ifndef ECONNRESET
+#define ECONNRESET              104
+#endif
+
 #ifndef EDESTADDRREQ
 #define EDESTADDRREQ            121
+#endif
+
+#ifndef EHOSTUNREACH
+#define EHOSTUNREACH            118
 #endif
 
 #ifndef EISCONN
@@ -185,6 +211,10 @@ extern "C" {
 
 #ifndef ENETDOWN
 #define ENETDOWN                115
+#endif
+
+#ifndef ENETRESET
+#define ENETRESET               102
 #endif
 
 #ifndef ENETUNREACH
@@ -203,12 +233,20 @@ extern "C" {
 #define ENOTCONN                128
 #endif
 
+#ifndef ENOTSOCK
+#define ENOTSOCK                108
+#endif
+
 #ifndef EOPNOTSUPP
 #define EOPNOTSUPP              95
 #endif
 
 #ifndef EOVERFLOW
 #define EOVERFLOW               139
+#endif
+
+#ifndef EPROTO
+#define EPROTO                  71
 #endif
 
 #ifndef EPROTONOSUPPORT
@@ -254,12 +292,28 @@ extern "C" {
 #define EAFNOSUPPORT            106
 #endif
 
+#ifndef EALREADY
+#define EALREADY                120
+#endif
+
+#ifndef ECONNABORTED
+#define ECONNABORTED            113
+#endif
+
 #ifndef ECONNREFUSED
 #define ECONNREFUSED            111
 #endif
 
+#ifndef ECONNRESET
+#define ECONNRESET              104
+#endif
+
 #ifndef EDESTADDRREQ
 #define EDESTADDRREQ            121
+#endif
+
+#ifndef EHOSTUNREACH
+#define EHOSTUNREACH            118
 #endif
 
 #ifndef EISCONN
@@ -286,12 +340,20 @@ extern "C" {
 #define ENOTCONN                128
 #endif
 
+#ifndef ENOTSOCK
+#define ENOTSOCK                108
+#endif
+
 #ifndef EOPNOTSUPP
 #define EOPNOTSUPP              95
 #endif
 
 #ifndef EOVERFLOW
 #define EOVERFLOW               139
+#endif
+
+#ifndef EPROTO
+#define EPROTO                  71
 #endif
 
 #ifndef EPROTONOSUPPORT
@@ -346,6 +408,10 @@ extern "C" {
 #define EAGAIN                  11
 #endif
 
+#ifndef EALREADY
+#define EALREADY                120
+#endif
+
 #ifndef EBADF
 #define EBADF                   9
 #endif
@@ -364,6 +430,10 @@ extern "C" {
 
 #ifndef EFAULT
 #define EFAULT                  14
+#endif
+
+#ifndef EHOSTUNREACH
+#define EHOSTUNREACH            118
 #endif
 
 #ifndef EINVAL
@@ -394,12 +464,20 @@ extern "C" {
 #define ENOSYS                  89
 #endif
 
+#ifndef ENOTSOCK
+#define ENOTSOCK                108
+#endif
+
 #ifndef ENOTSUP
 #define ENOTSUP                 48
 #endif
 
 #ifndef EPERM
 #define EPERM                   1
+#endif
+
+#ifndef EPROTO
+#define EPROTO                  71
 #endif
 
 #ifndef ETIMEDOUT
@@ -418,8 +496,16 @@ extern "C" {
 #define EAFNOSUPPORT            106
 #endif
 
+#ifndef ECONNABORTED
+#define ECONNABORTED            113
+#endif
+
 #ifndef ECONNREFUSED
 #define ECONNREFUSED            111
+#endif
+
+#ifndef ECONNRESET
+#define ECONNRESET              104
 #endif
 
 #ifndef EDESTADDRREQ
@@ -432,6 +518,10 @@ extern "C" {
 
 #ifndef ENETDOWN
 #define ENETDOWN                115
+#endif
+
+#ifndef ENETRESET
+#define ENETRESET               102
 #endif
 
 #ifndef ENETUNREACH

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -472,9 +472,6 @@ IArg Core_lock()
  */
 Void Core_unlock()
 {
-    // TODO Check BIOS.swiEnabled and BIOS.taskEnabled before using
-    //      Task_enabled() and Swi_enabled() APIs as Tasking/Swis
-    //      may be disabled.
     if (Task_enabled() && Swi_enabled()) {
         GateSmp_leave(Core_gate, 0);
     }

@@ -212,6 +212,7 @@ function instance$static$init(obj, func, timeout, params)
 
     obj.timeout = timeout;
     obj.currTimeout = timeout;
+    obj.timeoutTicks = timeout;
     obj.period = params.period;
     obj.fxn = func;
     obj.arg = params.arg;

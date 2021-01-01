@@ -50,6 +50,7 @@ SECTIONS
 #endif
 #endif
     .const      : > SRAM
+    .rodata     : > SRAM
     .cinit      : > SRAM
     .pinit      : > SRAM
     .init_array : > SRAM

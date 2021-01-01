@@ -61,10 +61,10 @@ Void ti_sysbios_knl_Clock_doTick__I(UArg arg)
 %}
 %else {
 %   if (Clock.tickMode == Clock.TickMode_DYNAMIC) {
-        ti_sysbios_knl_Clock_workFuncDynamic__E(0, 0);
+        ti_sysbios_knl_Clock_workFuncDynamic__E(0U, 0U);
 %   }
 %   else {
-        ti_sysbios_knl_Clock_workFunc__E(NULL, NULL);
+        ti_sysbios_knl_Clock_workFunc__E(0U, 0U);
 %   }
 %}
     }

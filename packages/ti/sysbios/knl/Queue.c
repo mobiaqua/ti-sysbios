@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@
  *  ======== Instance_init ========
  */
 /* MISRA.FUNC.UNUSEDPAR.2012 */
+/* REQ_TAG(SYSBIOS-485), REQ_TAG(SYSBIOS-486), REQ_TAG(SYSBIOS-487) */
 Void Queue_Instance_init(Queue_Object *obj, const Queue_Params *params)
 {
     obj->elem.prev = &(obj->elem);
@@ -53,6 +54,7 @@ Void Queue_Instance_init(Queue_Object *obj, const Queue_Params *params)
 /*
  *  ======== dequeue ========
  */
+/* REQ_TAG(SYSBIOS-488) */
 Ptr Queue_dequeue(Queue_Object *obj)
 {
     Queue_Elem *elem;
@@ -69,6 +71,7 @@ Ptr Queue_dequeue(Queue_Object *obj)
 /*
  *  ======== empty ========
  */
+/* REQ_TAG(SYSBIOS-494) */
 Bool Queue_empty(Queue_Object *obj)
 {
     return ((Bool)(obj->elem.next == &(obj->elem)));
@@ -77,6 +80,7 @@ Bool Queue_empty(Queue_Object *obj)
 /*
  *  ======== enqueue ========
  */
+/* REQ_TAG(SYSBIOS-492) */
 Void Queue_enqueue(Queue_Object *obj, Queue_Elem *elem)
 {
     Queue_Elem *prev;
@@ -92,6 +96,7 @@ Void Queue_enqueue(Queue_Object *obj, Queue_Elem *elem)
 /*
  *  ======== get ========
  */
+/* REQ_TAG(SYSBIOS-489) */
 Ptr Queue_get(Queue_Object *obj)
 {
     Queue_Elem *elem;
@@ -113,6 +118,7 @@ Ptr Queue_get(Queue_Object *obj)
 /*
  *  ======== getTail ========
  */
+/* REQ_TAG(SYSBIOS-496) */
 Ptr Queue_getTail(Queue_Object *obj)
 {
     Queue_Elem *elem;
@@ -151,6 +157,7 @@ Void Queue_elemClear(Queue_Elem *qelem)
 /*
  *  ======== insert ========
  */
+/* REQ_TAG(SYSBIOS-497) */
 void Queue_insert(Queue_Elem *qelem, Queue_Elem *elem)
 {
     Queue_Elem *prev;
@@ -166,6 +173,7 @@ void Queue_insert(Queue_Elem *qelem, Queue_Elem *elem)
 /*
  *  ======== next ========
  */
+/* REQ_TAG(SYSBIOS-498) */
 Ptr Queue_next(Queue_Elem *qelem)
 {
     return (qelem->next);
@@ -174,6 +182,7 @@ Ptr Queue_next(Queue_Elem *qelem)
 /*
  *  ======== prev ========
  */
+/* REQ_TAG(SYSBIOS-499) */
 Ptr Queue_prev(Queue_Elem *qelem)
 {
     return (qelem->prev);
@@ -182,6 +191,7 @@ Ptr Queue_prev(Queue_Elem *qelem)
 /*
  *  ======== put ========
  */
+/* REQ_TAG(SYSBIOS-493) */
 Void Queue_put(Queue_Object *obj, Queue_Elem *elem)
 {
     UInt key;
@@ -199,6 +209,7 @@ Void Queue_put(Queue_Object *obj, Queue_Elem *elem)
 /*
  *  ======== putHead ========
  */
+/* REQ_TAG(SYSBIOS-491) */
 Void Queue_putHead(Queue_Object *obj, Queue_Elem *elem)
 {
     UInt key;

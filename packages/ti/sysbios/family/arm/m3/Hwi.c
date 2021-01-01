@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019 Texas Instruments Incorporated
+ * Copyright (c) 2015-2020 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 /*
  *  ======== Hwi.c ========
  */
+/* REQ_TAG(SYSBIOS-1006) */
 
 #include <xdc/std.h>
 
@@ -51,16 +52,13 @@
 
 #include <ti/sysbios/BIOS.h>
 
+/* REQ_TAG(SYSBIOS-547) - enable/disable/restore implementations in header: */
 #include "package/internal/Hwi.xdc.h"
 
-extern Char *ti_sysbios_family_xxx_Hwi_switchToIsrStack();
-extern Void ti_sysbios_family_xxx_Hwi_switchToTaskStack(Char *oldTaskSP);
 extern Void ti_sysbios_family_xxx_Hwi_switchAndRunFunc(Void (*func)());
 
 extern UInt32 ti_sysbios_family_arm_m3_Hwi_dispatchTable[];
 
-#define Hwi_switchToIsrStack ti_sysbios_family_xxx_Hwi_switchToIsrStack
-#define Hwi_switchToTaskStack ti_sysbios_family_xxx_Hwi_switchToTaskStack
 #define Hwi_switchAndRunFunc ti_sysbios_family_xxx_Hwi_switchAndRunFunc
 
 #ifdef ti_sysbios_family_arm_m3_Hwi_dispatcherTaskSupport__D
@@ -106,8 +104,8 @@ Int Hwi_Module_startup(Int phase)
      * The dispatcher's SP must be aligned on a long word boundary
      */
     Hwi_module->isrStack =
-        (Char *)(((UInt32)(Hwi_module->isrStackBase) & 0xfffffff8) +
-                (UInt32)Hwi_module->isrStackSize - 2 * sizeof(Int));
+        (Char *)(((UInt32)(Hwi_module->isrStackBase) & 0xfffffff8U) +
+                (UInt32)Hwi_module->isrStackSize - 2U * sizeof(Int));
 
     Hwi_module->taskSP = (Char *)-1;    /* signal that we're executing */
                                         /* on the ISR stack */
@@ -134,9 +132,12 @@ Hwi_Handle Hwi_construct2(Hwi_Struct2 *hwiStruct2, Int intNum,
 {
     Hwi_Handle   hwi;
 
+    if (intNum >= Hwi_NUM_INTERRUPTS) {
+        return (NULL);
+    }
+
     /* check vector table entry for already in use vector */
-    if (*((UInt32 *)Hwi_module->vectorTableBase + intNum) !=
-         (UInt32)Hwi_nullIsrFunc) {
+    if (*(Hwi_module->vectorTable + intNum) != Hwi_nullIsrFunc) {
         return (NULL);
     }
 
@@ -144,8 +145,7 @@ Hwi_Handle Hwi_construct2(Hwi_Struct2 *hwiStruct2, Int intNum,
             Error_IGNORE);
 
     /* check vector table entry for success */
-    if (*((UInt32 *)Hwi_module->vectorTableBase + intNum) ==
-         (UInt32)Hwi_nullIsrFunc) {
+    if (*(Hwi_module->vectorTable + intNum) == Hwi_nullIsrFunc) {
         return (NULL);
     }
 
@@ -167,11 +167,10 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
         return (1);
     }
 
-    hwi->intNum = intNum;
+    hwi->intNum = (Int16)intNum;
 
     /* check vector table entry for already in use vector */
-    if (*((UInt32 *)Hwi_module->vectorTableBase + intNum) !=
-         (UInt32)Hwi_nullIsrFunc) {
+    if (*(Hwi_module->vectorTable + intNum) != Hwi_nullIsrFunc) {
         Error_raise(eb, Hwi_E_alreadyDefined, intNum, 0);
         return (1);
     }
@@ -188,7 +187,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
     }
 #endif
 
-    Hwi_disableInterrupt(intNum);
+    Hwi_disableInterrupt((UInt)intNum);
 
     hwi->fxn = fxn;
     hwi->arg = params->arg;
@@ -201,7 +200,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
         hwi->priority = 255;
     }
     else {
-        hwi->priority = params->priority;
+        hwi->priority = (UInt8)params->priority;
     }
 
     /*
@@ -214,18 +213,18 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
     hwi->irp = 0;
 
     /* encode 'enableInt' in bit 0 */
-    if (params->enableInt) {
+    if (params->enableInt != FALSE) {
         hwi->irp = 0x1;
     }
 
     /* encode 'useDispatcher' in bit 1 */
-    if (params->useDispatcher) {
-        hwi->irp |= 0x2;
+    if (params->useDispatcher != FALSE) {
+        hwi->irp |= 0x2U;
     }
 
     status = Hwi_postInit(hwi, eb);
 
-    if (status) {
+    if (status != 0) {
         return (2 + status);
     }
 
@@ -240,6 +239,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum,
  *  returns 'eb' *and* 'n' for number of successful createFxn() calls iff
  *      one of the createFxn() calls fails
  */
+/* REQ_TAG(SYSBIOS-1007) */
 Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
 {
     UInt intNum;
@@ -275,11 +275,11 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
      */
 
     /* save intNum for use by Hwi_enableInterrupt */
-    intNum = hwi->intNum;
+    intNum = (UInt)hwi->intNum;
 
-    if (((hwi->irp & 0x2) == 0) ||
+    if (((hwi->irp & 0x2U) == 0U) ||
         (hwi->priority < Hwi_disablePriority)) {
-        Hwi_plug(hwi->intNum, (Void *)(UArg)hwi->fxn);
+        Hwi_plug((UInt)hwi->intNum, (Void *)hwi->fxn);
         /*
          * encode useDispatcher == FALSE as a negative intNum
          * This is done to inform ROV that this is a non-dispatched interrupt
@@ -288,7 +288,7 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
         hwi->intNum = 0 - hwi->intNum;
     }
     else {
-        if (Hwi_numSparseInterrupts) {
+        if (Hwi_numSparseInterrupts != 0U) {
             Int i = 0;
             UInt32 *sparseInterruptTableEntry = Hwi_module->dispatchTable;
             Char *vectorPtr;
@@ -296,7 +296,7 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
 
             /* find an unused sparseTableEntry */
             do {
-                if (sparseInterruptTableEntry[2] == 0) {
+                if (sparseInterruptTableEntry[2] == 0U) {
                     found = TRUE;
                     break;
                 }
@@ -306,14 +306,14 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
                 i++;
             } while (i < (Int)Hwi_numSparseInterrupts);
 
-            if (found) {
+            if (found != FALSE) {
                 /* point it to the Hwi object */
                 sparseInterruptTableEntry[2] = (UInt32)hwi;
 
                 /* plug the vector table with the sparseTable entry */
                 vectorPtr = (Char *)sparseInterruptTableEntry;
                 vectorPtr += 1;    /* make it a thumb func vector */
-                Hwi_plug(hwi->intNum, (Void *)vectorPtr);
+                Hwi_plug((UInt)hwi->intNum, (Void *)vectorPtr);
             }
             else {
                 Error_raise(eb, Hwi_E_hwiLimitExceeded, 0, 0);
@@ -327,13 +327,13 @@ Int Hwi_postInit (Hwi_Object *hwi, Error_Block *eb)
         else {
             Hwi_Object **dispatchTable = (Hwi_Object **)Hwi_module->dispatchTable;
             dispatchTable[intNum] = hwi;
-            Hwi_plug(intNum, (Void *)(UArg)Hwi_dispatch);
+            Hwi_plug(intNum, (Void *)Hwi_dispatch);
         }
     }
 
     Hwi_setPriority(intNum, hwi->priority);
 
-    if ((hwi->irp & 0x1) != 0) {
+    if ((hwi->irp & 0x1U) != 0U) {
         Hwi_enableInterrupt(intNum);
     }
 
@@ -382,16 +382,16 @@ Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 
     /* compensate for encoded intNum */
     if (hwi->intNum < 0) {
-        intNum = 0 - hwi->intNum;
+        intNum = 0U - (UInt)hwi->intNum;
     }
     else {
-        intNum = hwi->intNum;
+        intNum = (UInt)hwi->intNum;
     }
 
     Hwi_disableInterrupt(intNum);
-    Hwi_plug(intNum, (Void *)(UArg)Hwi_nullIsrFunc);
+    Hwi_plug(intNum, (Void *)Hwi_nullIsrFunc);
 
-    if (Hwi_numSparseInterrupts) {
+    if (Hwi_numSparseInterrupts != 0U) {
         Int i = 0;
         UInt32 *sparseInterruptTableEntry = Hwi_module->dispatchTable;
 
@@ -424,10 +424,18 @@ extern const UInt32 ti_sysbios_family_arm_m3_Hwi_resetVectors[];
 #define Hwi_resetVectors ti_sysbios_family_arm_m3_Hwi_resetVectors
 #endif
 
+/* REQ_TAG(SYSBIOS-1007) */
 Void Hwi_initNVIC()
 {
-    UInt intNum;
+    Int intNum;
     UInt32 *ramVectors;
+    Hwi_VectorFuncPtr *ramVectorFuncs;
+
+    /*
+     *  Startup.firstFxns are called before Module.startup functions, so
+     *  initializate vector table base here.
+     */
+    Hwi_module->vectorTable = (Hwi_VectorFuncPtr *)Hwi_module->vectorTableBase;
 
     /* configure Vector Table Offset Register */
     Hwi_nvic.VTOR = (UInt32)Hwi_module->vectorTableBase;
@@ -435,19 +443,20 @@ Void Hwi_initNVIC()
     /* copy ROM vector table contents to RAM vector table */
     if (Hwi_nvic.VTOR != (UInt32)Hwi_resetVectors) {
         ramVectors = Hwi_module->vectorTableBase;
+        ramVectorFuncs = Hwi_module->vectorTable;
 
         for (intNum = 0; intNum < Hwi_NUM_INTERRUPTS; intNum++) {
             if (intNum < 15) {
                 ramVectors[intNum] = Hwi_resetVectors[intNum];
             }
             else {
-                ramVectors[intNum] = (UInt32)Hwi_nullIsrFunc;
+                ramVectorFuncs[intNum] = Hwi_nullIsrFunc;
             }
         }
     }
 
     /* Set the configured PRIGROUP value */
-    Hwi_nvic.AIRCR = (Hwi_nvic.AIRCR & 0xffff00ff) + (Hwi_priGroup << 8) + 0x05fa0000;
+    Hwi_nvic.AIRCR = (Hwi_nvic.AIRCR & 0xffff00ffU) + (Hwi_priGroup << 8) + 0x05fa0000U;
 
     /* set pendSV interrupt priority to Hwi_disablePriority */
     Hwi_nvic.SHPR[10] = Hwi_disablePriority;
@@ -455,7 +464,7 @@ Void Hwi_initNVIC()
     /* set CCR per user's preference */
     Hwi_nvic.CCR = Hwi_ccr;
 
-#if (defined(__TI_VFP_SUPPORT__) || \
+#if ((defined(__ti__) && defined(__ARM_FP)) || \
     (defined(__VFP_FP__) && !defined(__SOFTFP__)) || \
     defined(__ARMVFP__))
     /* disable lazy stacking mode fp indications in control register */
@@ -482,6 +491,7 @@ Void Hwi_startup()
 /*
  *  ======== Hwi_disableFxn ========
  */
+/* REQ_TAG(SYSBIOS-1008) */
 UInt Hwi_disableFxn()
 {
     return (_set_interrupt_priority(Hwi_disablePriority));
@@ -508,6 +518,7 @@ Void Hwi_restoreFxn(UInt key)
 /*
  *  ======== Hwi_disableFxn ========
  */
+/* REQ_TAG(SYSBIOS-1008) */
 UInt Hwi_disableFxn()
 {
     UInt key;
@@ -572,32 +583,27 @@ UInt Hwi_enableFxn()
  */
 UInt Hwi_disableInterrupt(UInt intNum)
 {
-    UInt oldEnableState, index, mask;
+    UInt oldEnableState, index, mask, key;
 
-    if (intNum >= 16) {
+    if (intNum >= 16U) {
 
-        index = (intNum-16) >> 5;
+        index = (intNum - 16U) >> 5;
 
-        mask = 1 << ((intNum-16) & 0x1f);
+        mask = (UInt)1U << ((intNum - 16U) & 0x1fU);
 
         oldEnableState = Hwi_nvic.ISER[index] & mask;
 
         Hwi_nvic.ICER[index] = mask;
     }
-    else if (intNum == 15) {
-        oldEnableState = Hwi_nvic.STCSR & 0x00000002;
-        Hwi_nvic.STCSR &= ~0x00000002;  /* disable SysTick Int */
+    else if (intNum == 15U) {
+        key = Hwi_disable();
+        oldEnableState = Hwi_nvic.STCSR & 0x00000002U;
+        Hwi_nvic.STCSR &= ~0x00000002U;  /* disable SysTick Int */
+        Hwi_restore(key);
     }
     else {
         oldEnableState = 0;
     }
-
-    /* suppress inlining of this function */
-#if (defined(__ti__) || defined(__IAR_SYSTEMS_ICC__))
-    asm (" nop");
-#else
-    __asm__ (" nop");
-#endif
 
     return oldEnableState;
 }
@@ -607,32 +613,27 @@ UInt Hwi_disableInterrupt(UInt intNum)
  */
 UInt Hwi_enableInterrupt(UInt intNum)
 {
-    UInt oldEnableState, index, mask;
+    UInt oldEnableState, index, mask, key;
 
-    if (intNum >= 16) {
+    if (intNum >= 16U) {
 
-        index = (intNum-16) >> 5;
+        index = (intNum - 16U) >> 5;
 
-        mask = 1 << ((intNum-16) & 0x1f);
+        mask = (UInt)1U << ((intNum - 16U) & 0x1fU);
 
         oldEnableState = Hwi_nvic.ISER[index] & mask;
 
         Hwi_nvic.ISER[index] = mask;
     }
-    else if (intNum == 15) {
-        oldEnableState = Hwi_nvic.STCSR & 0x00000002;
-        Hwi_nvic.STCSR |= 0x00000002;   /* enable SysTick Int */
+    else if (intNum == 15U) {
+        key = Hwi_disable();
+        oldEnableState = Hwi_nvic.STCSR & 0x00000002U;
+        Hwi_nvic.STCSR |= 0x00000002U;   /* enable SysTick Int */
+        Hwi_restore(key);
     }
     else {
         oldEnableState = 0;
     }
-
-    /* suppress inlining of this function */
-#if (defined(__ti__) || defined(__IAR_SYSTEMS_ICC__))
-    asm (" nop");
-#else
-    __asm__ (" nop");
-#endif
 
     return oldEnableState;
 }
@@ -642,50 +643,48 @@ UInt Hwi_enableInterrupt(UInt intNum)
  */
 Void Hwi_restoreInterrupt(UInt intNum, UInt key)
 {
-    UInt index, mask;
+    UInt index, mask, hwiKey;
 
-    if (intNum >= 16) {
+    if (intNum >= 16U) {
 
-        index = (intNum-16) >> 5;
+        index = (intNum - 16U) >> 5;
 
-        mask = 1 << ((intNum-16) & 0x1f);
+        mask = (UInt)1U << ((intNum - 16U) & 0x1fU);
 
-        if (key) {
+        if (key != 0U) {
             Hwi_nvic.ISER[index] = mask;
         }
         else {
             Hwi_nvic.ICER[index] = mask;
         }
     }
-    else if (intNum == 15) {
-        if (key) {
-            Hwi_nvic.STCSR |= 0x00000002;       /* enable SysTick Int */
-        }
-        else {
-            Hwi_nvic.STCSR &= ~0x00000002;      /* disable SysTick Int */
+    else {
+        if (intNum == 15U) {
+            hwiKey = Hwi_disable();
+            if (key != 0U) {
+                Hwi_nvic.STCSR |= 0x00000002U;       /* enable SysTick Int */
+            }
+            else {
+                Hwi_nvic.STCSR &= ~0x00000002U;      /* disable SysTick Int */
+            }
+            Hwi_restore(hwiKey);
         }
     }
-
-    /* suppress inlining of this function */
-#if (defined(__ti__) || defined(__IAR_SYSTEMS_ICC__))
-    asm (" nop");
-#else
-    __asm__ (" nop");
-#endif
 }
 
 /*
  *  ======== Hwi_clearInterrupt ========
  */
+/* REQ_TAG(SYSBIOS-546) */
 Void Hwi_clearInterrupt(UInt intNum)
 {
     UInt index, mask;
 
-    if (intNum >= 16) {
+    if (intNum >= 16U) {
 
-        index = (intNum-16) >> 5;
+        index = (intNum - 16U) >> 5;
 
-        mask = 1 << ((intNum-16) & 0x1f);
+        mask = (UInt)1U << ((intNum - 16U) & 0x1fU);
 
         Hwi_nvic.ICPR[index] = mask;
     }
@@ -699,12 +698,11 @@ Void Hwi_clearInterrupt(UInt intNum)
  */
 Hwi_Handle Hwi_getHandle(UInt intNum)
 {
-    UInt32 *func;
+    if (Hwi_numSparseInterrupts != 0U) {
+        Hwi_VectorFuncPtr *func;
+        func = Hwi_module->vectorTable + intNum;
 
-    func = (UInt32 *)Hwi_module->vectorTableBase + intNum;
-
-    if (Hwi_numSparseInterrupts) {
-        if (*func != (UInt32)Hwi_nullIsrFunc) {
+        if (*func != Hwi_nullIsrFunc) {
             Char *vectorPtr = (Char *)func;
             vectorPtr -= 1;
             UInt32 *sparseTableEntry = (UInt32 *)vectorPtr;
@@ -731,13 +729,13 @@ Void Hwi_plug(UInt intNum, Void *fxn)
     func = (UInt32 *)Hwi_module->vectorTableBase + intNum;
 
     /* guard against writing to static const vector table in flash */
-    if (*func !=  (UInt32)fxn) {
+    if (*func != (UInt32)fxn) {
         *func = (UInt32)fxn;
     }
 }
 
 /*
- *  ======== switchFromBootStack ========
+ *  ======== Hwi_switchFromBootStack ========
  *  Indicate that we are leaving the boot stack and
  *  are about to switch to a task stack.
  *
@@ -770,12 +768,12 @@ Bool Hwi_getStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth)
     /* Check for stack overflow */
     stackOverflow = (*isrSP != (Char)0xbe ? TRUE : FALSE);
 
-    if (computeStackDepth && !stackOverflow) {
+    if ((computeStackDepth != FALSE) && (stackOverflow == FALSE)) {
         /* Compute stack depth */
         do {
             isrSP++;
         } while(*isrSP == (Char)0xbe);
-        stkInfo->hwiStackPeak = stkInfo->hwiStackSize - (SizeT)(--isrSP - (Char *)stkInfo->hwiStackBase);
+        stkInfo->hwiStackPeak = stkInfo->hwiStackSize - (SizeT)(--isrSP - (UInt32)stkInfo->hwiStackBase);
     }
     else {
         stkInfo->hwiStackPeak = 0;
@@ -803,14 +801,16 @@ Bool Hwi_getCoreStackInfo(Hwi_StackInfo *stkInfo, Bool computeStackDepth, UInt c
 Void Hwi_setPriority(UInt intNum, UInt priority)
 {
     /* User interrupt (id >= 16) priorities are set in the IPR registers */
-    if (intNum >= 16) {
-        Hwi_nvic.IPR[intNum-16] = priority;
+    if (intNum >= 16U) {
+        Hwi_nvic.IPR[intNum - 16U] = (UInt8)priority;
     }
     /* System interrupt (id >= 4) priorities are set in the SHPR registers */
-    else if (intNum >= 4) {
-        Hwi_nvic.SHPR[intNum-4] = priority;
+    else {
+        if (intNum >= 4U) {
+            Hwi_nvic.SHPR[intNum - 4U] = (UInt8)priority;
+        }
+        /* System interrupts (id < 4) priorities  are fixed in hardware */
     }
-    /* System interrupts (id < 4) priorities  are fixed in hardware */
 }
 
 /*
@@ -823,10 +823,10 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
 
     /* compensate for encoded intNum */
     if (hwi->intNum < 0) {
-        intNum = 0 - hwi->intNum;
+        intNum = 0U - (UInt)hwi->intNum;
     }
     else {
-        intNum = hwi->intNum;
+        intNum = (UInt)hwi->intNum;
     }
 
     Hwi_disableInterrupt(intNum);
@@ -842,12 +842,12 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
         hwi->priority = 255;
     }
     else {
-        hwi->priority = params->priority;
+        hwi->priority = (UInt8)params->priority;
     }
 
     Hwi_setPriority(intNum, hwi->priority);
 
-    if (params->enableInt) {
+    if (params->enableInt != FALSE) {
         Hwi_enableInterrupt(intNum);
     }
 }
@@ -900,8 +900,8 @@ Void Hwi_setHookContext(Hwi_Object *hwi, Int id, Ptr hookContext)
  */
 Void Hwi_post(UInt intNum)
 {
-    if (intNum >= 16) {
-        Hwi_nvic.STI = intNum - 16;
+    if (intNum >= 16U) {
+        Hwi_nvic.STI = intNum - 16U;
     }
 }
 
@@ -956,10 +956,10 @@ Void Hwi_excHandlerMin(UInt *excStack, UInt lr)
         Hwi_excHookFuncs[coreId](Hwi_module->excContext[coreId]);
     }
 
-    excNum = Hwi_nvic.ICSR & 0xff;
+    excNum = Hwi_nvic.ICSR & 0xffU;
 
     /* distinguish between an interrupt and an exception */
-    if ( excNum < 15 ) {
+    if (excNum < 15U) {
         Error_raise(0, Hwi_E_exception, excNum, excStack[14]);
     }
     else {
@@ -993,7 +993,7 @@ Void Hwi_excHandlerMax(UInt *excStack, UInt lr)
 
     Hwi_disable();
 
-    excNum = Hwi_nvic.ICSR & 0xff;
+    excNum = Hwi_nvic.ICSR & 0xffU;
 
     switch (excNum) {
         case 2:
@@ -1080,7 +1080,7 @@ Void Hwi_excFillContext(UInt *excStack)
 
     switch (excContext->threadType) {
         case BIOS_ThreadType_Task: {
-            if (BIOS_taskEnabled) {
+            if (BIOS_taskEnabled != FALSE) {
                 excContext->threadHandle = (Ptr)Task_self();
                 stack = (Task_self())->stack;
                 stackSize = (Task_self())->stackSize;
@@ -1088,7 +1088,7 @@ Void Hwi_excFillContext(UInt *excStack)
             break;
         }
         case BIOS_ThreadType_Swi: {
-            if (BIOS_swiEnabled) {
+            if (BIOS_swiEnabled != FALSE) {
                 excContext->threadHandle = (Ptr)Swi_self();
                 stack = Hwi_module->isrStackBase;
                 stackSize = (SizeT)Hwi_module->isrStackSize;
@@ -1097,7 +1097,7 @@ Void Hwi_excFillContext(UInt *excStack)
         }
         case BIOS_ThreadType_Hwi: {
             excContext->threadHandle =
-                (Ptr)Hwi_getHandle((UInt)(excContext->psr) & 0xff);
+                (Ptr)Hwi_getHandle((UInt)(excContext->psr) & 0xffU);
             stack = Hwi_module->isrStackBase;
             stackSize = (SizeT)Hwi_module->isrStackSize;
             break;
@@ -1108,6 +1108,8 @@ Void Hwi_excFillContext(UInt *excStack)
             stackSize = (SizeT)Hwi_module->isrStackSize;
             break;
         }
+        default:
+            break;
     }
 
     excContext->threadStackSize = stackSize;
@@ -1118,8 +1120,9 @@ Void Hwi_excFillContext(UInt *excStack)
         Char *from, *to;
         from = stack;
         to = (Char *)Hwi_module->excStack[coreId];
-        while (stackSize--) {
+        while (stackSize > 0U) {
             *to++ = *from++;
+            stackSize--;
         }
     }
 
@@ -1155,23 +1158,23 @@ Void Hwi_excNmi(UInt *excStack)
 /* LCOV_EXCL_START */
 Void Hwi_excHardFault(UInt *excStack)
 {
-    Char *fault;
+    const Char *fault;
     Error_Block eb;
     Error_init(&eb);
 
-    if (Hwi_nvic.HFSR & 0x40000000) {
+    if ((Hwi_nvic.HFSR & 0x40000000U) != 0U) {
         Error_raise(&eb, Hwi_E_hardFault, "FORCED", 0);
         Hwi_excUsageFault(excStack);
         Hwi_excBusFault(excStack);
         Hwi_excMemFault(excStack);
         return;
     }
-    else if (Hwi_nvic.HFSR & 0x80000000) {
+    else if ((Hwi_nvic.HFSR & 0x80000000U) != 0U) {
         Error_raise(&eb, Hwi_E_hardFault, "DEBUGEVT", 0);
         Hwi_excDebugMon(excStack);
         return;
     }
-    else if (Hwi_nvic.HFSR & 0x00000002) {
+    else if ((Hwi_nvic.HFSR & 0x00000002U) != 0U) {
         fault = "VECTBL";
     }
     else {
@@ -1187,21 +1190,21 @@ Void Hwi_excHardFault(UInt *excStack)
 /* LCOV_EXCL_START */
 Void Hwi_excMemFault(UInt *excStack)
 {
-    Char *fault;
+    const Char *fault;
     Error_Block eb;
     Error_init(&eb);
 
-    if (Hwi_nvic.MMFSR) {
-        if (Hwi_nvic.MMFSR & 0x10) {
+    if (Hwi_nvic.MMFSR != 0U) {
+        if ((Hwi_nvic.MMFSR & 0x10U) != 0U) {
             fault = "MSTKERR: Stacking Error (RD/WR failed), Stack Push";
         }
-        else if (Hwi_nvic.MMFSR & 0x08) {
+        else if ((Hwi_nvic.MMFSR & 0x08U) != 0U) {
             fault = "MUNSTKERR: Unstacking Error (RD/WR failed), Stack Pop";
         }
-        else if (Hwi_nvic.MMFSR & 0x02) {
+        else if ((Hwi_nvic.MMFSR & 0x02U) != 0U) {
             fault = "DACCVIOL: Data Access Violation (RD/WR failed)";
         }
-        else if (Hwi_nvic.MMFSR & 0x01) {
+        else if ((Hwi_nvic.MMFSR & 0x01U) != 0U) {
             fault = "IACCVIOL: Instruction Access Violation";
         }
         else {
@@ -1218,24 +1221,24 @@ Void Hwi_excMemFault(UInt *excStack)
 /* LCOV_EXCL_START */
 Void Hwi_excBusFault(UInt *excStack)
 {
-    Char *fault;
+    const Char *fault;
     Error_Block eb;
     Error_init(&eb);
 
-    if (Hwi_nvic.BFSR) {
-        if (Hwi_nvic.BFSR & 0x10) {
+    if (Hwi_nvic.BFSR != 0U) {
+        if ((Hwi_nvic.BFSR & 0x10U) != 0U) {
             fault = "STKERR: Bus Fault caused by Stack Push";
         }
-        else if (Hwi_nvic.BFSR & 0x08) {
+        else if ((Hwi_nvic.BFSR & 0x08U) != 0U) {
             fault = "UNSTKERR: Bus Fault caused by Stack Pop";
         }
-        else if (Hwi_nvic.BFSR & 0x04) {
+        else if ((Hwi_nvic.BFSR & 0x04U) != 0U) {
             fault = "IMPRECISERR: Delayed Bus Fault, exact addr unknown";
         }
-        else if (Hwi_nvic.BFSR & 0x02) {
+        else if ((Hwi_nvic.BFSR & 0x02U) != 0U) {
             fault = "PRECISERR: Immediate Bus Fault, exact addr known";
         }
-        else if (Hwi_nvic.BFSR & 0x01) {
+        else if ((Hwi_nvic.BFSR & 0x01U) != 0U) {
             fault = "IBUSERR: Instruction Access Violation";
         }
         else {
@@ -1252,30 +1255,30 @@ Void Hwi_excBusFault(UInt *excStack)
 /* LCOV_EXCL_START */
 Void Hwi_excUsageFault(UInt *excStack)
 {
-    Char *fault;
+    const Char *fault;
     Error_Block eb;
     Error_init(&eb);
 
-    if (Hwi_nvic.UFSR) {
-        if (Hwi_nvic.UFSR & 0x0001) {
+    if (Hwi_nvic.UFSR != 0U) {
+        if ((Hwi_nvic.UFSR & 0x0001U) != 0U) {
             fault = "UNDEFINSTR: Undefined instruction";
         }
-        else if (Hwi_nvic.UFSR & 0x0002) {
+        else if ((Hwi_nvic.UFSR & 0x0002U) != 0U) {
             fault = "INVSTATE: Invalid EPSR and instruction combination";
         }
-        else if (Hwi_nvic.UFSR & 0x0004) {
+        else if ((Hwi_nvic.UFSR & 0x0004U) != 0U) {
             fault = "INVPC: Invalid PC";
         }
-        else if (Hwi_nvic.UFSR & 0x0008) {
+        else if ((Hwi_nvic.UFSR & 0x0008U) != 0U) {
             fault = "NOCP: Attempting to use co-processor";
         }
-        else if (Hwi_nvic.UFSR & 0x0010) {
+        else if ((Hwi_nvic.UFSR & 0x0010U) != 0U) {
             fault = "STKOF: Stack overflow error has occurred";
         }
-        else if (Hwi_nvic.UFSR & 0x0100) {
+        else if ((Hwi_nvic.UFSR & 0x0100U) != 0U) {
             fault = "UNALIGNED: Unaligned memory access";
         }
-        else if (Hwi_nvic.UFSR & 0x0200) {
+        else if ((Hwi_nvic.UFSR & 0x0200U) != 0U) {
             fault = "DIVBYZERO";
         }
         else {
@@ -1309,24 +1312,24 @@ Void Hwi_excSvCall(UInt *excStack)
 /* LCOV_EXCL_START */
 Void Hwi_excDebugMon(UInt *excStack)
 {
-    Char *fault;
+    const Char *fault;
     Error_Block eb;
     Error_init(&eb);
 
-    if (Hwi_nvic.DFSR) {
-        if (Hwi_nvic.DFSR & 0x00000010) {
+    if (Hwi_nvic.DFSR != 0U) {
+        if ((Hwi_nvic.DFSR & 0x00000010U) != 0U) {
             fault = "EXTERNAL";
         }
-        else if (Hwi_nvic.DFSR & 0x00000008) {
+        else if ((Hwi_nvic.DFSR & 0x00000008U) != 0U) {
             fault = "VCATCH";
         }
-        else if (Hwi_nvic.DFSR & 0x00000004) {
+        else if ((Hwi_nvic.DFSR & 0x00000004U) != 0U) {
             fault = "DWTTRAP";
         }
-        else if (Hwi_nvic.DFSR & 0x00000002) {
+        else if ((Hwi_nvic.DFSR & 0x00000002U) != 0U) {
             fault = "BKPT";
         }
-        else if (Hwi_nvic.DFSR & 0x00000001) {
+        else if ((Hwi_nvic.DFSR & 0x00000001U) != 0U) {
             fault = "HALTED";
         }
         else {
@@ -1378,18 +1381,18 @@ Void Hwi_excNoIsr(UInt *excStack, UInt excNum)
 Void Hwi_excDumpRegs(UInt lr)
 {
     Hwi_ExcContext *excp;
-    Char *ttype;
+    const Char *ttype;
     UInt coreId = 0;
-    Char *name;
+    const Char *name;
 
     excp = Hwi_module->excContext[coreId];
 
     switch (lr) {
-        case 0xfffffff1:
+        case 0xfffffff1U:
             System_printf("Exception occurred in ISR thread at PC = 0x%08x.\n", excp->pc);
             break;
-        case 0xfffffff9:
-        case 0xfffffffd:
+        case 0xfffffff9U:
+        case 0xfffffffdU:
             System_printf("Exception occurred in background thread at PC = 0x%08x.\n", excp->pc);
             break;
         default:
@@ -1400,7 +1403,7 @@ Void Hwi_excDumpRegs(UInt lr)
     switch (excp->threadType) {
         case BIOS_ThreadType_Task: {
             ttype = "Task";
-            if (BIOS_taskEnabled) {
+            if (BIOS_taskEnabled != FALSE) {
                 name = Task_Handle_name(excp->threadHandle);
             }
             else {
@@ -1410,7 +1413,7 @@ Void Hwi_excDumpRegs(UInt lr)
         }
         case BIOS_ThreadType_Swi: {
             ttype = "Swi";
-            if (BIOS_swiEnabled) {
+            if (BIOS_swiEnabled != FALSE) {
                 name = Swi_Handle_name(excp->threadHandle);
             }
             else {
@@ -1428,6 +1431,8 @@ Void Hwi_excDumpRegs(UInt lr)
             name = "main()";
             break;
         }
+        default:
+            break;
     }
 
     if (name == NULL) {
@@ -1505,19 +1510,19 @@ UInt Hwi_dispatchC(Hwi_Irp irp, UInt32 dummy1, UInt32 dummy2, Hwi_Object *hwi)
 
     Hwi_disable();
 
-    if (Hwi_dispatcherTaskSupport) {
+    if (Hwi_dispatcherTaskSupport != FALSE) {
         tskKey = TASK_DISABLE();
     }
 
-    if (Hwi_dispatcherSwiSupport) {
+    if (Hwi_dispatcherSwiSupport != FALSE) {
         swiKey = SWI_DISABLE();
     }
 
     /* set thread type to Hwi */
     prevThreadType = BIOS_setThreadType(BIOS_ThreadType_Hwi);
 
-    if (Hwi_numSparseInterrupts == 0) {
-        UInt intNum = (Hwi_nvic.ICSR & 0x000000ff);
+    if (Hwi_numSparseInterrupts == 0U) {
+        UInt intNum = (Hwi_nvic.ICSR & 0x000000ffU);
         Hwi_Object **dispatchTable = (Hwi_Object **)Hwi_module->dispatchTable;
         hwi = dispatchTable[intNum];
     }
@@ -1538,7 +1543,7 @@ UInt Hwi_dispatchC(Hwi_Irp irp, UInt32 dummy1, UInt32 dummy2, Hwi_Object *hwi)
                (IArg)prevThreadType, (IArg)hwi->intNum, hwi->irp);
 
     /* call the user's isr */
-    if (Hwi_dispatcherAutoNestingSupport) {
+    if (Hwi_dispatcherAutoNestingSupport != FALSE) {
         Hwi_enable();
         (hwi->fxn)(hwi->arg);
         Hwi_disable();
@@ -1572,8 +1577,8 @@ UInt Hwi_dispatchC(Hwi_Irp irp, UInt32 dummy1, UInt32 dummy2, Hwi_Object *hwi)
 Void Hwi_doSwiRestore(UInt swiTskKey)
 {
     /* Run Swi scheduler */
-    if (Hwi_dispatcherSwiSupport) {
-        SWI_RESTORE(swiTskKey & 0xff);    /* Run Swi scheduler */
+    if (Hwi_dispatcherSwiSupport != FALSE) {
+        SWI_RESTORE(swiTskKey & 0xffU);    /* Run Swi scheduler */
     }
 }
 
@@ -1584,7 +1589,7 @@ Void Hwi_doSwiRestore(UInt swiTskKey)
 Void Hwi_doTaskRestore(UInt swiTskKey)
 {
     /* Run Task scheduler */
-    if (Hwi_dispatcherTaskSupport) {
+    if (Hwi_dispatcherTaskSupport != FALSE) {
         TASK_RESTORE(swiTskKey >> 8);   /* returns with ints disabled */
     }
 }

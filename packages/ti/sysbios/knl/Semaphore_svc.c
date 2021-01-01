@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,15 @@
 #include <ti/sysbios/hal/SysCall.h>
 
 #include "package/internal/Semaphore.xdc.h"
+
+Void ti_sysbios_knl_Semaphore_construct_SVC(Semaphore_Struct *obj, Int count,
+        const Semaphore_Params *prms);
+Void ti_sysbios_knl_Semaphore_destruct_SVC(Semaphore_Struct *obj);
+Int ti_sysbios_knl_Semaphore_getCount_SVC(Semaphore_Object *sem);
+Void ti_sysbios_knl_Semaphore_Params_init_SVC(Semaphore_Params *prms);
+Bool ti_sysbios_knl_Semaphore_pend_SVC(Semaphore_Object *sem, UInt32 timeout);
+Void ti_sysbios_knl_Semaphore_post_SVC(Semaphore_Handle handle);
+
 
 /*
  *  ======== ti_sysbios_knl_Semaphore_construct_SVC ========

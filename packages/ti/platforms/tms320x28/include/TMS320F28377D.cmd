@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -143,11 +143,11 @@ SECTIONS
 #ifdef __TI_EABI__
     .bss                : > M01SARAM | LS05SARAM    PAGE = 1
     .sysmem             : > LS05SARAM | M01SARAM    PAGE = 1
-    .data               : > M01SARAM | LS05SARAM    PAGE = 1
 #else
     .ebss               : > M01SARAM | LS05SARAM    PAGE = 1
     .esysmem            : > LS05SARAM | M01SARAM    PAGE = 1
 #endif
+    .data               : > M01SARAM | LS05SARAM    PAGE = 1
     .cio                : > LS05SARAM | M01SARAM    PAGE = 1
 
     /* Initalized sections go in Flash */

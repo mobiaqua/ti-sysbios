@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,14 @@ int clock_gettime(clockid_t clockId, struct timespec *ts)
     if (clockId == CLOCK_REALTIME) {
         Seconds_getTime(&t);
 
+#if defined(_TARGET_DEFAULTS_TO_TIME64) || \
+    (defined(__TI_TIME_USES_64) && __TI_TIME_USES_64)
+        ts->tv_sec = t.secsHi;
+        ts->tv_sec = ts->tv_sec << 32;
+        ts->tv_sec = ts->tv_sec | t.secs;
+#else
         ts->tv_sec = t.secs;
+#endif
         ts->tv_nsec = t.nsecs;
     }
     else {
@@ -251,7 +258,14 @@ int clock_settime(clockid_t clock_id, const struct timespec *ts)
 {
     Seconds_Time its;
 
+#if defined(_TARGET_DEFAULTS_TO_TIME64) || \
+    (defined(__TI_TIME_USES_64) && __TI_TIME_USES_64)
+    its.secsHi = (UInt32)(ts->tv_sec >> 32);
     its.secs = (UInt32)(ts->tv_sec);
+#else
+    its.secsHi = 0;
+    its.secs = (UInt32)(ts->tv_sec);
+#endif
     its.nsecs = (UInt32)(ts->tv_nsec);
     Seconds_setTime(&its);
 }

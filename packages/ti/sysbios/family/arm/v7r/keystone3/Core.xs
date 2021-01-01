@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ var Core = null;
 var Build = null;
 var halCore = null;
 var Reset = null;
+var Cache = null;
 
 /*
  * ======== getAsmFiles ========
@@ -68,6 +69,8 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
     };
 
     deviceTable["J7.*"]       = deviceTable["AM65.*"];
+    deviceTable["TPR12"]      = deviceTable["AM65.*"];
+    deviceTable["AM64.*"]     = deviceTable["AM65.*"];
 }
 
 /*
@@ -157,6 +160,25 @@ function module$use()
         Core.$logWarning("Reset function has been changed in the cfg script" +
             " and SYS/BIOS's reset function has been overriden.", this,
             "Hwi.resetFunc");
+    }
+
+    Cache = xdc.module('ti.sysbios.family.arm.v7r.Cache');
+    /*
+     * We typically need to set DLFO bit for keystone3 devices.  Since no
+     * module or package code currently writes Cache.disableLFOptimization,
+     * if it has been written then it was written by user config and we
+     * should honor that value.  If not written, the "default" for keystone
+     * devices should apply (which is to set DLFO).  Keystone3 devices need
+     * this since a problem was discovered concerning the AXI bridge when
+     * the LF optimization is not disabled.
+     */
+    if (Cache.$written("disableLFOptimization")) {
+        if (Cache.disableLFOptimization) {
+            Reset.fxns[Reset.fxns.length++] = Cache.setDLFO;
+        }
+    }
+    else {
+        Reset.fxns[Reset.fxns.length++] = Cache.setDLFO;
     }
 
     if ((Core.numCores == 1) && (Core.id == 0)) {

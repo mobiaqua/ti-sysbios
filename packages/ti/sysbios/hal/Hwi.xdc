@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -264,8 +264,10 @@ import xdc.runtime.Error;
  *
  */
 
+/* REQ_TAG(SYSBIOS-544) */
 @ModuleStartup      /* generate a call to startup function */
 
+/* REQ_TAG(SYSBIOS-543) */
 module Hwi inherits ti.sysbios.interfaces.IHwi
 {
     /*!

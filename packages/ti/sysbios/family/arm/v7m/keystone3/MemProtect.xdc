@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ package ti.sysbios.family.arm.v7m.keystone3;
  *  ======== MemProtect ========
  *  Memory protection manager.
  */
+/* REQ_TAG(SYSBIOS-1009) */
 @CustomHeader
 module MemProtect
 {

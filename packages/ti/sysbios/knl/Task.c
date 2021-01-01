@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
 #define Task_moduleStateCheckValue   \
     (ti_sysbios_knl_Task_moduleStateCheckValue)
 
-#ifdef __ti__
+#if defined(__ti__) && !defined(__clang__)
 /* disable unused local variable warning during optimized compile */
 #pragma diag_suppress=179
 #endif
@@ -78,12 +78,16 @@ extern UInt32 ti_sysbios_knl_Task_moduleStateCheckValue;
  *
  *  Must be called with interrupts disabled.
  */
-/* REQ_TAG(SYSBIOS-456) */
+/* REQ_TAG(SYSBIOS-456), REQ_TAG(SYSBIOS-570) */
 Void Task_schedule(Void)
 {
     Queue_Handle maxQ;
     Task_Object *prevTask;
     Task_Object *curTask;
+#if defined(ti_sysbios_knl_Task_minimizeLatency__D) \
+    && (ti_sysbios_knl_Task_minimizeLatency__D == TRUE)
+    volatile UInt delay;
+#endif
 #ifdef ti_sysbios_knl_Task_ENABLE_SWITCH_HOOKS
     Int i;
 #endif
@@ -111,7 +115,7 @@ Void Task_schedule(Void)
                 Task_module->curTaskPrivileged = curTask->privileged;
             }
 
-            if (Task_checkStackFlag) {
+            if (Task_checkStackFlag != FALSE) {
                 /* UNREACH.GEN */
                 Task_checkStacks(prevTask, curTask);
             }
@@ -138,6 +142,13 @@ Void Task_schedule(Void)
 #elif defined(ti_sysbios_knl_Task_minimizeLatency__D) \
     && (ti_sysbios_knl_Task_minimizeLatency__D == TRUE)
             Hwi_enable();
+            for (delay = 0; delay < 1U; delay = delay + 1U) {
+                /*
+                 * There's an issue with the C6x optimzer where a back-to-back
+                 * enable/disable is not enough to open the window for an ISR.
+                 * This short 'volatile delay' loop works around that issue.
+                 */
+            }
             Hwi_disable();
 #endif
             if ((BIOS_mpeEnabled == TRUE) &&
@@ -148,7 +159,7 @@ Void Task_schedule(Void)
             Task_SupportProxy_swap((Ptr)&prevTask->context,
                             (Ptr)&curTask->context);
         }
-    } while (Task_module->workFlag);
+    } while (Task_module->workFlag != FALSE);
 }
 
 /*
@@ -160,7 +171,7 @@ Void Task_schedule(Void)
  */
 Void Task_enter(Void)
 {
-    if (Task_module->workFlag) {
+    if (Task_module->workFlag != FALSE) {
         Task_schedule();
     }
     Task_module->locked = FALSE;
@@ -185,7 +196,7 @@ Int Task_Module_startup (Int phase)
     /*
      * Need to wait for SupportProxy. Other modules safe.
      */
-    if (BIOS_taskEnabled) {  /* minimize code foot print if Task is disabled */
+    if (BIOS_taskEnabled != FALSE) {  /* minimize code foot print if Task is disabled */
         Int i;
         UInt j;
 
@@ -194,7 +205,7 @@ Int Task_Module_startup (Int phase)
          * Startup_rtsDone() is called because we do Error_check() in
          * instanceStartup
          */
-        if (Task_SupportProxy_Module_startupDone() ) {
+        if (Task_SupportProxy_Module_startupDone() != FALSE) {
 
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
             for (i = 0; i < Task_hooks.length; i++) {
@@ -204,7 +215,7 @@ Int Task_Module_startup (Int phase)
             }
 #endif
 
-            if (Task_moduleStateCheckFlag) {
+            if (Task_moduleStateCheckFlag != FALSE) {
                 Task_moduleStateCheckValue =
                     /* UNREACH.GEN */
                     Task_moduleStateCheckValueFxn(Task_module);
@@ -271,7 +282,7 @@ Void Task_startCore(UInt coreId)
     Task_module->curQ = maxQ;
     Task_module->curTask = (Task_Handle)Queue_head(maxQ);
     /* CWARN.CONSTCOND.IF */
-    if (BIOS_mpeEnabled) {
+    if (BIOS_mpeEnabled != FALSE) {
         Task_module->curTaskPrivileged = Task_module->curTask->privileged;
     }
 
@@ -281,7 +292,7 @@ Void Task_startCore(UInt coreId)
     /* Signal that we are entering task thread mode */
     (Void)BIOS_setThreadType(BIOS_ThreadType_Task);
 
-    if (Task_checkStackFlag) {
+    if (Task_checkStackFlag != FALSE) {
         /* UNREACH.GEN */
         Task_checkStacks(NULL, Task_module->curTask);
     }
@@ -310,7 +321,7 @@ Void Task_startCore(UInt coreId)
     Hwi_switchFromBootStack();
 
     /* CWARN.CONSTCOND.IF */
-    if (BIOS_mpeEnabled) {
+    if (BIOS_mpeEnabled != FALSE) {
         MemProtect_switch((MemProtect_Struct *)Task_module->curTask->domain);
     }
 
@@ -340,11 +351,27 @@ Bool Task_enabled(Void)
  */
 UInt Task_disable(Void)
 {
+    /*
+     * The following Read-Modify-Write of 'locked' does not
+     * require atomic execution. If locked is 'FALSE' on entry
+     * all other pre-empting manipulations of 'locked' will
+     * restore 'locked' to 'FALSE' prior to returning to this
+     * thread. Therefore, if the fetched value of 'key' is FALSE,
+     * even though many pre-empting operations may manipulate
+     * 'locked' prior to the next statement setting it to TRUE,
+     * by design, 'locked' will have been set back to 'FALSE'
+     * prior to returning to this thread.
+     * The same logic applies to 'locked' having a value of
+     * TRUE on entry. All other pre-empting operations will
+     * reset 'locked' to TRUE prior to returning to this thread.
+     * Consequently, the return value of Task_disable() will always
+     * match the on-entry state of 'locked'.
+     */
     UInt key = (UInt)Task_module->locked;
 
     Task_module->locked = TRUE;
 
-    if (Task_moduleStateCheckFlag) {
+    if (Task_moduleStateCheckFlag != FALSE) {
         /* UNREACH.GEN */
         if (Task_moduleStateCheckFxn(Task_module,
                                      Task_moduleStateCheckValue) != 0) {
@@ -418,7 +445,7 @@ Void Task_checkStacks(Task_Handle oldTask, Task_Handle newTask)
 {
     UInt oldTaskStack; /* used to obtain current (oldTask) stack address */
 
-    if (Task_objectCheckFlag) {
+    if (Task_objectCheckFlag != FALSE) {
         /* UNREACH.GEN */
         if (oldTask != NULL) {
             if (Task_objectCheckFxn(oldTask, oldTask->checkValue) != 0) {
@@ -528,7 +555,7 @@ Void Task_exit(Void)
         /* UNREACH.GEN */
         dynTask = Task_Object_first();
 
-        while (dynTask) {
+        while (dynTask != NULL) {
             if (tsk == dynTask) {
                 tsk->readyQ = Task_Module_State_terminatedQ();
                 Queue_put(tsk->readyQ, &tsk->qElem);
@@ -634,7 +661,7 @@ Void Task_sleep(UInt32 timeout)
      * BIOS_clockEnabled check is here to eliminate Clock module
      * references in the custom library
      */
-    if (BIOS_clockEnabled) {
+    if (BIOS_clockEnabled != FALSE) {
         hwiKey = Hwi_disable();
         /* remove Clock object from Clock Q */
         Clock_removeI(elem.clockHandle);
@@ -656,7 +683,7 @@ Void Task_yield(Void)
     tskKey = Task_disable();
     hwiKey = Hwi_disable();
 
-    if (Task_module->curQ) {
+    if (Task_module->curQ != NULL) {
         /* move current task to end of curQ */
         Queue_enqueue(Task_module->curQ,
             Queue_dequeue(Task_module->curQ));
@@ -701,7 +728,10 @@ Task_Handle Task_getIdleTaskHandle(UInt coreId)
 /*
  *  ======== Task_Instance_init ========
  */
-/* REQ_TAG(SYSBIOS-575), REQ_TAG(SYSBIOS-463) */
+/*
+ * REQ_TAG(SYSBIOS-575), REQ_TAG(SYSBIOS-463), REQ_TAG(SYSBIOS-636)
+ * REQ_TAG(SYSBIOS-570)
+ */
 Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
                 const Task_Params *params, Error_Block *eb)
 {
@@ -720,7 +750,7 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
                    Task_A_badPriority);
 
     /* CWARN.CONSTCOND.IF */
-    if (BIOS_mpeEnabled) {
+    if (BIOS_mpeEnabled != FALSE) {
         /* Check if Task object in kernel memory space */
         if (MemProtect_isDataInKernelSpace((Ptr)tsk,
             sizeof(Task_Object)) == FALSE) {
@@ -772,7 +802,7 @@ Int Task_Instance_init(Task_Object *tsk, Task_FuncPtr fxn,
         tsk->stackHeap = (xdc_runtime_IHeap_Handle)(-1);
     }
     else {
-        if (BIOS_runtimeCreatesEnabled) {
+        if (BIOS_runtimeCreatesEnabled != FALSE) {
             if (align != 0U) {
                 /*
                  * round stackSize up to the nearest multiple of the alignment.
@@ -895,7 +925,7 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
 
     tsk->pendElem = NULL;
 
-    if (Task_objectCheckFlag) {
+    if (Task_objectCheckFlag != FALSE) {
         /* UNREACH.GEN */
         if (Task_objectCheckValueFxn == Task_getObjectCheckValue) {
             tsk->checkValue = Task_getObjectCheckValue(tsk);
@@ -949,6 +979,7 @@ Int Task_postInit(Task_Object *tsk, Error_Block *eb)
 /*
  *  ======== Task_Instance_finalize ========
  */
+/* REQ_TAG(SYSBIOS-636) */
 Void Task_Instance_finalize(Task_Object *tsk, Int status)
 {
 #ifndef ti_sysbios_knl_Task_DISABLE_ALL_HOOKS
@@ -987,7 +1018,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
             /* remove task from its ready list */
             Queue_remove(&tsk->qElem);
             /* if last task in readyQ, remove corresponding bit in curSet */
-            if (Queue_empty(tsk->readyQ)) {
+            if (Queue_empty(tsk->readyQ) != FALSE) {
                 Task_module->curSet &= ~tsk->mask;
             }
 
@@ -1032,7 +1063,7 @@ Void Task_Instance_finalize(Task_Object *tsk, Int status)
         return;
     }
 
-    if (BIOS_runtimeCreatesEnabled) {
+    if (BIOS_runtimeCreatesEnabled != FALSE) {
         /* free stack if it was allocated dynamically */
         if (tsk->stackHeap != (xdc_runtime_IHeap_Handle)(-1)) {
             Memory_free(tsk->stackHeap, tsk->stack, tsk->stackSize);
@@ -1132,6 +1163,8 @@ Ptr Task_getHookContext(Task_Object *tsk, Int id)
 /* REQ_TAG(SYSBIOS-454) */
 Void Task_setHookContext(Task_Object *tsk, Int id, Ptr hookContext)
 {
+    Assert_isTrue(((id < Task_hooks.length) && (id >= 0)), Task_A_badContextId);
+
     tsk->hookEnv[id] = hookContext;
 }
 
@@ -1212,7 +1245,7 @@ Int Task_setPri(Task_Object *tsk, Int priority)
         Queue_remove(&tsk->qElem);
 
         /* if last task in readyQ, remove corresponding bit in curSet */
-        if (Queue_empty(tsk->readyQ)) {
+        if (Queue_empty(tsk->readyQ) != FALSE) {
             Task_module->curSet &= ~tsk->mask;
         }
 
@@ -1316,7 +1349,7 @@ Void Task_blockI(Task_Object *tsk)
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
 
-    if (Task_objectCheckFlag) {
+    if (Task_objectCheckFlag != FALSE) {
         /* UNREACH.GEN */
         if (Task_objectCheckFxn(tsk, tsk->checkValue) != 0) {
             Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
@@ -1329,7 +1362,7 @@ Void Task_blockI(Task_Object *tsk)
     Queue_remove(&tsk->qElem);
 
     /* if last task in readyQ, remove corresponding bit in curSet */
-    if (Queue_empty(readyQ)) {
+    if (Queue_empty(readyQ) != FALSE) {
         Task_module->curSet = curset & ~mask;
     }
     if (Task_module->curTask == tsk) {
@@ -1370,7 +1403,7 @@ Void Task_unblockI(Task_Object *tsk, UInt hwiKey)
     UInt curset = Task_module->curSet;
     UInt mask = tsk->mask;
 
-    if (Task_objectCheckFlag) {
+    if (Task_objectCheckFlag != FALSE) {
         /* UNREACH.GEN */
         if (Task_objectCheckFxn(tsk, tsk->checkValue) != 0) {
             Error_raise(NULL, Task_E_objectCheckFailed, tsk, 0);
@@ -1415,9 +1448,12 @@ Void Task_allBlockedFunction(Void)
     }
     else if (Task_allBlockedFunc == NULL) {
         (Void)Hwi_enable();
-        /* Guarantee that interrupts are enabled briefly */
         for (delay = 0; delay < 1U; delay = delay + 1U) {
-           ;
+            /*
+             * There's an issue with the C6x optimzer where a back-to-back
+             * enable/disable is not enough to open the window for an ISR.
+             * This short 'volatile delay' loop works around that issue.
+             */
         }
         (Void)Hwi_disable();
     }
@@ -1472,7 +1508,7 @@ Int Task_moduleStateCheck(Task_Module_State *moduleState, UInt32 checkValue)
     if (((moduleState->curQ != NULL) &&
         ((moduleState->curQ < (Queue_Handle)(moduleState->readyQ)) ||
          (moduleState->curQ > (Queue_Handle)((UInt8 *)(moduleState->readyQ) +
-         (UInt)(Task_numPriorities*(2U*sizeof(Ptr)))))))) {
+         ((UInt)Task_numPriorities * (UInt)(2U * sizeof(Ptr)))))))) {
         return (-1);
     }
 
@@ -1529,7 +1565,6 @@ UInt32 Task_getObjectCheckValue(Task_Handle taskHandle)
 #if defined(__IAR_SYSTEMS_ICC__)
                (UInt64)taskHandle->fxn +
 #else
-               /* MISRA.CAST.FUNC_PTR.2012 */
                (uintptr_t)taskHandle->fxn +
 #endif
                taskHandle->arg0 +

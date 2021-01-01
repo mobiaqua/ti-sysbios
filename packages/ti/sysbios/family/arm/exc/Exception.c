@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ Void Exception_excHandler(UInt *excStack, UInt pc)
     excContextp->pc  = (Ptr)pc;                 /* pc */
     excContextp->psr = (Ptr)excStack[0];        /* psr */
 
-    excContextp->type = (Exception_Type)(excStack[3] &0x1f);    /* psr */
+    excContextp->type = (Exception_Type)(excStack[3] &0x1f);
 
     excContextp->threadType = BIOS_getThreadType();
 

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /* J721E.cmd                                                                  */
 /*                                                                            */
-/* (c) Texas Instruments 2019, All rights reserved.                           */
+/* (c) Texas Instruments 2019-2020, All rights reserved.                      */
 /*                                                                            */
 
 -c
 -heap  0x20000
--stack 0x60000
+-stack 0x20000
 --args 0x1000
 
 /* Set L1D, L1P and L2 Cache Sizes */
@@ -17,6 +17,7 @@ ti_sysbios_family_c7x_Cache_l2Size = 0;
 MEMORY
 {
         MSMC:   o = 70000000h   l = 00800000h
+        DDR:    o = 80000000h   l = 80000000h
 }
 
 SECTIONS
@@ -29,7 +30,7 @@ SECTIONS
 
     .cinit      >       MSMC  /* could be part of const */
     .init_array >       MSMC  /* C++ initializations */
-    .stack      >       MSMC
+    .stack      >       MSMC ALIGN(0x10000)
     .args       >       MSMC
     .cio        >       MSMC
     .const      >       MSMC

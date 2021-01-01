@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,17 @@
     .section .c_int00, "ax"
     .func _c_int00
 _c_int00:
+
+#if defined(ti_sysbios_family_arm_v8a_Core_setL2DataRamLatency__D) && \
+    (ti_sysbios_family_arm_v8a_Core_setL2DataRamLatency__D != -1)
+    mrs     x0, s3_1_c11_c0_2    /* read L2CTLR_EL1 */
+    bic     x0, x0, #0x0007      /* clear bits [2:0] */
+    mov     x1, #ti_sysbios_family_arm_v8a_Core_setL2DataRamLatency__D
+    and     x1, x1, #0x0007      /* isolate bits [2:0] */
+    orr     x0, x0, x1
+    msr     s3_1_c11_c0_2, x0    /* write L2CTLR_EL1 */
+#endif
+
     mrs     x0, currentel
     cmp     x0, #0xC
     bne     2f

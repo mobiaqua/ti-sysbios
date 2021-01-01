@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef ti_sysbios_family_arm_v7m_SysCall__epilogue__include
+#define ti_sysbios_family_arm_v7m_SysCall__epilogue__include
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -53,6 +56,23 @@ extern "C" {
  */
 #define ti_sysbios_family_arm_v7m_SysCall_restorePrivMode() asm(" svc #2 ");
 
+#elif defined(__GNUC__)
+
+/*
+ *  ======== SysCall_enterPrivMode ========
+ */
+#define ti_sysbios_family_arm_v7m_SysCall_enterPrivMode() __asm__(" svc #0 ");
+
+/*
+ *  ======== SysCall_enterUnprivMode ========
+ */
+#define ti_sysbios_family_arm_v7m_SysCall_enterUnprivMode() __asm__(" svc #1 ");
+
+/*
+ *  ======== SysCall_restorePrivMode ========
+ */
+#define ti_sysbios_family_arm_v7m_SysCall_restorePrivMode() __asm__(" svc #2 ");
+
 #endif /* defined(__ti__) */
 
 #endif /* defined(xdc_target__isaCompatible_v7M) || defined(xdc_target__isaCompatible_v7M4) */
@@ -60,3 +80,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ti_sysbios_family_arm_v7m_SysCall__epilogue__include */

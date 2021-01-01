@@ -222,8 +222,6 @@ IArg Core_lock()
  */
 Void Core_unlock()
 {
-    // TODO Check BIOS.swiEnabled and BIOS.taskEnabled before using
-    //      Task_enabled() and Swi_enabled() APIs.
     if (Task_enabled() && Swi_enabled()) {
         GateSmp_leave(Core_gate, 0);
     }

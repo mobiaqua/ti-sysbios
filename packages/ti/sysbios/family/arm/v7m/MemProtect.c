@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -93,6 +93,11 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
         baseAddress = acl[i].baseAddress;
         length = acl[i].length;
 
+        /* Verify length is a power of 2 */
+        if (length && (length & (length - 1)) != 0) {
+            return (-5);
+        }
+
         /* verify base address is a multiple of length */
         if (((UInt32)baseAddress & (length - 1)) != 0) {
             return (-3);
@@ -100,9 +105,7 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 
         flags = acl[i].flags;
 
-#if defined(__TI_COMPILER_VERSION__)
         regionSize = (30 - __clz(length)) << 1;
-#endif
 
         regionAttrs = MemProtect_parseFlags(flags);
         if (regionAttrs == (~0)) {
@@ -126,7 +129,13 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
 
 Int MemProtect_destructDomain(MemProtect_Struct *obj)
 {
-    return (0);
+    /*
+     * This API is provided for completeness and possible future
+     * expansion. It is not used in practice. Memory protection
+     * domains are constructed at boot time and never changed
+     * during runtime. We always return an error status.
+     */
+    return (-1);
 }
 
 UInt32 MemProtect_parseFlags(UInt32 flags)
@@ -272,9 +281,7 @@ Void MemProtect_programMpuEntry(UInt8 id, UInt32 begin, UInt32 end,
 
     baseAddress = begin;
     regionSize = end - begin;
-#if defined(__TI_COMPILER_VERSION__)
     regionSize = (30 - __clz(regionSize)) << 1;
-#endif
     regionAttrs = MemProtect_parseFlags(flags);
 
     rbar = (baseAddress & (~0x1F)) | MPU_VALID | (i & MPU_REGION_MASK);

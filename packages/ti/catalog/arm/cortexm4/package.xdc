@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,8 @@ package ti.catalog.arm.cortexm4 [1,0,0] {
     module MSP432;
     module MSP432E;
     module CC13xx;
+    module CC14xx;
     module CC26xx;
+    module CC27xx;
     module CortexM;
 }

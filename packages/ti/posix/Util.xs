@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2017-2019 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,15 +41,23 @@ function incPath(targetName)
 {
     var incs = new Array();
     var cgt = "";
+    var match = null;
 
-    /* extract the first word of the target package name */
-    var match = targetName.match(/^(\w+)\.targets/);
+    /* special case ticlang */
+    if (targetName.match(/^ti\.targets\.arm\.clang/)) {
+        /* wonky, but matches the syntax of .match() */
+        match = ["ignore", "ticlang"];
+    } else {
+        /* extract the first word of the target package name */
+        match = targetName.match(/^(\w+)\.targets/);
+    }
 
     /* compute the include path suffix */
     switch (match != null ? match[1] : "") {
-        case "gnu": cgt = "gcc"; break;
-        case "iar": cgt = "iar"; break;
-        case "ti":  cgt = "ccs"; break;
+        case "gnu":      cgt = "gcc";     break;
+        case "iar":      cgt = "iar";     break;
+        case "ti":       cgt = "ccs";     break;
+        case "ticlang":  cgt = "ticlang"; break;
         default:
             cgt = null;
     }

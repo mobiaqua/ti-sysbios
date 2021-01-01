@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,11 +40,16 @@ var Core = null;
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "AM65.*": {
-            baseClusterId : 0
+            baseClusterId : 0,
+            setL2DataRamLatency : -1
+        },
+        "J7.*": {
+            baseClusterId : 0,
+            setL2DataRamLatency : 0x2
         }
     };
 
-    deviceTable["J7.*"]   = deviceTable["AM65.*"];
+    deviceTable["AM64.*"] = deviceTable["J7.*"];
 }
 
 /*
@@ -85,6 +90,7 @@ function module$meta$init()
         if (device == Program.cpu.deviceName ||
             Program.cpu.deviceName.match(device)) {
             Core.baseClusterId = deviceTable[device].baseClusterId;
+            Core.setL2DataRamLatency = deviceTable[device].setL2DataRamLatency;
             return;
         }
     }
@@ -120,4 +126,7 @@ function module$static$init(mod, params)
     Build.ccArgs.$add(
         "-Dti_sysbios_family_arm_v8a_Core_baseClusterId__D=" +
         Core.baseClusterId);
+    Build.ccArgs.$add(
+        "-Dti_sysbios_family_arm_v8a_Core_setL2DataRamLatency__D=" +
+        Core.setL2DataRamLatency);
 }

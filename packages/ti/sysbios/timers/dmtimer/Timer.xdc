@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -380,6 +380,16 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      *  operating frequency equals the frequency at which BIOS expects the 
      *  timers to operate.  This check is performed by checking the timer count
      *  rate against the {@link xdc.runtime.Timestamp} count rate.
+     *
+     *  @a(NOTE)
+     *  The frequency check operation is performed with interrupts disabled in
+     *  order to obtain an accurate measurement of the actual clock frequency.
+     *  At low input clock frequencies such as 32,768Hz, this can result in
+     *  a very long period of time with interrupts disabled. As the frequency
+     *  check is only performed at Timer create/construct time, the latency
+     *  effect can be minimized by performing all runtime Timer creates/constructs
+     *  within main() or within a Task when it is known to be safe to incur the
+     *  the potential latency hit.
      */
     config Bool checkFrequency = true;
 

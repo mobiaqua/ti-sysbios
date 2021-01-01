@@ -6,8 +6,8 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>The HeapNull module provides a "null" heap manager that can be used to satisfy linkage requirements of applications that reference the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module but run in a mode that never requires runtime allocated memory.
-        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
+        <p>The HeapNull module provides a "null" heap manager that can be used to satisfy linkage requirements of applications that reference the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module but run in a mode that never requires runtime allocated memory.
+        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
         <p> </p>
       </form></td>
   </tr>

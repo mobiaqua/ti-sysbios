@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,8 @@ function getCFiles(targetName)
 {
     switch(targetName) {
         case "ti.targets.arm.elf.M3":
+        case "gnu.targets.arm.M3":
+        case "ti.targets.arm.clang.M3":
             return (["MemProtect.c"]);
         default:
             return (null);
@@ -76,6 +78,4 @@ function module$static$init(mod, params)
  */
 function module$use()
 {
-    Startup = xdc.useModule('xdc.runtime.Startup');
-    Startup.firstFxns.$add('&ti_sysbios_hal_MemProtect_init');
 }

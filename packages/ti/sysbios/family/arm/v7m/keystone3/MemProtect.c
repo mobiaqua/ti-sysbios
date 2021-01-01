@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,14 +32,16 @@
 /*
  *  ======== MemProtect.c ========
  */
+/* REQ_TAG(SYSBIOS-1009) */
 
 #include <xdc/std.h>
 
 #include <ti/sysbios/hal/Hwi.h>
+/* REQ_TAG(SYSBIOS-571) - module startup implemented in header */
 #include <ti/sysbios/hal/MemProtect.h>
 
-#define MemProtect_USER_RW_MASK     0x00000003
-#define MemProtect_PRIV_RW_MASK     0x00000030
+#define MemProtect_USER_RW_MASK     0x00000003U
+#define MemProtect_PRIV_RW_MASK     0x00000030U
 
 #define MemProtect_domainCreateDone ti_sysbios_hal_MemProtect_domainCreateDone
 
@@ -67,10 +69,15 @@ static Bool MemProtect_domainCreateDone;
 /*
  *  ======== MemProtect_constructDomain ========
  */
+/*
+ * REQ_TAG(SYSBIOS-1011), REQ_TAG(SYSBIOS-1012), REQ_TAG(SYSBIOS-1013),
+ * REQ_TAG(SYSBIOS-1014), REQ_TAG(SYSBIOS-1015), REQ_TAG(SYSBIOS-1016),
+ * REQ_TAG(SYSBIOS-1017)
+ */
 Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
     UInt16 aclLength)
 {
-    UInt8  i;
+    UInt16 i;
     UInt   key;
     UInt32 flags;
 
@@ -104,17 +111,19 @@ Int MemProtect_constructDomain(MemProtect_Struct *obj, MemProtect_Acl *acl,
          * If number ACL entries exceeds number of available Firewall slots,
          * the API will return FALSE.
          */
-        if (!DMSC_programFirewall(acl[i].baseAddress, acl[i].length, flags)) {
+        if (DMSC_programFirewall(acl[i].baseAddress, acl[i].length, flags) == FALSE) {
             return (-2);
         }
     }
 
+    MemProtect_domainCreateDone = FALSE;
     return (0);
 }
 
 /*
  *  ======== MemProtect_destructDomain ========
  */
+/* REQ_TAG(SYSBIOS-1018) */
 Int MemProtect_destructDomain(MemProtect_Struct *obj)
 {
     return (0);
@@ -123,8 +132,13 @@ Int MemProtect_destructDomain(MemProtect_Struct *obj)
 /*
  *  ======== MemProtect_init ========
  */
+/* REQ_TAG(SYSBIOS-1010) */
+#if (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
+Void __attribute__ ((weak)) MemProtect_init()
+#else
 #pragma WEAK(MemProtect_init)
 Void MemProtect_init()
+#endif
 {
     UInt32 flags;
     SizeT regionSize;
@@ -199,9 +213,11 @@ Bool MemProtect_isDataInKernelSpace(Ptr obj, SizeT size)
         (end <= (Ptr)&_privileged_bss_end)) {
         ret = TRUE;
     }
-    else if ((begin >= (Ptr)&_privileged_data_begin) &&
-             (end <= (Ptr)&_privileged_data_end)) {
-        ret = TRUE;
+    else {
+        if ((begin >= (Ptr)&_privileged_data_begin) &&
+                (end <= (Ptr)&_privileged_data_end)) {
+            ret = TRUE;
+        }
     }
 
     return (ret);
@@ -209,12 +225,12 @@ Bool MemProtect_isDataInKernelSpace(Ptr obj, SizeT size)
 
 #if defined(__IAR_SYSTEMS_ICC__)
 __weak Void DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
-#elif defined(__GNUC__) && !defined(__ti__)
+#elif (defined(__GNUC__) && !defined(__ti__)) || (defined(__GNUC__) && defined(__clang__))
 Bool __attribute__((weak)) DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
 #else
 #pragma WEAK (DMSC_programFirewall)
 Bool DMSC_programFirewall(Ptr baseAddress, SizeT size, UInt32 flags)
 #endif
 {
-    return (FALSE);
+    return (TRUE);
 }

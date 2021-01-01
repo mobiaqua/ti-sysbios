@@ -156,7 +156,7 @@ Ptr TaskSupport_buildTaskStack(Ptr stackBase, SizeT stackSize, Task_FuncPtr fxn,
     stack[--idx] = (~0);
     stack[--idx] = (~0);
 
-#if (defined(__ti__) && defined(__TI_VFP_SUPPORT__)) || \
+#if (defined(__ti__) && defined(__ARM_FP)) || \
     (defined(__IAR_SYSTEMS_ICC__) && defined(__ARMVFP__)) || \
     (defined(__GNUC__) && !defined(__ti__) && \
      defined(__VFP_FP__) && !defined(__SOFTFP__)) || \

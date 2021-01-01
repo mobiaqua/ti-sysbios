@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -186,6 +186,12 @@ function module$meta$init()
     Cache.common$.fxntab = false;
 }
 
+function module$static$init(mod, params)
+{
+    mod.L1DCFG = Cache.initSize.l1dSize;
+    mod.L2CFG = Cache.initSize.l2Size;
+}
+
 /*
  *  ======== module$use ========
  */
@@ -193,9 +199,12 @@ function module$use()
 {
     xdc.useModule("ti.sysbios.hal.Hwi");
     xdc.useModule("ti.sysbios.family.c7x.Mmu");
+    Hwi = xdc.useModule("ti.sysbios.family.c7x.Hwi");
     Reset = xdc.useModule("xdc.runtime.Reset");
 
-    Reset.fxns[Reset.fxns.length++] = Cache.startup;
+    if (!Hwi.bootToNonSecure) {
+        Reset.fxns[Reset.fxns.length++] = Cache.startup;
+    }
 
     /*
      *  Override the original sizes if we find the cache settings
@@ -333,133 +342,30 @@ function convertToUInt32(value)
 function viewInitModule(view, mod)
 {
     var Program = xdc.useModule('xdc.rov.Program');
-    var ScalarStructs = xdc.useModule('xdc.rov.support.ScalarStructs');
-    var cacheModCfg = Program.getModuleConfig('ti.sysbios.family.c7x.Cache');
+    var Cache = xdc.useModule('ti.sysbios.family.c7x.Cache');
+    var cacheRawView;
 
-    /* Retrieve the L1P cache size */
     try {
-        var L1PCacheSize = Program.fetchStruct(ScalarStructs.S_UInt32$fetchDesc,
-                                               cacheModCfg.L1PCFG,
-                                               false);
+        cacheRawView = Program.scanRawView('ti.sysbios.family.c7x.Cache');
     }
     catch (e) {
-        print("Caught exception trying to retrieve L1P cache size: " + e);
+        return null;
     }
 
     /* Retrieve the L1D cache size */
     try {
-        var L1DCacheSize = Program.fetchStruct(ScalarStructs.S_UInt32$fetchDesc,
-                                               cacheModCfg.L1DCFG,
-                                               false);
+        var modState = Program.fetchStruct(Cache.Module_State$fetchDesc,
+                                            cacheRawView.modState.$addr,
+                                            false);
     }
     catch (e) {
         print("Caught exception trying to retrieve L1D cache size: " + e);
     }
 
-    /* Retrieve the L1P cache mode */
-    try {
-        var L1PCacheMode = Program.fetchStruct(ScalarStructs.S_UInt32$fetchDesc,
-                                               cacheModCfg.L1PCC,
-                                               false);
-    }
-    catch (e) {
-        print("Caught exception trying to retrieve L1P cache mode: " + e);
-    }
-
-    /* Retrieve the L1D cache mode */
-    try {
-        var L1DCacheMode = Program.fetchStruct(ScalarStructs.S_UInt32$fetchDesc,
-                                               cacheModCfg.L1DCC,
-                                               false);
-    }
-    catch (e) {
-        print("Caught exception trying to retrieve L1D cache mode: " + e);
-    }
-
-    /* Retrieve the L2 cache configuration */
-    try {
-        var L2Cache = Program.fetchStruct(ScalarStructs.S_UInt32$fetchDesc,
-                                          cacheModCfg.L2CFG,
-                                          false);
-    }
-    catch (e) {
-        print("Caught exception trying to retrieve L2 cache size: " + e);
-    }
-
     /* The 3 LSB determine the cache configuration size */
-    var L1PSize = L1PCacheSize.elem & 0x7;
-    var L1DSize = L1DCacheSize.elem & 0x7;
-    var L2Size = L2Cache.elem & 0x7;
+    var L1DSize = modState.L1DCFG & 0x7;
+    var L2Size = modState.L2CFG & 0x7;
 
-    view.L1PCacheSize = getL1CacheSizeString(L1PSize);
     view.L1DCacheSize = getL1CacheSizeString(L1DSize);
     view.L2CacheSize = getL2CacheSizeString(L2Size);
-
-    /* Determine the cache configuration mode */
-    view.L1PMode = (L1PCacheMode.elem & 7) ? "Freeze" : "Normal";
-    view.L1DMode = (L1DCacheMode.elem & 7) ? "Freeze" : "Normal";
-
-    var L2Mode = L2Cache.elem & 0x18;
-    switch (L2Mode) {
-        case 0x0:
-            view.L2Mode = "Normal";
-            break;
-        case 0x8:
-            view.L2Mode = "Freeze";
-            break;
-        case 0x10:
-        case 0x18:
-            view.L2Mode = "Bypass";
-            break;
-        default:
-            view.L2Mode = "Unknown";
-    }
-}
-
-/*
- *  ======== viewInitSystemInts ========
- */
-function viewInitMarRegisters(view)
-{
-    var Program = xdc.useModule('xdc.rov.Program');
-    var ScalarStructs = xdc.useModule('xdc.rov.support.ScalarStructs');
-    var Cache = xdc.useModule('ti.sysbios.family.c7x.Cache');
-    var numMarRegisters = 256;
-
-    /* Retrieve the module configuration. */
-    var modCfg = Program.getModuleConfig('ti.sysbios.family.c7x.Cache');
-
-    /* Retrieve the MAR registers */
-    try {
-        var marRegisters = Program.fetchArray(ScalarStructs.S_UInt32$fetchDesc,
-                                              modCfg.MAR,
-                                              numMarRegisters,
-                                              false);
-    }
-    catch (e) {
-        // TODO - Report problem
-        print("Caught exception while trying to retrieve MAR registers: " + e);
-    }
-
-    /*
-     *  Display each MAR register that is enabled.
-     *  MAR registers 0-15 are read-only and need not be displayed.
-     */
-    for (var i = 16; i < numMarRegisters; i++) {
-        var marview =
-            Program.newViewStruct('ti.sysbios.family.c7x.Cache',
-                                  'MARs');
-
-        marview.number = i;
-        marview.addr   = utils.toHex(marRegisters[i].$addr);
-        marview.startAddrRange =
-            utils.toHex(convertToUInt32(Number(i << 24)));
-        marview.endAddrRange   =
-            utils.toHex(convertToUInt32(Number((i << 24) + 0xFFFFFF)));
-        marview.cacheable = marRegisters[i].elem & modCfg.PC;
-        marview.prefetchable = marRegisters[i].elem & modCfg.PFX;
-        marview.marRegisterValue = "0x" + marRegisters[i].elem.toString(16);
-
-        view.elements.$add(marview);
-    }
 }

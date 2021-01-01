@@ -6,8 +6,8 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>The HeapTrack module sits on top of any heap and provides heap tracking data that can be viewed with RTOS Object Viewer (ROV). The HeapTrack handle is used with the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module and will use the configured heap for all operations.
-        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
+        <p>The HeapTrack module sits on top of any heap and provides heap tracking data that can be viewed with RTOS Object Viewer (ROV). The HeapTrack handle is used with the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module and will use the configured heap for all operations.
+        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
         <p> </p>
       </form></td>
   </tr>

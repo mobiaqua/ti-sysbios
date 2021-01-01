@@ -6,7 +6,7 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>The TimestampProvider module provides device-specific time services for the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Timestamp.html">Timestamp</a> module.</p>
+        <p>The TimestampProvider module provides device-specific time services for the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Timestamp.html">Timestamp</a> module.</p>
         <p> </p>
       </form></td>
   </tr>

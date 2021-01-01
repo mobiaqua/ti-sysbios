@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,13 @@
 /*
  *  ======== SysCall.c ========
  */
+/* REQ_TAG(SYSBIOS-1078) */
 
 #include <xdc/std.h>
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/Startup.h>
 
+/* REQ_TAG(SYSBIOS-1075), REQ_TAG(SYSBIOS-1076), REQ_TAG(SYSBIOS-1077) */
 #include "package/internal/SysCall.xdc.h"
 
 /*
@@ -44,7 +46,7 @@
  */
 Int SysCall_Module_startup(Int phase)
 {
-    UInt i;
+    Int i;
 
     for (i = 0; i < SysCall_NUM_SYSCALLS; i++) {
         /* Initialize system call table entries */

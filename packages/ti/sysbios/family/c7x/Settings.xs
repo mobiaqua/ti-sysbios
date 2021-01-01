@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@ var settings = {
             intrinsicsSupportDelegate : "ti.sysbios.family.c7x.IntrinsicsSupport",
             cacheDelegate : "ti.sysbios.family.c7x.Cache",
             clockTickPeriod : 1000,
+            syscallDelegate: "ti.sysbios.family.c7x.SysCall",
             targets : [ "ti.targets.elf.C71" ]
         },
 /*
@@ -242,7 +243,13 @@ function getDefaultSecondsDelegate()
  */
 function getDefaultSysCallDelegate()
 {
-    return (null);
+    deviceSupportCheck();
+    if  (settings.device[Program.cpu.deviceName].syscallDelegate == null) {
+        return ("ti.sysbios.hal.SysCallNull");
+    }
+    else {
+        return (settings.device[Program.cpu.deviceName].syscallDelegate);
+    }
 }
 
 /*

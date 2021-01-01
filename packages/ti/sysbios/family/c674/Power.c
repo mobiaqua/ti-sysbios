@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Texas Instruments Incorporated
+ * Copyright (c) 2012-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -187,8 +187,8 @@ Power_Status Power_changeSetpoint(Power_Domain domain, UInt newSetpoint,
         if (proceed == TRUE) {
 
             /* determine PSCL clock ID */
-            clk = (PSCL_ClkID) domain == Power_CPU ? PSCL_CPU_CLK : 
-                PSCL_PER_CLK;
+            clk = (PSCL_ClkID) (domain == Power_CPU ? PSCL_CPU_CLK :
+                PSCL_PER_CLK);
 
             /* disable Task scheduling; allow Swi & Hwi for completion */
             taskKey = Task_disable();
@@ -422,7 +422,7 @@ Power_Status Power_getCurrentSetpoint(Power_Domain domain, UInt * setpoint)
     else {
 
         /* determine PSCL clock ID */
-        clk = (PSCL_ClkID) domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK;
+        clk = (PSCL_ClkID) (domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK);
 
         /* next query PSCL for current setpoint */
         psclStatus = PSCL_getSetpoint(clk, setpoint);
@@ -505,7 +505,7 @@ Power_Status Power_getNumSetpoints(Power_Domain domain, UInt * numberSetpoints)
     else {
 
         /* determine PSCL clock ID */
-        clk = (PSCL_ClkID) domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK;
+        clk = (PSCL_ClkID) (domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK);
 
         /* now call to PSCL to get number of setpoints for the domain */
         psclStatus = PSCL_getNumSetpoints(clk, numberSetpoints);
@@ -660,7 +660,7 @@ Power_Status Power_getSetpointInfo(Power_Domain domain, UInt setpoint,
     else {
 
         /* determine PSCL clock ID */
-        clk = (PSCL_ClkID) domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK;
+        clk = (PSCL_ClkID) (domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK);
 
         psclStatus = PSCL_querySetpoint(clk, setpoint, frequency, voltage,
             &mode);
@@ -668,7 +668,7 @@ Power_Status Power_getSetpointInfo(Power_Domain domain, UInt setpoint,
         if (psclStatus == PSCL_INVALID_SETPOINT) {
             status = Power_EINVALIDVALUE;
         }
-        else if (status != PSCL_OK) {
+        else if (status != (Power_Status)PSCL_OK) {
             status = Power_EFAIL;
         }
     }
@@ -713,7 +713,7 @@ Power_Status Power_getTransitionLatency(Power_Domain domain,
     else {
 
         /* determine PSCL clock ID */
-        clk = (PSCL_ClkID) domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK;
+        clk = (PSCL_ClkID) (domain == Power_CPU ? PSCL_CPU_CLK : PSCL_PER_CLK);
 
         /* call to PSCL to get transition latency estimates */
         psclStatus = PSCL_querySetpointTransition(clk, initialSetpoint,

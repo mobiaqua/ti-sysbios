@@ -77,6 +77,7 @@ package ti.sysbios.family.c7x;
 
 @ModuleStartup          /* To start TimeStamp Counter */
 
+@CustomHeader
 module TimestampProvider inherits ti.sysbios.interfaces.ITimestamp
 {
 }

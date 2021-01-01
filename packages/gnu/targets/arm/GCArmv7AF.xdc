@@ -55,7 +55,7 @@ metaonly module GCArmv7AF inherits gnu.targets.arm.ITarget {
      */
     override readonly config ITarget2.Command asm = {
         cmd: "$(rootDir)/bin/$(GCCTARG)-gcc -c -x assembler",
-        opts: "-Wa,-march=armv7-a -Wa,-mfloat-abi=hard"
+        opts: "-march=armv7-a -mfloat-abi=hard"
     };
 
     /*

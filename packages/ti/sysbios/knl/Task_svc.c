@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,19 @@
 #include <ti/sysbios/hal/SysCall.h>
 
 #include "package/internal/Task.xdc.h"
+
+Void ti_sysbios_knl_Task_construct_SVC(Task_Struct *obj, Task_FuncPtr fxn,
+        const Task_Params *prms, Error_Block *eb);
+Void ti_sysbios_knl_Task_destruct_SVC(Task_Struct *obj);
+UInt ti_sysbios_knl_Task_disable_SVC();
+Void ti_sysbios_knl_Task_enable_SVC();
+Int ti_sysbios_knl_Task_getPri_SVC(Task_Object *tsk);
+Bool ti_sysbios_knl_Task_getPrivileged_SVC(Task_Object *tsk);
+Void ti_sysbios_knl_Task_Params_init_SVC(Task_Params *prms);
+Void ti_sysbios_knl_Task_restore_SVC(UInt tskKey);
+Int ti_sysbios_knl_Task_setPri_SVC(Task_Object *tsk, Int priority);
+Void ti_sysbios_knl_Task_sleep_SVC(UInt32 period);
+Void ti_sysbios_knl_Task_yield_SVC();
 
 /*
  *  ======== ti_sysbios_knl_Task_construct_SVC ========
@@ -114,7 +127,8 @@ Bool ti_sysbios_knl_Task_getPrivileged_SVC(Task_Object *tsk)
 /*
  *  ======== ti_sysbios_knl_Task_Params_init_SVC ========
  */
-Void ti_sysbios_knl_Task_Params_init_SVC(Task_Params *prms) {
+Void ti_sysbios_knl_Task_Params_init_SVC(Task_Params *prms)
+{
     SysCall_enterPrivMode();
     Task_Params_init(prms);
     SysCall_enterUnprivMode();

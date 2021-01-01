@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -180,6 +180,7 @@ import xdc.runtime.Error;
  */
 
 @DirectCall
+/* REQ_TAG(SYSBIOS-544) */
 @InstanceFinalize
 @InstanceInitError
 
@@ -497,6 +498,7 @@ interface IHwi {
     /*!
      *  ======== disable ========
      */
+    /* REQ_TAG(SYSBIOS-547) */
     UInt disable();
 
     /*!
@@ -532,6 +534,7 @@ interface IHwi {
      *
      *  @b(returns)     opaque key for use by Hwi_restore()
      */
+    /* REQ_TAG(SYSBIOS-547) */
     UInt enable();
 
     /*!
@@ -551,6 +554,7 @@ interface IHwi {
      *
      *  @param(key)     enable/disable state to restore
      */
+    /* REQ_TAG(SYSBIOS-547) */
     Void restore(UInt key);
 
     /*!
@@ -658,6 +662,7 @@ interface IHwi {
      *  @param(intNum)  interrupt number to disable
      *  @b(returns)     key to restore previous enable/disable state
      */
+    /* REQ_TAG(SYSBIOS-552) */
     UInt disableInterrupt(UInt intNum);
 
     /*!
@@ -669,6 +674,7 @@ interface IHwi {
      *  @param(intNum)  interrupt number to enable
      *  @b(returns)     key to restore previous enable/disable state
      */
+    /* REQ_TAG(SYSBIOS-552) */
     UInt enableInterrupt(UInt intNum);
 
     /*!
@@ -683,6 +689,7 @@ interface IHwi {
      *  @param(intNum)  interrupt number to restore
      *  @param(key)     key returned from enableInt or disableInt
      */
+    /* REQ_TAG(SYSBIOS-552) */
     Void restoreInterrupt(UInt intNum, UInt key);
 
     /*!
@@ -694,6 +701,7 @@ interface IHwi {
      *
      *  @param(intNum)  interrupt number to clear
      */
+    /* REQ_TAG(SYSBIOS-546) */
     Void clearInterrupt(UInt intNum);
 
 instance:
@@ -725,6 +733,8 @@ instance:
      *
      */
     create(Int intNum, FuncPtr hwiFxn);
+
+    /* REQ_TAG(SYSBIOS-545) */
 
     /*! maskSetting. Default is {@link #MaskingOption Hwi_MaskingOption_SELF} */
     config MaskingOption maskSetting = MaskingOption_SELF;

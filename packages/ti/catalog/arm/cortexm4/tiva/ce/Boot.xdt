@@ -37,13 +37,13 @@
 % /* Don't generate Boot_init if this is a romimage */
 % if (Program.build.rtsName !== null) {
 %var Boot = xdc.module("ti.catalog.arm.cortexm4.tiva.ce.Boot");
-#if defined(__ti__)
-#pragma CODE_SECTION(ti_catalog_arm_cortexm4_tiva_ce_Boot_init, ".text:.bootCodeSection")
-#endif
 
 /*
  *  ======== ti_catalog_arm_cortexm4_tiva_ce_Boot_init ========
  */
+#if defined(__ti__)
+xdc_Void ti_catalog_arm_cortexm4_tiva_ce_Boot_init() __attribute__((section(".text:bootCodeSection")));
+#endif
 xdc_Void ti_catalog_arm_cortexm4_tiva_ce_Boot_init()
 {
 %if (Boot.configureClock == true) {

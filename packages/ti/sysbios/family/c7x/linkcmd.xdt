@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2019, Texas Instruments Incorporated
+ * Copyright (c) 2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,12 +41,29 @@
 %var Mmu = xdc.module("ti.sysbios.family.c7x.Mmu");
 %if (Mmu.tableMemory != "") {
 %var memory = Mmu.tableMemory;
+%var memory_NS = Mmu.tableMemory_NS;
+
+%var Hwi = xdc.module("ti.sysbios.family.c7x.Hwi");
+%if (Hwi.bootToNonSecure) {
+-e _c_int00_secure
+%}
 
 SECTIONS
 {
+%if (Hwi.bootToNonSecure) {
+    .text:ti_sysbios_family_c7x_Hwi_switchToNS__E > DDR
+    .text:ti_sysbios_family_c7x_Hwi_secureStart__E > DDR
+    .secure_vecs > DDR ALIGN(0x400000)
+%}
+
     `Mmu.tableArraySection` > `memory`, type=NOINIT
     .data.ti_sysbios_family_c7x_Mmu_tableArraySlot > `memory`, type=NOINIT
     .data.ti_sysbios_family_c7x_Mmu_level1Table > `memory`, type=NOINIT
+%if (Hwi.bootToNonSecure && Mmu.tableMemory_NS != "") {
+    `Mmu.tableArraySection_NS` > `memory_NS`, type=NOINIT
+    .data.ti_sysbios_family_c7x_Mmu_tableArraySlot_NS > `memory_NS`, type=NOINIT
+    .data.ti_sysbios_family_c7x_Mmu_level1Table_NS > `memory_NS`, type=NOINIT
+%}
 }
 
 %}

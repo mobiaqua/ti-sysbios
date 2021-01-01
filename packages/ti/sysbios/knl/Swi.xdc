@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -442,6 +442,16 @@ module Swi
     };
 
     /*!
+     *  ======== A_badContextId ========
+     *  Assert raised if bad context ID is used.
+     *
+     *  Asserted in Swi_setHookContext()/Swi_getHookContext().
+     */
+    config Assert.Id A_badContextId = {
+        msg: "A_badContextId: Hook context id is out of range."
+    };
+
+     /*!
      *  ======== numPriorities ========
      *  Number of Swi priorities supported
      *

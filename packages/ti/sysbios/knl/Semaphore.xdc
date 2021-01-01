@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,9 +148,11 @@ import ti.sysbios.knl.Clock;
 
 @CustomHeader
 @DirectCall
+/* REQ_TAG(SYSBIOS-501) */
 @InstanceFinalize       /* to destruct queue */
 @InstanceInitStatic     /* Construct/Destruct CAN becalled at runtime */
 
+/* REQ_TAG(SYSBIOS-500) */
 module Semaphore
 {
     /*!
@@ -334,6 +336,7 @@ instance:
      */
     create(Int count);
 
+    /* REQ_TAG(SYSBIOS-502) */
     /*!
      *  ======== event ========
      *  Event instance to use if non-NULL
@@ -346,6 +349,11 @@ instance:
      *      - Event_pend(sem->event, 0, sem->eventId, timeout) will be
      *        invoked when Semaphore_pend() is called.
      *  @p
+     *
+     *  @a(CONSTRAINT)
+     *  The 'event' parameter is ignored if
+     *  {@link #supportsEvents Semaphore.supportsEvents}
+     *  is set to false.
      */
     config Event.Handle event = null;
 
@@ -354,6 +362,11 @@ instance:
      *  eventId if using Events
      *
      *  The default for this parameters is 1.
+     *
+     *  @a(CONSTRAINT)
+     *  The 'eventId' parameter is ignored if
+     *  {@link #supportsEvents Semaphore.supportsEvents}
+     *  is set to false.
      */
     config UInt eventId = 1;
 
@@ -392,6 +405,7 @@ instance:
      *
      *  @b(returns)             current semaphore count
      */
+    /* REQ_TAG(SYSBIOS-508) */
     Int getCount();
 
     /*!
@@ -422,7 +436,13 @@ instance:
      *  @param(timeout)     return after this many system time units
      *
      *  @b(returns)         TRUE if successful, FALSE if timeout
+     *
+     *  @a(CONSTRAINT)
+     *  It is a fatal error to invoke Semaphore_pend() with a non-zero timeout
+     *  while the Task scheduler is disabled.
+     *  See {@link ti.sysbios.knl.Task#disable Task_disable} for more details.
      */
+    /* REQ_TAG(SYSBIOS-504) */
     Bool pend(UInt32 timeout);
 
     /*!
@@ -435,6 +455,7 @@ instance:
      *  the semaphore count and returns. In the case of a binary semaphore,
      *  the count has a maximum value of one.
      */
+    /* REQ_TAG(SYSBIOS-503) */
     Void post();
 
     /*!

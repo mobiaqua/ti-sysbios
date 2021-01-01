@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,11 +63,13 @@
 #endif
 
 /* MODULE LEVEL FUNCTIONS */
+/* REQ_TAG(SYSBIOS-519) */
 
 /*
  *  ======== Clock_Module_startup ========
  */
 /* MISRA.FUNC.UNUSEDPAR.2012 */
+/* REQ_TAG(SYSBIOS-520), REQ_TAG(SYSBIOS-523) */
 Int Clock_Module_startup(Int phase)
 {
     Int rv;
@@ -82,7 +84,7 @@ Int Clock_Module_startup(Int phase)
     else {
         if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
             /* get the max ticks that can be skipped by the timer */
-            Clock_module->maxSkippable = 
+            Clock_module->maxSkippable =
                     Clock_TimerProxy_getMaxTicks(Clock_module->timer);
         }
 
@@ -144,13 +146,14 @@ Void Clock_setTicks(UInt32 ticks)
 }
 
 /*
- *  ======== Clock_ticksUntilInterrupt  ========
+ *  ======== Clock_getTicksUntilInterrupt  ========
  */
 UInt32 Clock_getTicksUntilInterrupt(Void)
 {
     UInt32 ticks;
 
-    if ((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) {
+    if (((Clock_TickSource)CLOCK_TICK_SOURCE == Clock_TickSource_TIMER) &&
+        ((Clock_TickMode)CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC)) {
 
         UInt32 current;
         UInt key;
@@ -227,6 +230,7 @@ Void Clock_tickStop(Void)
 /*
  *  ======== Clock_tickReconfig  ========
  */
+/* REQ_TAG(SYSBIOS-522) */
 Bool Clock_tickReconfig(Void)
 {
     Bool rv;
@@ -302,6 +306,7 @@ UInt32 Clock_walkQueuePeriodic(Void)
  *  Service Clock Queue for TickMode_PERIODIC
  */
 /* MISRA.FUNC.UNUSEDPAR.2012 */
+/* REQ_TAG(SYSBIOS-525) */
 Void Clock_workFunc(UArg arg0, UArg arg1)
 {
     Queue_Elem  *elem;
@@ -336,7 +341,7 @@ Void Clock_workFunc(UArg arg0, UArg arg1)
      * tick. The next time this swi runs the count will be zero.
      */
 
-    while (count) {
+    while (count != 0U) {
 
         compare = compare + 1U;
         count = count - 1U;
@@ -361,6 +366,7 @@ Void Clock_workFunc(UArg arg0, UArg arg1)
                 else {                  /* periodic */
                     /* refresh timeout */
                     obj->currTimeout += obj->period;
+                    obj->timeoutTicks = obj->period;
                 }
 
                 /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 MISRA.CAST.FUNC_PTR.2012 */
@@ -415,6 +421,7 @@ UInt32 Clock_walkQueueDynamic(Bool service, UInt32 thisTick)
                     else {                      /* periodic */
                         /* refresh timeout */
                         obj->currTimeout += obj->period;
+                        obj->timeoutTicks = obj->period;
                     }
 
                     /* MISRA.ETYPE.INAPPR.OPERAND.BINOP.2012 MISRA.CAST.FUNC_PTR.2012 */
@@ -469,8 +476,8 @@ Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
     serviceTick = Clock_module->nextScheduledTick;
     ticksToService = nowTick - serviceTick;
 
-    /* 
-     * if now hasn't caught up to nextScheduledTick, 
+    /*
+     * if now hasn't caught up to nextScheduledTick,
      * a spurious interrupt has probably occurred.
      * ignore for now...
      */
@@ -534,6 +541,7 @@ Void Clock_workFuncDynamic(UArg arg0, UArg arg1)
  *  interrupt handler called by user interrupt when
  *  CLOCK_TICK_SOURCE = USER or NULL
  */
+/* REQ_TAG(SYSBIOS-531) */
 Void Clock_tick(Void)
 {
     Clock_doTickFunc(0);
@@ -544,6 +552,7 @@ Void Clock_tick(Void)
 /*
  *  ======== Clock_Instance_init ========
  */
+/* REQ_TAG(SYSBIOS-521) */
 Void Clock_Instance_init(Clock_Object *obj, Clock_FuncPtr func, UInt timeout,
     const Clock_Params *params)
 {
@@ -556,7 +565,7 @@ Void Clock_Instance_init(Clock_Object *obj, Clock_FuncPtr func, UInt timeout,
                         Clock_A_badThreadType);
 
     Assert_isTrue(!((params->startFlag != FALSE) && (timeout == 0U)),
-            (Assert_Id)NULL);
+            (Assert_Id)0U);
 
     obj->timeout = (UInt32)timeout;
     obj->period = params->period;
@@ -570,7 +579,7 @@ Void Clock_Instance_init(Clock_Object *obj, Clock_FuncPtr func, UInt timeout,
     clockQ = Clock_Module_State_clockQ();
     Queue_put(clockQ, &obj->elem);
 
-    if (params->startFlag) {
+    if (params->startFlag != FALSE) {
         Clock_start(obj);
     }
 }
@@ -651,6 +660,8 @@ Void Clock_removeI(Clock_Object *obj)
  */
 Void Clock_startI(Clock_Object *obj)
 {
+    obj->timeoutTicks = obj->timeout;
+
     if ((Clock_TickMode)CLOCK_TICK_MODE == Clock_TickMode_DYNAMIC) {
         UInt32 nowTick, nowDelta;
         UInt32 scheduledTick, scheduledDelta;
@@ -663,37 +674,37 @@ Void Clock_startI(Clock_Object *obj)
              /* if Clock is NOT currently processing its Q */
              (Clock_module->inWorkFunc == FALSE)) {
 
-            /* 
+            /*
              * get virtual current tick count,
              * signal Timer to save corresponding NOW info
              */
             nowTick = Clock_TimerProxy_getCurrentTick(Clock_module->timer, TRUE);
 
             nowDelta = nowTick - Clock_module->ticks;
-            scheduledDelta = Clock_module->nextScheduledTick - 
+            scheduledDelta = Clock_module->nextScheduledTick -
                 Clock_module->ticks;
 
             if (nowDelta <= scheduledDelta) {
-                        
+
                 objectServiced = TRUE;
-                    
+
                 /* start new Clock object */
                 obj->currTimeout = nowTick + obj->timeout;
                 obj->active = TRUE;
 
                 /* get the next scheduled tick */
                 scheduledTick = Clock_module->nextScheduledTick;
-                
+
                 /* how many ticks until scheduled tick? */
                 remainingTicks = scheduledTick - nowTick;
-                
+
                 if (obj->timeout < remainingTicks) {
                     Clock_scheduleNextTick(obj->timeout,
                        obj->currTimeout);
                 }
             }
         }
-        
+
         if (objectServiced == FALSE) {
             /*
              * get virtual current tick count,
@@ -709,7 +720,7 @@ Void Clock_startI(Clock_Object *obj)
                 Clock_module->startDuringWorkFunc = TRUE;
             }
         }
-    } 
+    }
     /* CLOCK_TICK_MODE == Clock_TickMode_PERIODIC */
     else {
         obj->currTimeout = (Clock_module->ticks + obj->timeout);
@@ -724,7 +735,7 @@ Void Clock_start(Clock_Object *obj)
 {
     UInt key;
 
-    Assert_isTrue(obj->timeout != 0U, (Assert_Id)NULL);
+    Assert_isTrue(obj->timeout != 0U, (Assert_Id)0U);
 
     key = Hwi_disable();
 
@@ -797,7 +808,7 @@ UInt32 Clock_getTimeout(Clock_Object *obj)
     key = Hwi_disable();
     if (obj->active == TRUE) {
         timeout = obj->currTimeout - Clock_getTicks();
-        if (timeout > obj->timeout) {
+        if (timeout > obj->timeoutTicks) {
             timeout = 0;
         }
     }

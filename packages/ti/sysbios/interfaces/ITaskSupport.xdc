@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@ interface ITaskSupport
     Ptr start(Ptr curTask, FuncPtr enterFxn, FuncPtr exitFxn, Error.Block *eb);
 
     /*!
-     *  ======== switch ========
+     *  ======== swap ========
      *  @_nodoc
      *  Switch from old task to new task.
      *

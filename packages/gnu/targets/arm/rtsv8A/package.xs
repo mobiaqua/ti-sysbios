@@ -1,10 +1,10 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,7 @@
 
 function getLibs(prog)
 {
-    var libs = "lib/boot.a" + Program.build.target.suffix + ";lib/syscalls.a"
-        + Program.build.target.suffix;
+    var libs = "lib/boot.a" + Program.build.target.suffix;
 
     if (Program.build.target.os == "Linux") {
         libs = "";

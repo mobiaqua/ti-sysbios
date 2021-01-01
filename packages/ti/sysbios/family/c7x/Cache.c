@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #include <xdc/runtime/Assert.h>
 #include <xdc/runtime/Error.h>
 #include <xdc/runtime/Startup.h>
-#include <ti/sysbios/hal/Hwi.h>
+#include <ti/sysbios/family/c7x/Hwi.h>
 #include <ti/sysbios/family/c7x/Mmu.h>
 
 #include <c6x_migration.h>
@@ -55,6 +55,21 @@ Void Cache_startup()
     Cache_setSize((Cache_Size *)&(Cache_initSize));
 
     Mmu_startup();
+}
+
+/*
+ *  ======== Cache_Module_startup ========
+ */
+Int Cache_Module_startup(Int phase)
+{
+    Cache_Size size;
+
+    Cache_getSize(&size);
+
+    Cache_module->L2CFG = size.l2Size;
+    Cache_module->L1DCFG = size.l1dSize;
+
+    return (Startup_DONE);
 }
 
 /*
@@ -106,6 +121,11 @@ Void Cache_disable(Bits16 type)
 Void Cache_setSize(Cache_Size *size)
 {
     UInt        mask;
+    ULong       reg;
+
+    if (ti_sysbios_family_c7x_Hwi_getCXM__E() != Hwi_TSR_CXM_SecureSupervisor) {
+        return;
+    }
 
     /* critical section -- disable interrupts */
     mask = Hwi_disable();
@@ -114,7 +134,10 @@ Void Cache_setSize(Cache_Size *size)
      *  Set size of L2 cache.
      *  Read back CFG, this stalls CPU until the mode change completes.
      */
-    Cache_setL2CFG(size->l2Size);
+    reg = Cache_getL2CFG();
+    reg &= ~0x7UL;
+    reg |= size->l2Size;
+    Cache_setL2CFG(reg);
 
     Cache_getL2CFG();
 
@@ -123,7 +146,10 @@ Void Cache_setSize(Cache_Size *size)
      *  Set size of L1P cache.
      *  Read back CFG, this stalls CPU until the mode change completes.
      */
-    Cache_setL1DCFG(size->l1dSize);
+    reg = Cache_getL1DCFG();
+    reg &= ~0x7UL;
+    reg |= size->l1dSize;
+    Cache_setL1DCFG(reg);
 
     Cache_getL1DCFG();
 
@@ -230,7 +256,7 @@ Void Cache_wbInvL1dAll()
  */
 Void Cache_inv(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait)
 {
-    __se_cache_op((void *)blockPtr, __DCICNS, byteCnt);
+    __se_cache_op((void *)blockPtr, __DCCMIC, byteCnt);
 
     if (wait) {
         Cache_wait();
@@ -249,7 +275,11 @@ Void Cache_inv(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait)
  */
 Void Cache_wb(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait)
 {
-    __se_cache_op((void *)blockPtr, __DCCCNS, byteCnt);
+    /*
+     * There is no SE operation for just WB, so do the next closest thing
+     * which is WBINV.
+     */
+    __se_cache_op((void *)blockPtr, __DCCIC, byteCnt);
 
     if (wait) {
         Cache_wait();
@@ -268,7 +298,7 @@ Void Cache_wb(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait)
  */
 Void Cache_wbInv(Ptr blockPtr, SizeT byteCnt, Bits16 type, Bool wait)
 {
-    __se_cache_op((void *)blockPtr, __DCCICNS, byteCnt);
+    __se_cache_op((void *)blockPtr, __DCCIC, byteCnt);
 
     if (wait) {
         Cache_wait();

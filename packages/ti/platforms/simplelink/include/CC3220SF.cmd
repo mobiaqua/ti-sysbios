@@ -52,6 +52,7 @@ SECTIONS
 #endif
 #endif
     .const      : > FLASH
+    .rodata     : > FLASH
     .cinit      : > FLASH
     .pinit      : > FLASH
     .init_array : > FLASH

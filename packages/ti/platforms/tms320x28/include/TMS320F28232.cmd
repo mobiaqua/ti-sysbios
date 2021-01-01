@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -107,6 +107,7 @@ SECTIONS
     /* Allocate uninitalized data sections: */
     .stack              : > M01SARAM | L05SARAM     PAGE = 1
     .ebss               : > M01SARAM | L05SARAM     PAGE = 1
+    .data               : > M01SARAM | L05SARAM     PAGE = 1
     .esysmem            : > L05SARAM | M01SARAM     PAGE = 1
     .cio                : > L05SARAM | M01SARAM     PAGE = 1
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,6 +227,8 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
 
     config UInt NUM_INTERRUPTS;
 
+    config UInt dummyIRQ = 0x0;
+
     // -------- Module Types --------
 
     /*! Hwi vector function type definition. */
@@ -391,6 +393,13 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      */
     config Error.Id E_undefined = {
         msg: "E_undefined: Hwi undefined, intNum: %d"
+    };
+
+    /*!
+     *  Error raised when reserved priority 0 is used
+     */
+    config Error.Id E_reservedPriority = {
+        msg: "E_reservedPriority: Hwi priority 0 reserved for workaround of Pulsar Dual R5F-SS interrupt preemption issue."
     };
 
     /*!

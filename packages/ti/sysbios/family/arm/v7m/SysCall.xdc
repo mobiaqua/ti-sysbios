@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@ import ti.sysbios.interfaces.ISysCall;
 
 @ModuleStartup      /* generate a call to startup function */
 
+/* REQ_TAG(SYSBIOS-1078) */
 module SysCall inherits ti.sysbios.interfaces.ISysCall
 {
     //  -------- Module Constants --------
@@ -96,6 +97,8 @@ module SysCall inherits ti.sysbios.interfaces.ISysCall
 
 internal:
 
+    typedef Void (*SysCallFunc)(Void);
+
     /*
      *  ======== requestFailed ========
      */
@@ -123,6 +126,6 @@ internal:
 
     /*! Module state */
     struct Module_State {
-        Ptr sysCallTable[];     // System call function table
+        SysCallFunc sysCallTable[];     // System call function table
     }
 }

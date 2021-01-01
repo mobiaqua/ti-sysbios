@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@
 Int TimestampProvider_Module_startup( Int phase )
 {
     /* Make sure Timer has been initialized */
-    if (!Timer_Module_startupDone()) {
+    if (Timer_Module_startupDone() == FALSE) {
         return (Startup_NOTDONE);
     }
 
@@ -118,12 +118,12 @@ Void TimestampProvider_get64(Types_Timestamp64 *result)
 
     Hwi_restore(key);
 
-    result->hi = timestamp >> 32;
-    result->lo = timestamp;
+    result->hi = (UInt32)(timestamp >> 32);
+    result->lo = (UInt32)timestamp;
 }
 
 /*
- *  ======== TimestampProvider_getCounterFreq ========
+ *  ======== TimestampProvider_getFreq ========
  */
 Void TimestampProvider_getFreq(Types_FreqHz *freq)
 {

@@ -86,11 +86,19 @@ function module$use()
     Idle.addFunc("&_pthread_cleanupFxn");
 
     /* identify which toolchain is loaded */
-    var match = Program.build.target.$name.match(/^(\w+)\.targets/);
+    var match = null;
+    if (Program.build.target.$name.match(/^ti\.targets\.arm\.clang/)) {
+        /* wonky, but matches the syntax of .match() */
+        match = ["ignore", "ticlang"];
+    } else {
+        /* extract the first word of the target package name */
+        match = Program.build.target.$name.match(/^(\w+)\.targets/);
+    }
     switch (match != null ? match[1] : "") {
-        case "gnu": toolchain = "gcc"; break;
-        case "iar": toolchain = "iar"; break;
-        case "ti":  toolchain = "ccs"; break;
+        case "gnu":     toolchain = "gcc";     break;
+        case "iar":     toolchain = "iar";     break;
+        case "ti":      toolchain = "ccs";     break;
+        case "ticlang": toolchain = "ticlang"; break;
         default:
             throw new xdc.global.Error("unknown target:"
                 + Program.build.target.$name);
@@ -135,6 +143,7 @@ function module$use()
     switch (toolchain) {
 
         case "ccs":
+        case "ticlang":
             xdc.useModule('ti.sysbios.rts.ti.ReentSupport');
             break;
 

@@ -57,8 +57,8 @@ function module$meta$init()
     Timer.common$.fxntab = false;
 
     /* initialize timer fields */
-    Timer.anyMask = (1 << 2) - 1;
-    Timer.numTimerDevices = 2;
+    Timer.anyMask = (1 << 3) - 1;
+    Timer.numTimerDevices = 3;
 }
 
 /*
@@ -87,9 +87,9 @@ function module$validate()
  */
 function module$static$init(mod, params)
 {
-    mod.availMask = (1 << 2) - 1;
-    mod.device.length = 2;
-    mod.handles.length = 2;
+    mod.availMask = (1 << 3) - 1;
+    mod.device.length = 3;
+    mod.handles.length = 3;
 
     if (params.anyMask > mod.availMask) {
         Timer.$logError("Incorrect anyMask (" + params.anyMask
@@ -98,21 +98,29 @@ function module$static$init(mod, params)
 
     if (Core.id == 0) {
         mod.device[0].channelId = 0;   /* SYSRTC channel 0 */
-        mod.device[0].intNum = 27;
+        mod.device[0].intNum = 31;
         mod.handles[0] = null;
 
         mod.device[1].channelId = 1;   /* SYSRTC channel 1 */
-        mod.device[1].intNum = 28;
+        mod.device[1].intNum = 32;
         mod.handles[1] = null;
+
+        mod.device[2].channelId = 6;   /* SYSRTC channel 6 */
+        mod.device[2].intNum = 33;
+        mod.handles[2] = null;
     }
     else {
         mod.device[0].channelId = 3;   /* SYSRTC channel 3 */
-        mod.device[0].intNum = 27;
+        mod.device[0].intNum = 31;
         mod.handles[0] = null;
 
         mod.device[1].channelId = 4;   /* SYSRTC channel 4 */
-        mod.device[1].intNum = 28;
+        mod.device[1].intNum = 32;
         mod.handles[1] = null;
+
+        mod.device[2].channelId = 6;   /* SYSRTC channel 6 */
+        mod.device[2].intNum = 33;
+        mod.handles[2] = null;
     }
 
     /*

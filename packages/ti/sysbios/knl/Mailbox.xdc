@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -400,6 +400,11 @@ instance:
      *  when the mailbox was created.  This function does a blind copy of the
      *  message from the mailbox to the destination pointer, so the destination
      *  buffer must be big enough to handle this copy.
+     *
+     *  @a(CONSTRAINT)
+     *  It is a fatal error to invoke Mailbox_pend() with a non-zero timeout
+     *  while the Task scheduler is disabled.
+     *  See {@link ti.sysbios.knl.Task#disable Task_disable} for more details.
      */
     Bool pend(Ptr msg, UInt32 timeout);
 
@@ -450,6 +455,11 @@ instance:
      *  may be delivered first while the higher priority task's message
      *  may not unblock the task waiting on the mailbox until the lower
      *  priority task resumes and completes its Mailbox_post() call.
+     *
+     *  @a(CONSTRAINT)
+     *  It is a fatal error to invoke Mailbox_post() with a non-zero timeout
+     *  while the Task scheduler is disabled.
+     *  See {@link ti.sysbios.knl.Task#disable Task_disable} for more details.
      */
     Bool post(Ptr msg, UInt32 timeout);
 

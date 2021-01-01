@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,20 @@ function close()
             xdc.useModule('ti.sysbios.Build');
             break;
         }
+    }
+
+    /* At this time BIOS params are settled, but there is still time to
+     * prevent Core from loading Asserts because that happens late.
+     */
+    var BIOS = xdc.module("ti.sysbios.BIOS");
+    if (!BIOS.assertsEnabled && BIOS.includeXdcRuntime) {
+         var Core = xdc.module("xdc.runtime.Core");
+         /* noAsserts was added in XDC 3.60. This check allows us to
+          * rebuild and use SYS/BIOS with XDC 3.5x.
+          */
+         if ("noAsserts" in Core) {
+             Core.noAsserts = true;
+         }
     }
 
     /* add default xdc.runtime.Timestamp.SupportProxy binding */

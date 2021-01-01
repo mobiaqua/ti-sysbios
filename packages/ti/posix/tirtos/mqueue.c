@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,7 +167,7 @@ int mq_getattr(mqd_t mqdes, struct mq_attr *mqstat)
 mqd_t mq_open(const char *name, int oflags, ...)
 {
     va_list             va;
-    mode_t              mode;
+    unsigned int        mode;
     struct mq_attr     *attrs = NULL;
     MQueueObj          *msgQueue;
     MQueueDesc         *msgQueueDesc = NULL;
@@ -182,7 +182,7 @@ mqd_t mq_open(const char *name, int oflags, ...)
     va_start(va, oflags);
 
     if (oflags & O_CREAT) {
-        mode = va_arg(va, mode_t);
+        mode = va_arg(va, unsigned int);
         attrs = va_arg(va, struct mq_attr *);
 
         if (attrs == NULL) {
@@ -348,11 +348,14 @@ int mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
     UInt32 timeout;
 
     if (msg_len > (size_t)(msgQueue->attrs.mq_msgsize)) {
-        errno = EMSGSIZE;
+        if (BIOS_getThreadType() == BIOS_ThreadType_Task) {
+            errno = EMSGSIZE;
+        }
         return (-1);
     }
 
-    if (mqd->flags & O_NONBLOCK) {
+    if ((mqd->flags & O_NONBLOCK) ||
+        (BIOS_getThreadType() != BIOS_ThreadType_Task)) {
         timeout = BIOS_NO_WAIT;
     }
     else {
@@ -361,7 +364,9 @@ int mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
 
     /* Send a message */
     if (!Mailbox_post(msgQueue->mailbox, (Ptr)msg_ptr, timeout)) {
-        errno = EAGAIN;
+        if (BIOS_getThreadType() == BIOS_ThreadType_Task) {
+            errno = EAGAIN;
+        }
         return (-1);
     }
 

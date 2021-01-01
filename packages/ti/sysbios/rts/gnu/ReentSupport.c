@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -138,10 +138,11 @@ Void ReentSupport_taskDeleteHook(Task_Handle task)
          * the now unused file objects cannot be reused, causing Newlib to
          * allocate more memory for new file objects.
          */
+#ifdef xdc_target__isaCompatible_v7M
         _fclose_r(pStoredContext, pStoredContext->_stdin);
         _fclose_r(pStoredContext, pStoredContext->_stdout);
         _fclose_r(pStoredContext, pStoredContext->_stderr);
-
+#endif
         Memory_free(Task_Object_heap(), pStoredContext, sizeof(struct _reent));
     }
 }

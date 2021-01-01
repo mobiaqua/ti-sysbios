@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Texas Instruments Incorporated
+ * Copyright (c) 2012-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,8 @@
 
 #include "package/internal/Idle.xdc.h"
 
+/* REQ_TAG(SYSBIOS-514) */
+
 /*
  *  ======== Idle_loop ========
  */
@@ -50,7 +52,7 @@
 Void Idle_loop(UArg arg1, UArg arg2)
 {
     /* INFINITE_LOOP.LOCAL */
-    while (TRUE) {
+    for (;;) {
         Idle_run();
     }
 }
@@ -58,6 +60,7 @@ Void Idle_loop(UArg arg1, UArg arg2)
 /*
  *  ======== Idle_run ========
  */
+/* REQ_TAG(SYSBIOS-515), REQ_TAG(SYSBIOS-516), REQ_TAG(SYSBIOS-517) */
 Void Idle_run(Void)
 {
     Int i;

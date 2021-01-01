@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,24 +33,27 @@
 #ifndef ti_sysbios_hal_MemProtect__epilogue__include
 #define ti_sysbios_hal_MemProtect__epilogue__include
 
+/* REQ_TAG(SYSBIOS-1014), REQ_TAG(SYSBIOS-1015) */
 /* Access Privilege Flags */
-#define ti_sysbios_hal_MemProtect_USER_READ         0x00000001
-#define ti_sysbios_hal_MemProtect_USER_WRITE        0x00000002
-#define ti_sysbios_hal_MemProtect_USER_EXEC         0x00000004
+#define ti_sysbios_hal_MemProtect_USER_READ         0x00000001U
+#define ti_sysbios_hal_MemProtect_USER_WRITE        0x00000002U
+#define ti_sysbios_hal_MemProtect_USER_EXEC         0x00000004U
 
-#define ti_sysbios_hal_MemProtect_PRIV_READ         0x00000010
-#define ti_sysbios_hal_MemProtect_PRIV_WRITE        0x00000020
-#define ti_sysbios_hal_MemProtect_PRIV_EXEC         0x00000040
+#define ti_sysbios_hal_MemProtect_PRIV_READ         0x00000010U
+#define ti_sysbios_hal_MemProtect_PRIV_WRITE        0x00000020U
+#define ti_sysbios_hal_MemProtect_PRIV_EXEC         0x00000040U
 
+/* REQ_TAG(SYSBIOS-1016) */
 /* Memory Type Flags */
-#define ti_sysbios_hal_MemProtect_DEVICE            0x00000100
-#define ti_sysbios_hal_MemProtect_DEVICE_UNBUFFERED 0x00001000
-#define ti_sysbios_hal_MemProtect_NONCACHEABLE      0x00010000
-#define ti_sysbios_hal_MemProtect_WRITEBACK         0x00100000
-#define ti_sysbios_hal_MemProtect_WRITETHROUGH      0x00200000
-#define ti_sysbios_hal_MemProtect_WRITEALLOCATE     0x00400000
-#define ti_sysbios_hal_MemProtect_SHAREABLE         0x01000000
+#define ti_sysbios_hal_MemProtect_DEVICE            0x00000100U
+#define ti_sysbios_hal_MemProtect_DEVICE_UNBUFFERED 0x00001000U
+#define ti_sysbios_hal_MemProtect_NONCACHEABLE      0x00010000U
+#define ti_sysbios_hal_MemProtect_WRITEBACK         0x00100000U
+#define ti_sysbios_hal_MemProtect_WRITETHROUGH      0x00200000U
+#define ti_sysbios_hal_MemProtect_WRITEALLOCATE     0x00400000U
+#define ti_sysbios_hal_MemProtect_SHAREABLE         0x01000000U
 
+/* REQ_TAG(SYSBIOS-1011), REQ_TAG(SYSBIOS-1012), REQ_TAG(SYSBIOS-1013) */
 typedef struct ti_sysbios_hal_MemProtect_Acl {
     Ptr    baseAddress;
     SizeT  length;
@@ -58,19 +61,40 @@ typedef struct ti_sysbios_hal_MemProtect_Acl {
 } ti_sysbios_hal_MemProtect_Acl;
 
 /* Target specific macro and structure definitions */
-#if defined(__TI_COMPILER_VERSION__) && defined(__TI_ARM_V7M4__)
+#if (((defined(__TI_COMPILER_VERSION__) || defined(__ti_version__)) && defined(__ARM_ARCH) && (__ARM_ARCH == 7) && (__ARM_ARCH_PROFILE == 'M') && defined(__ARM_FEATURE_SIMD32)) || \
+    (defined(__GNUC__) && (defined(gnu_targets_arm_M4) || defined(gnu_targets_arm_M4F))))
 
 #include <ti/sysbios/family/arm/v7m/MemProtect.h>
 
-#elif defined(__TI_COMPILER_VERSION__) && defined(__TI_ARM_V7M3__)
+extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
+
+#elif (((defined(__TI_COMPILER_VERSION__) || defined(__ti_version__)) && defined(__ARM_ARCH) && (__ARM_ARCH == 7) && (__ARM_ARCH_PROFILE == 'M') && !defined(__ARM_FEATURE_SIMD32)) || \
+    (defined(__GNUC__) && (defined(gnu_targets_arm_M3))))
 
 #include <ti/sysbios/family/arm/v7m/keystone3/MemProtect.h>
+
+extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
+
+#elif ((defined(__TI_COMPILER_VERSION__) || defined(__ti_version__)) && defined(__ARM_ARCH) && (__ARM_ARCH == 7) && (__ARM_ARCH_PROFILE == 'R') && defined(__ARM_FEATURE_SIMD32))
+
+#include <ti/sysbios/family/arm/v7r/MemProtect.h>
+
+extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
+
+#elif (defined(__TI_COMPILER_VERSION__) && defined(__C7000__) && (__C7000__ == 1))
+
+#include <ti/sysbios/family/c7x/MemProtect.h>
+#include <ti/sysbios/family/c7x/Mmu.h>
+
+extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags, ti_sysbios_family_c7x_Mmu_MapAttrs *attrs);
 
 #else
 
 typedef Void ti_sysbios_hal_MemProtect_Struct;
 
 #define MemProtect_Struct   ti_sysbios_hal_MemProtect_Struct
+
+extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
 
 #endif
 
@@ -84,8 +108,7 @@ extern Int ti_sysbios_hal_MemProtect_constructDomain(
 extern Int ti_sysbios_hal_MemProtect_destructDomain(
     ti_sysbios_hal_MemProtect_Struct *obj);
 
-extern UInt32 ti_sysbios_hal_MemProtect_parseFlags(UInt32 flags);
-
+/* REQ_TAG(SYSBIOS-571) */
 extern Void ti_sysbios_hal_MemProtect_startup(Void);
 
 extern Void ti_sysbios_hal_MemProtect_switch(
@@ -97,7 +120,9 @@ extern Bool ti_sysbios_hal_MemProtect_isDataInKernelSpace(Ptr obj, SizeT size);
 #define MemProtect_Acl               ti_sysbios_hal_MemProtect_Acl
 #define MemProtect_Handle            ti_sysbios_hal_MemProtect_Handle
 
+/* REQ_TAG(SYSBIOS-1017) */
 #define MemProtect_constructDomain   ti_sysbios_hal_MemProtect_constructDomain
+/* REQ_TAG(SYSBIOS-1018) */
 #define MemProtect_destructDomain    ti_sysbios_hal_MemProtect_destructDomain
 #define MemProtect_parseFlags        ti_sysbios_hal_MemProtect_parseFlags
 #define MemProtect_startup           ti_sysbios_hal_MemProtect_startup

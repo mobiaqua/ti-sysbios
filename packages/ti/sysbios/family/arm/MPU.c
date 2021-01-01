@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,13 +42,20 @@
 
 #if (defined ti_targets_arm_elf_R5F) || (defined ti_targets_arm_elf_R5Ft)
 #include <ti/sysbios/family/arm/v7r/Cache.h>
-#else
+#elif (defined ti_targets_arm_elf_M4F || defined gnu_targets_arm_M4F || \
+        defined iar_targets_arm_M4F || defined ti_targets_arm_clang_M4F || \
+        defined ti_targets_arm_elf_R4F || defined ti_targets_arm_elf_R4Ft)
 #include <ti/sysbios/hal/Cache.h>
 /*
- *  Cache_getEnabled() is not part of ICache. Creating a dummy macro
- *  so compiler does not complain.
+ *  Cache_getEnabled() is not part of the ICache interface. It's an
+ *  extended API added by the Cortex-R5 Cache module. TI's catalog Cortex-M4F
+ *  and Cortex-R4F devices do not have a cache. They use CacheNull (a noop
+ *  Cache implementation). Cache_getEnabled() is added here so that this common
+ *  code can be shared between the R5F and M4F/R4F devices.
  */
 #define Cache_getEnabled()  0
+#else
+#error "unsupported target"
 #endif
 
 #include "package/internal/MPU.xdc.h"

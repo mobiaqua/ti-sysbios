@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ var Timer = null;
 /*
  *  ======== module$use ========
  */
+/* REQ_TAG(SYSBIOS-1041) */
 function module$use()
 {
     Timer = this;

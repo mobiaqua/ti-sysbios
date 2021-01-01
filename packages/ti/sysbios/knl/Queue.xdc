@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -181,6 +181,7 @@ import xdc.rov.ViewInfo;
  */
 
 @DirectCall
+/* REQ_TAG(SYSBIOS-485) */
 @InstanceInitStatic /* Construct/Destruct CAN be called at runtime */
 module Queue
 {
@@ -212,6 +213,7 @@ module Queue
      *
      *  A field of this type is placed at the head of client structs.
      */
+    /* REQ_TAG(SYSBIOS-487) */
     struct Elem {
         Elem *volatile next;
         Elem *volatile prev;
@@ -257,6 +259,7 @@ module Queue
      *
      *  @param(elem)            element to be inserted in queue
      */
+    /* REQ_TAG(SYSBIOS-497) */
     Void insert(Elem *qelem, Elem *elem); 
 
     /*!
@@ -284,6 +287,7 @@ module Queue
      *
      *  @b(returns)             next element in queue
      */
+    /* REQ_TAG(SYSBIOS-498) */
     Ptr next(Elem *qelem);
 
     /*!
@@ -300,6 +304,7 @@ module Queue
      *
      *  @b(returns)             previous element in queue
      */
+    /* REQ_TAG(SYSBIOS-499) */
     Ptr prev(Elem *qelem);
 
     /*!
@@ -327,6 +332,7 @@ module Queue
     Bool isQueued (Elem *qelem);
 
 instance:
+    /* REQ_TAG(SYSBIOS-486) */
 
     /*!
      *  @_nodoc
@@ -367,6 +373,7 @@ instance:
      *
      *  @b(returns)             pointer to former first element
      */
+    /* REQ_TAG(SYSBIOS-488) */
     Ptr dequeue();
 
     /*!
@@ -375,6 +382,7 @@ instance:
      *
      *  @b(returns)             TRUE if this queue is empty
      */
+    /* REQ_TAG(SYSBIOS-494) */
     Bool empty();
 
     /*!
@@ -383,6 +391,7 @@ instance:
      *
      *  @param(elem)            pointer to an element
      */
+    /* REQ_TAG(SYSBIOS-492) */
     Void enqueue(Elem *elem);
 
     /*!
@@ -406,6 +415,7 @@ instance:
      *
      *  @b(returns)             pointer to former first element
      */
+    /* REQ_TAG(SYSBIOS-489) */
     Ptr get();
 
     /*!
@@ -428,6 +438,7 @@ instance:
      *
      *  @b(returns)             pointer to former end element
      */
+    /* REQ_TAG(SYSBIOS-496) */
     Ptr getTail();
 
     /*!
@@ -468,6 +479,7 @@ instance:
      *
      *  @param(elem)            pointer to new queue element
      */
+    /* REQ_TAG(SYSBIOS-493) */
     Void put(Elem *elem);
     
     /*!
@@ -485,6 +497,7 @@ instance:
      *
      *  @param(elem)            pointer to new queue element
      */
+    /* REQ_TAG(SYSBIOS-491) */
     Void putHead(Elem *elem);
 
     /*!

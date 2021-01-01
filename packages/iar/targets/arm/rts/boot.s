@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Texas Instruments Incorporated
+ * Copyright (c) 2014-2020 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,11 +49,22 @@
 
         THUMB
 __iar_program_start:
-        MOV32   R0, CSTACK$$Limit
+        LDR     R0, cstacklimit
         MOV     SP, R0
-        MOV32   R0, __iar_program_startC
+        LDR     R0, program_startc
         BLX     R0
 
+        DATA
+        ALIGNROM 2
+cstacklimit:
+        DC32    CSTACK$$Limit
+
+program_startc:
+        DC32   __iar_program_startC
+
+
+        SECTION CODE:CODE:NOROOT
+        THUMB
         /* Should never reach here */
 exit:
         B       exit

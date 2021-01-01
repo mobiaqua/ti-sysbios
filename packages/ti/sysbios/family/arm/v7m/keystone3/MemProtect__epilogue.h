@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ extern void ti_sysbios_hal_MemProtect_init();
 #define MemProtect_Struct                                 \
     ti_sysbios_hal_MemProtect_Struct
 
+/* REQ_TAG(SYSBIOS-1010) */
 #define MemProtect_init                                   \
     ti_sysbios_hal_MemProtect_init
 

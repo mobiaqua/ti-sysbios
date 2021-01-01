@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 
 /*
  *  ======== Platform.xs ========
- *  Generic platform support for Simplelink devices.
  */
 
 var Boot = null;
@@ -197,7 +196,7 @@ function instance$meta$init(name)
     /* if in the configuration model ... */
     if (xdc.om.$name == "cfg") {
         /* We use 'revision' to pass 'the real device name' to the generic
-         * CC13xx, CC26xx, or CC32xx device.
+         * CC13xx, CC14xx, CC26xx, CC27xx, or CC32xx device.
          */
         this.CPU.revision = this.deviceName;
 
@@ -232,6 +231,28 @@ function instance$meta$init(name)
                 this.CPU.catalogName = "ti.catalog.arm.cortexm4";
             }
             this.CPU.deviceName = "CC13xx";
+            xdc.loadPackage(this.CPU.catalogName);
+        }
+        else if (this.deviceName.match(/CC27.*/)) {
+            if (nameParams[2] != undefined && !isNaN(parseFloat(nameParams[2]))) {
+                this.CPU.clockRate = this.clockRate = parseFloat(nameParams[2]);
+            }
+            else {
+                this.CPU.clockRate = this.clockRate = 48;
+            }
+            this.CPU.catalogName = "ti.catalog.arm.cortexm4";
+            this.CPU.deviceName = "CC27xx";
+            xdc.loadPackage(this.CPU.catalogName);
+        }
+        else if (this.deviceName.match(/CC14.*/)) {
+            if (nameParams[2] != undefined && !isNaN(parseFloat(nameParams[2]))) {
+                this.CPU.clockRate = this.clockRate = parseFloat(nameParams[2]);
+            }
+            else {
+                this.CPU.clockRate = this.clockRate = 48;
+            }
+            this.CPU.catalogName = "ti.catalog.arm.cortexm4";
+            this.CPU.deviceName = "CC14xx";
             xdc.loadPackage(this.CPU.catalogName);
         }
     }

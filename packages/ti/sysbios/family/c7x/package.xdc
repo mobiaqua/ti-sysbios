@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,8 +51,10 @@ package ti.sysbios.family.c7x [2,0,0,0] {
     module Exception;
     module Hwi;
     module IntrinsicsSupport;
+    module MemProtect;
     module Mmu;
     module Settings;
+    module SysCall;
     module TaskSupport;
     module TimestampProvider;
 }

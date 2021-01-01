@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2016, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,8 @@ interface ITimer
     typedef Void (*FuncPtr)(UArg);
 
     /*! Const used to specify any timer */
-    const UInt ANY = ~0;
+    /* REQ_TAG(SYSBIOS-1038) */
+    const UInt ANY = ~0U;
 
     /*! 
      *  Timer Start Modes
@@ -88,7 +89,10 @@ interface ITimer
      *  Timer is dynamically reprogrammed for the next required tick. This mode
      *  is intended only for use by the Clock module when it is operating in
      *  TickMode_DYNAMIC; it is not applicable for user-created Timer instances.
+     *  The behavior is similar to RunMode_ONESHOT, but the timer will be reprogrammed
+     *  and restarted automatically by the Clock module upon each timer interrupt.
      */
+    /* REQ_TAG(SYSBIOS-1026) */
     enum RunMode {
         RunMode_CONTINUOUS,     /*! periodic and continuous */
         RunMode_ONESHOT,        /*! one-shot */
@@ -160,14 +164,29 @@ interface ITimer
      *
      *  @b(returns)     Number of timer peripherals.
      */
+    /* REQ_TAG(SYSBIOS-1030) */
     UInt getNumTimers();
 
     /*! 
      *  ======== getStatus ========
      *  Returns timer status (free or in use).
      *
+     *  Thread safety should be observed when using {@link #getStatus}.
+     *  For example, to protect against preemption surround the query of
+     *  timer status with {@link ti.sysbios.hal.Hwi#disable Hwi_disable()} and
+     *  {@link ti.sysbios.hal.Hwi#restore Hwi_restore()} calls:
+     *
+     *  @p(code)
+     *  // disable interrupts to avoid another thread claiming this timer
+     *  key = Hwi_disable();
+     *  status = Timer_getStatus(timerId);
+     *  ...
+     *  Hwi_restore(key);
+     *  @p
+     *
      *  @b(returns)     timer status
      */
+    /* REQ_TAG(SYSBIOS-1032) */
     Status getStatus(UInt id);
 
     /*! 
@@ -206,6 +225,7 @@ instance:
      *                  or {@link #ANY}
      *  @param(tickFxn) function that runs upon timer expiry.
      */
+    /* REQ_TAG(SYSBIOS-1022) */
     create(Int id, FuncPtr tickFxn);
 
     /*!
@@ -220,6 +240,7 @@ instance:
      *
      *  Default is {@link #StartMode_AUTO}.
      */
+    /* REQ_TAG(SYSBIOS-1039) */
     config StartMode startMode = StartMode_AUTO;
 
     /*!
@@ -309,9 +330,14 @@ instance:
      *  Hwi_restore(key);
      *  @p
      *
+     *  @a(constraints)
+     *  Timer_start() should not be called if the timer has already been
+     *  started.
+     *
      *  @a(side effects)
      *  Enables the timer's interrupt.
      */
+    /* REQ_TAG(SYSBIOS-1036) */
     Void start();
 
     /*!
@@ -338,6 +364,7 @@ instance:
      *  @a(side effects)
      *  Disables the timer's interrupt.
      */
+    /* REQ_TAG(SYSBIOS-1037) */
     Void stop();
 
     /*!
@@ -368,6 +395,7 @@ instance:
      *
      *  @param(period)          period in timer counts
      */
+    /* REQ_TAG(SYSBIOS-1034) */
     Void setPeriod(UInt32 period);
 
     /*!
@@ -398,6 +426,7 @@ instance:
      *
      *  @param(period)          period in microseconds
      */
+    /* REQ_TAG(SYSBIOS-1035) */
     Bool setPeriodMicroSecs(UInt32 microsecs);
 
     /*!
@@ -406,14 +435,30 @@ instance:
      *
      *  @b(returns)     period in timer counts
      */
+    /* REQ_TAG(SYSBIOS-1031) */
     UInt32 getPeriod();
 
     /*!
      *  ======== getCount ========
      *  Read timer counter register
      *
+     *  Thread safety may be a concern when using {@link #getCount}, to avoid
+     *  using a stale count value. For example, to protect against preemption
+     *  surround the query of timer count with
+     *  {@link ti.sysbios.hal.Hwi#disable Hwi_disable()} and
+     *  {@link ti.sysbios.hal.Hwi#restore Hwi_restore()} calls:
+     *
+     *  @p(code)
+     *  // disable interrupts to read current timer count
+     *  key = Hwi_disable();
+     *  currentCount = Timer_getCount();
+     *  ...
+     *  Hwi_restore(key);
+     *  @p
+     *
      *  @b(returns)     timer counter value
      */
+    /* REQ_TAG(SYSBIOS-1027) */
     UInt32 getCount();
 
     /*!
@@ -426,6 +471,7 @@ instance:
      *
      *  @param(freq)    frequency in Hz
      */
+    /* REQ_TAG(SYSBIOS-1028) */
     Void getFreq(xdc.runtime.Types.FreqHz *freq);
 
     /*!
@@ -435,6 +481,7 @@ instance:
      *  @param(arg)     pointer for returning Timer's function argument
      *  @b(returns)     Timer's function
      */
+    /* REQ_TAG(SYSBIOS-1029) */
     FuncPtr getFunc(UArg *arg);
 
     /*!
@@ -447,6 +494,7 @@ instance:
      *  @param(fxn)     pointer to function
      *  @param(arg)     argument to function
      */
+    /* REQ_TAG(SYSBIOS-1033) */
     Void setFunc(FuncPtr fxn, UArg arg);
 
     /*!

@@ -37,7 +37,7 @@
 #include <xdc/std.h>
 #include <xdc/runtime/Types.h>
 
-#include <ti/devices/mtxx/mtl1.h>
+#include <ti/devices/mtxx/mtl1/mtl1.h>
 #include <ti/devices/mtxx/hwpi/hwpi_sysrtc.h>
 
 #include "package/internal/TimestampProvider.xdc.h"

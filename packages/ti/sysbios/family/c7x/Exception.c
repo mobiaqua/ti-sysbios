@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 Texas Instruments Incorporated
+ * Copyright (c) 2014-2020 Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -403,7 +403,6 @@ Void Exception_externalHandler(Void)
 /*
  *  ======== Exception_nmiHandler ========
  *  This function is called only if a legacy NMI exception has occurred.
- *  It checks the EFR register to determine what type of exceptions occurred.
  */
 Void Exception_nmiHandler(Void)
 {

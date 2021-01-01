@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -202,6 +202,21 @@ module Cache inherits ti.sysbios.interfaces.ICache
     config Bool enableForceWrThru = false;
 
     /*!
+     *  Disable Cache Line Fill Optimization
+     *
+     *  In normal cache operation there can be numerous outstanding data
+     *  cache line fill operations at a given time.  Set this flag to 'true'
+     *  to limit outstanding cache line fill operations to 2 (by setting
+     *  ACTLR.DLFO bit).
+     *
+     *  There is no default value for this because Core modules for parts
+     *  that use this Cache module will have their own idea about disabling
+     *  LF optimization.  This flag exists solely for user configuration
+     *  file to use in order to override the part's Core module decision.
+     */
+    metaonly config Bool disableLFOptimization;
+
+    /*!
      *  ======== disable ========
      *  Disables the 'type' cache(s)
      *
@@ -330,6 +345,12 @@ internal:
      *  Configure ACTLR FWT bit
      */
     Void configForceWrThru(Bool enable);
+
+    /*
+     *  ======== setDLFO ========
+     *  Set ACTLR.DLFO bit
+     */
+    Void setDLFO();
 
     struct Module_State {
         UInt32  l1dCacheLineSize;   // Size of L1D cache line in bytes

@@ -6,8 +6,8 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>The HeapMultiBuf module provides a multiple fixed-length runtime heap manager that can be used with the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.
-        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
+        <p>The HeapMultiBuf module provides a multiple fixed-length runtime heap manager that can be used with the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.
+        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
         <p> </p>
         <p>The HeapMultiBuf module currently supports creating instances from scripting only and not from the GUI</p>
         <p> </p>

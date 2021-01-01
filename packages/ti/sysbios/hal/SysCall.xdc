@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,7 @@ package ti.sysbios.hal;
 
 @CustomHeader
 
+/* REQ_TAG(SYSBIOS-569) */
 module SysCall inherits ti.sysbios.interfaces.ISysCall
 {
     /*!

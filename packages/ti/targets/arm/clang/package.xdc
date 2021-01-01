@@ -1,10 +1,10 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2018-2019, Texas Instruments Incorporated
+ * Copyright (c) 2018-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,11 +49,12 @@ requires ti.targets.arm.elf;
  *
  */
 package ti.targets.arm.clang [1,0,0] {
+    module M0;
+    module M3;
+    module M4;
+    module M4F;
     module M33;
     module M33F;
-    module M4F;
-    module M4;
-    module M3;
 }
 /*
 

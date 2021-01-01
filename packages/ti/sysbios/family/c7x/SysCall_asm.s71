@@ -1,0 +1,147 @@
+;
+;  Copyright (c) 2020, Texas Instruments Incorporated
+;  All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions
+;  are met:
+;
+;  *  Redistributions of source code must retain the above copyright
+;     notice, this list of conditions and the following disclaimer.
+;
+;  *  Redistributions in binary form must reproduce the above copyright
+;     notice, this list of conditions and the following disclaimer in the
+;     documentation and/or other materials provided with the distribution.
+;
+;  *  Neither the name of Texas Instruments Incorporated nor the names of
+;     its contributors may be used to endorse or promote products derived
+;     from this software without specific prior written permission.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+;  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+;  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+;  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+;  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+;  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+;  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+;
+; ======== SysCall_asm.s71 ========
+;
+
+        .cdecls C,NOLIST,"SysCall_asm.h"
+
+    .if $isdefed("__TI_ELFABI__")
+    .if __TI_ELFABI__
+        .asg ti_sysbios_knl_Task_Module__state__V, ti_sysbios_knl_Task_Module__state__V
+    .endif
+    .endif
+
+        .global _kernel_wrapper_funcs_begin
+        .global _kernel_wrapper_funcs_end
+        .global ti_sysbios_family_c7x_SysCall_enterPrivModeI__I
+        .global ti_sysbios_family_c7x_SysCall_enterUnprivModeI__I
+        .global ti_sysbios_family_c7x_SysCall_restorePrivModeI__I
+        .global ti_sysbios_family_c7x_SysCall_syscallHandler__I
+
+ti_sysbios_family_c7x_SysCall_Module__state__V .tag ti_sysbios_family_c7x_SysCall_Module_State
+ti_sysbios_knl_Task_Module__state__V .tag ti_sysbios_knl_Task_Module_State
+
+        .sect ".text:ti_sysbios_family_c7x_SysCall_syscallHandler__I"
+ti_sysbios_family_c7x_SysCall_syscallHandler__I:
+        .asmfunc
+
+        addkpc.d1  $PCR_OFFSET(_kernel_wrapper_funcs_begin), a5
+        cmpgtd.l1  a8, a5, a1
+  [!a1] b.b1       $PCR_OFFSET(validationFailed)
+
+        addkpc.d1  $PCR_OFFSET(_kernel_wrapper_funcs_end), a5
+        cmpgtd.l1  a8, a5, a1
+  [ a1] b.b1       $PCR_OFFSET(validationFailed)
+
+        addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_SysCall_Module__state__V), d0
+        ldd.d1     *d0(ti_sysbios_family_c7x_SysCall_Module_State.sysCallTable), d0
+        mv.d1      a0, d1
+        ldd.d1     *d0[d1], a5
+        ba.s1       a5         ; syscall fxn will do rets.b1 for us
+
+validationFailed:
+        mvc.s1 rp, a8
+||      std.d1 a8, *d15++(-0x10)
+
+        addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_SysCall_requestFailedFunc__C), a5
+        ldd.d1     *a5, a5
+        calla.s1   a5
+
+        mvc.s1 a8, rp
+        ldd.d1 *d15(0x10), a8
+||      addd.d2 d15, 0x10, d15
+
+        rets.b1
+
+        .endasmfunc
+
+        .sect ".text:ti_sysbios_family_c7x_SysCall_enterPrivModeI__I"
+ti_sysbios_family_c7x_SysCall_enterPrivModeI__I:
+        .asmfunc
+
+        mvk64.l1  3, a6          ; priv mode is 011b
+        shld.l1   a6, 32, a6     ; shift to syscall position
+        mvc.s1    a6, rxmr_s
+
+        mvc.s1    rp, a6
+        mvk64.l1  0, a5
+        mvk64.l1  2, a7
+        subd.l1   a5, a7, a5     ; create 0xfffffffffffffffe
+        andd.s1   a6, a5, a6     ; unset rp.syscall to signal no priv transition
+        mvc.s1    a6, rp
+
+        rets.b1
+
+        .endasmfunc
+
+        .sect ".text:ti_sysbios_family_c7x_SysCall_enterUnprivModeI__I"
+ti_sysbios_family_c7x_SysCall_enterUnprivModeI__I:
+        .asmfunc
+
+        mvk64.l1  2, a6          ; user mode is 010b
+        shld.l1   a6, 32, a6     ; shift to syscall position
+        mvc.s1    a6, rxmr_s
+
+        mvc.s1    rp, a6
+        ord.s1    a6, 1, a6      ; set rp.syscall to signal priv transition
+        mvc.s1    a6, rp
+
+        rets.b1
+
+        .endasmfunc
+
+        .sect ".text:ti_sysbios_family_c7x_SysCall_restorePrivModeI__I"
+ti_sysbios_family_c7x_SysCall_restorePrivModeI__I:
+        .asmfunc
+
+        addkpc.d1  $PCR_OFFSET(ti_sysbios_knl_Task_Module__state__V), a0
+        ldd.d1     *a0(ti_sysbios_knl_Task_Module_State.curTaskPrivileged), a1
+
+  [!a1] mvk64.l1  2, a6          ; user mode is 010b
+  [ a1] mvk64.l1  3, a6          ; priv mode is 011b
+        shld.l1   a6, 32, a6     ; shift to syscall position
+        mvc.s1    a6, rxmr_s
+
+	mvc.s1    tsr, a5
+	andd.s1   a5, 0x3, a5    ; isolate TSR.CXM
+	cmpeqd.l1 a5, a6, a0     ; check if restored mode same as current mode
+
+  [!a0] mvc.s1    rp, a6
+  [!a0] ord.s1    a6, 1, a6      ; set rp.syscall to signal priv transition
+  [!a0] mvc.s1    a6, rp
+
+        rets.b1
+
+        .endasmfunc
+
+        .end

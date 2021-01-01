@@ -386,7 +386,7 @@ void Clock::setMillenium()
 
 long Clock::getTicks()
 {
-    return ticks;
+    return (long)ticks;
 }
 
 int Clock::getId()

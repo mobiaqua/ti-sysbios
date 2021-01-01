@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -720,6 +720,11 @@ module Task
         msg: "A_invalidCoreId: Cannot pass a non-zero CoreId in a non-SMP application."
     };
 
+    /*! Asserted in Task_setHookContext */
+    config Assert.Id A_badContextId = {
+        msg: "A_badContextId: Hook context id is out of range."
+    };
+
     /*!
      *  Number of Task priorities supported. Default is 16.
      *
@@ -1352,13 +1357,14 @@ module Task
      *  ======== Task_disable ========
      *  Disable the task scheduler.
      *
-     *  {@link #disable} and {@link #restore} control Task scheduling.
-     *  {@link #disable} disables all other Tasks from running until
-     *  {@link #restore} is called. Hardware and Software interrupts
-     *  can still run.
+     *  {@link #disable Task_disable} and {@link #restore Task_restore}
+     *  control Task scheduling.
+     *  {@link #disable Task_disable} disables all other Tasks from running
+     *  until {@link #restore Task_restore} is called.
+     *  Hardware and Software interrupts can still run.
      *
-     *  {@link #disable} and {@link #restore} allow you to ensure that
-     *  statements
+     *  {@link #disable Task_disable} and {@link #restore Task_restore} allow
+     *  you to ensure that statements
      *  that must be performed together during critical processing are not
      *  preempted by other Tasks.
      *
@@ -1374,18 +1380,27 @@ module Task
      *  Task_restore(key);
      *  @p
      *
-     *  You can also use {@link #disable} and {@link #restore} to
+     *  You can also use {@link #disable Task_disable} and
+     *  {@link #restore Task_restore} to
      *  create several Tasks and allow them to be invoked in
      *  priority order.
      *
-     *  {@link #disable} calls can be nested.
+     *  {@link #disable Task_disable} calls can be nested.
      *
-     *  @b(returns)     key for use with {@link #restore}
+     *  @b(returns)     key for use with {@link #restore Task_restore}
      *
      *  @a(constraints)
      *  Do not call any function that can cause the current task to block
-     *  within a {@link #disable}/{@link #restore} block. For example,
+     *  within a {@link #disable Task_disable()}/
+     *  {@link #restore Task_restore()} block.
+     *  Doing so will result in application failure.
+     *  For example,
      *  {@link ti.sysbios.knl.Semaphore#pend Semaphore_pend}
+     *  (if timeout is non-zero),
+     *  {@link ti.sysbios.knl.Event#pend Event_pend}
+     *  (if timeout is non-zero),
+     *  {@link ti.sysbios.knl.Mailbox#pend Mailbox_pend} /
+     *  {@link ti.sysbios.knl.Mailbox#post Mailbox_post}
      *  (if timeout is non-zero),
      *  {@link #sleep}, {@link #yield}, and Memory_alloc can all
      *  cause blocking.
@@ -1828,12 +1843,19 @@ instance:
      */
     config UInt affinity;
 
-    /*! Privileged task */
+    /*!
+     *  Privileged task
+     *
+     *  'privileged' applies only when {@link ti.sysbios.BIOS#mpeEnabled}
+     *   == true.  Setting 'privileged' to false has no effect when
+     *  {@link ti.sysbios.BIOS#mpeEnabled} == false and therefore the Task
+     *  will actually run in privileged mode.
+     */
     /* REQ_TAG(SYSBIOS-575) */
     config Bool privileged = true;
 
     /*! Domain Handle */
-    /* REQ_TAG(SYSBIOS-575) */
+    /* REQ_TAG(SYSBIOS-570) */
     config Ptr domain = null;
 
     // -------- Handle Functions --------
@@ -2000,7 +2022,8 @@ instance:
      *  less than or equal to ({@link #numPriorities} - 1).  newpri can also
      *  be set to -1 which puts the the task into the INACTIVE state and the
      *  task will not run until its priority is raised at a later time by
-     *  another task.  Priority 0 is reserved for the idle task.
+     *  another task.  If {@link #enableIdleTask} is true, priority 0 is
+     *  reserved for the idle task.
      *  If newpri equals ({@link #numPriorities} - 1), execution of the task
      *  effectively locks out all other program activity, except for the
      *  handling of interrupts.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ Void GateHwi_Instance_init(GateHwi_Object *gate,
  */
 IArg GateHwi_enter(GateHwi_Object *obj)
 {
-    return(Hwi_disable());
+    return ((IArg)Hwi_disable());
 }
 
 /*

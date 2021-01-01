@@ -6,7 +6,7 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>Module that implements <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/knl/ISync.html">ISync</a> using ti.sysbios.knl.Event</p>
+        <p>Module that implements <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/knl/ISync.html">ISync</a> using ti.sysbios.knl.Event</p>
         <p> </p>
       </form></td>
   </tr>

@@ -95,6 +95,16 @@ _ti_sysbios_family_c28_TaskSupport_buildTaskStack:
         addb    xar4, #2
         movl    *xar4, xar5             ; store xar1 initial value 0
         addb    xar4, #2
+    .if (.TMS320C2800_FPU64 == 1)
+        movl    *xar4, xar5             ; store r4l initial value 0
+        addb    xar4, #2
+        movl    *xar4, xar5             ; store r5l initial value 0
+        addb    xar4, #2
+        movl    *xar4, xar5             ; store r6l initial value 0
+        addb    xar4, #2
+        movl    *xar4, xar5             ; store r7l initial value 0
+        addb    xar4, #2
+    .endif
     .if (.TMS320C2800_FPU32 == 1)
         movl    *xar4, xar5             ; store r4h initial value 0
         addb    xar4, #2
@@ -134,6 +144,12 @@ _ti_sysbios_family_c28_TaskSupport_swap__E:
         push    xar2
         push    xar1
 
+    .if (.TMS320C2800_FPU64 == 1)
+        mov32   *sp++, r4l
+        mov32   *sp++, r5l
+        mov32   *sp++, r6l
+        mov32   *sp++, r7l
+    .endif
     .if (.TMS320C2800_FPU32 == 1)
         mov32   *sp++, r4h
         mov32   *sp++, r5h
@@ -157,6 +173,12 @@ _ti_sysbios_family_c28_TaskSupport_swap__E:
         mov32   r6h, *--sp
         mov32   r5h, *--sp
         mov32   r4h, *--sp
+    .endif
+    .if (.TMS320C2800_FPU64 == 1)
+        mov32   r7l, *--sp
+        mov32   r6l, *--sp
+        mov32   r5l, *--sp
+        mov32   r4l, *--sp
     .endif
 
         pop     xar1                            ; pop xar1, xar2 and xar3

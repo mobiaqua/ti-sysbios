@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -102,6 +102,7 @@ import ti.sysbios.interfaces.ITimer;
 @ModuleStartup          /* to configure static timers */
 @InstanceInitStatic
 
+/* REQ_TAG(SYSBIOS-1020) */
 module Timer inherits ti.sysbios.interfaces.ITimer
 {
     /*! Max value of Timer period for PeriodType_COUNTS */
@@ -235,6 +236,9 @@ instance:
      *  ======== reconfig ========
      *  Used to modify static timer instances at runtime.
      *
+     *  @a(constraints)
+     *  Timer_reconfig() should not be called for a timer that has been started.
+     *
      *  @param(timerParams)     timer Params
      *  @param(tickFxn)         function that runs when timer expires
      */
@@ -295,6 +299,7 @@ internal:   /* not for client use */
         Hwi.Handle      hwi;
     }
 
+    /* REQ_TAG(SYSBIOS-1021) */
     struct Module_State {
         volatile UInt   tickCount;      /* SysTick Rollover counter */
         UInt            availMask;      /* available peripherals */

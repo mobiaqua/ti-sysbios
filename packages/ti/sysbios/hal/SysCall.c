@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,3 +32,16 @@
 /*
  *  ======== SysCall.c ========
  */
+/* REQ_TAG(SYSBIOS-569) */
+
+#include <xdc/std.h>
+
+#if defined(ti_targets_arp32_elf_ARP32) || defined(ti_targets_arp32_elf_ARP32_far)
+/*
+ * Suppress "warning: a translation unit must contain at least one declaration"
+ * from ARP32 compiler. The APR32 compiler does not like an empty .c file.
+ */
+void SysCall_dummy(void)
+{
+}
+#endif

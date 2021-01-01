@@ -6,8 +6,8 @@
 <html><body><table>
   <tr>
       <td><form>
-        <p>The HeapBuf module provides a deterministic fixed-length runtime heap manager that can be used with the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.
-        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipse.org/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
+        <p>The HeapBuf module provides a deterministic fixed-length runtime heap manager that can be used with the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.
+        In most cases, runtime allocation is handled by the <a href="ref:xdc.runtime.Memory">default heap</a> defined by the <a href="http://rtsc.eclipseprojects.io/cdoc-tip/index.html#xdc/runtime/Memory.html">Memory</a> module.</p>
         <p> </p>
       </form></td>
   </tr>

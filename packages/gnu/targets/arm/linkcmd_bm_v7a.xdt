@@ -86,7 +86,7 @@ REGION_ALIAS("REGION_ARM_EXIDX", `Program.platform.dataMemory`);
 /*
  * Linker command file contributions from all loaded packages:
  */
-%var _utils = xdc.loadCapsule("gnu/targets/linkUtils.xs");
+%var _utils = xdc.loadCapsule("gnu/targets/arm/linkUtils.xs");
 `_utils.genContributions($args)`
 
 SECTIONS {

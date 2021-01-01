@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -209,6 +209,7 @@ module Mmu
      *  Structure containing attributes for memory map entry
      */
     struct MapAttrs {
+        Bool       ns;
         AccessPerm accessPerm;      /*! privileged & user access permissions  */
         Bool       privExecute;     /*! privileged execute permission         */
         Bool       userExecute;     /*! user execute permission               */
@@ -273,6 +274,7 @@ module Mmu
      *  default descriptor attributes structure
      */
     config MapAttrs defaultMapAttrs = {
+        ns: 1,
         accessPerm: AccessPerm_PRIV_RW_USER_NONE,
         privExecute: true,
         userExecute: false,
@@ -394,7 +396,19 @@ module Mmu
      *  To prevent placement of the Mmu tables altogether, set to empty
      *  string "".
      */
-    config String tableMemory = "MSMC";
+    config String tableMemory = "DDR";
+
+    /*!
+     *  ======== tableMemory_NS ========
+     *  Memory segment in which to place Mmu tables
+     *
+     *  If set to a non-empty string, this config param identifies the memory
+     *  segment in which the Mmu tables are placed.
+     *
+     *  To prevent placement of the Mmu tables altogether, set to empty
+     *  string "".
+     */
+    config String tableMemory_NS = "MSMC";
 
     /*!
      *  ======== tableArraySection ========
@@ -407,6 +421,18 @@ module Mmu
      */
     metaonly config String tableArraySection =
         ".data.ti_sysbios_family_c7x_Mmu_tableArray";
+
+    /*!
+     *  ======== tableArraySection_NS ========
+     *  Contains a table array and some state variables.
+     *  This section is uninitialized.
+     *
+     *  Note: Memory containing the table array must be marked as inner &
+     *  and outer shareable, and inner and outer write-back write-allocate
+     *  cacheable.
+     */
+    metaonly config String tableArraySection_NS =
+        ".data.ti_sysbios_family_c7x_Mmu_tableArray_NS";
 
     /*!
      *  ======== tableArrayLen ========
@@ -478,7 +504,7 @@ module Mmu
      *  @param(attrs)         Memory region attributes
      *  @b(returns)           Status (True-success, False-failed)
      */
-    Bool map(UInt64 vaddr, UInt64 paddr, SizeT size, MapAttrs *attrs);
+    Bool map(UInt64 vaddr, UInt64 paddr, SizeT size, MapAttrs *attrs, Bool secure);
 
     /*!
      *  ======== setMAIR ========
@@ -575,6 +601,11 @@ internal:
     Void enableI();
 
     /*
+     *  ======== enableI_secure ========
+     */
+    Void enableI_secure();
+
+    /*
      *  ======== configInfo ========
      *  This is a const object that contains pre-initialized config info
      *  about the MMU. Goal is to save some computation time at runtime
@@ -591,12 +622,12 @@ internal:
     /*
      *  ======== addTableEntry ========
      */
-    UInt64* addTableEntry(UInt64 *tablePtr, UInt16 tableIdx, MapAttrs *attrs);
+    UInt64* addTableEntry(UInt64 *tablePtr, UInt16 tableIdx, MapAttrs *attrs, Bool secure);
 
     /*
      *  ======== allocTable ========
      */
-    UInt64* allocTable();
+    UInt64* allocTable(Bool secure);
 
     /*
      *  ======== freeTable ========
@@ -606,7 +637,7 @@ internal:
     /*
      *  ======== init ========
      */
-    Void init(Ptr tableAddr);
+    Void init(Ptr tableAddr, Bool secure);
 
     /*
      *  ======== readBlockEntry ========
@@ -623,12 +654,12 @@ internal:
      *  ======== tableWalk ========
      */
     Bool tableWalk(UInt8 level, UInt64 *tablePtr, UInt64 *vaddr, UInt64 *paddr,
-        SizeT *size, MapAttrs *attrs);
+        SizeT *size, MapAttrs *attrs, Bool secure);
 
     /*
      *  ======== setTCR ========
      */
-    Void setTCR(UInt64 regVal);
+    Void setTCR(UInt64 regVal, Bool secure);
 
     /*! Module state */
     struct Module_State {

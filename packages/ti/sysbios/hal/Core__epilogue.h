@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@ extern "C" {
  *  ======== Core_interruptCore ========
  */
 #ifdef ti_sysbios_hal_Core_delegate_interruptCore
-    extern Void ti_sysbios_hal_Core_delegate_interruptCore(UInt);
+    extern Void ti_sysbios_hal_Core_delegate_interruptCore(UInt coreId);
 #define ti_sysbios_hal_Core_interruptCore(x) ti_sysbios_hal_Core_delegate_interruptCore(x)
 #else /* !ti_sysbios_hal_Core_delegate_interruptCore */
 #define ti_sysbios_hal_Core_interruptCore(x) ti_sysbios_hal_Core_CoreProxy_interruptCore(x)

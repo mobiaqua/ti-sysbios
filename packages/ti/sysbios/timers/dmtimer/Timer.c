@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,8 @@
 #else
 #include <ti/sysbios/hal/Hwi.h>
 #endif
+
+#include <ti/sysbios/knl/Task.h>
 
 #include <ti/sysbios/BIOS.h>
 #include "package/internal/Timer.xdc.h"
@@ -194,7 +196,7 @@ Void Timer_initDevice(Timer_Object *obj, Error_Block *eb)
 Int Timer_deviceConfig(Timer_Object *obj, Error_Block *eb)
 {
     TimerRegs *timer;
-    UInt hwiKey;
+    UInt taskKey;
     UInt32 tsicr;
 
     timer = (TimerRegs *)Timer_module->device[obj->id].baseAddr;
@@ -202,7 +204,12 @@ Int Timer_deviceConfig(Timer_Object *obj, Error_Block *eb)
     /* initialize the timer */
     Timer_initDevice(obj, eb);
 
-    hwiKey = Hwi_disable();
+    /*
+     * As this timer's interrupt has been disabled by Timer_initDevice(),
+     * only task thread pre-emption is required to be disabled while
+     * initializing the timer registers.
+     */
+    taskKey = Task_disable();
 
     /* if doing SOFTRESET: do it first before setting other flags */
     if (obj->tiocpCfg & TIMER_TIOCP_CFG_SOFTRESET_FLAG) {
@@ -243,7 +250,7 @@ Int Timer_deviceConfig(Timer_Object *obj, Error_Block *eb)
     /* set the period */
     if (obj->periodType == Timer_PeriodType_MICROSECS) {
         if (!Timer_setPeriodMicroSecs(obj, obj->period)) {
-            Hwi_restore(hwiKey);
+            Task_restore(taskKey);
             Error_raise(eb, Timer_E_cannotSupport, obj->period, 0);
             return (3);
         }
@@ -279,7 +286,7 @@ Int Timer_deviceConfig(Timer_Object *obj, Error_Block *eb)
     while (timer->twps & TIMER_TWPS_W_PEND_TCLR)
         ;
 
-    Hwi_restore(hwiKey);
+    Task_restore(taskKey);
     return (0);
 }
 
@@ -401,6 +408,7 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
     if (params->intNum == -1) {
         if (Timer_module->device[obj->id].intNum == -1) {
             Error_raise(eb, Timer_E_badIntNum, params->intNum, 0);
+            return (3);
         }
     }
 
@@ -649,7 +657,7 @@ UInt32 Timer_getCurrentTick(Timer_Object *obj, Bool saveFlag)
  */
 Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
 {
-    if (obj->extFreq.lo != NULL) {
+    if (obj->extFreq.lo != 0U) {
         *freq = obj->extFreq;
     }
     else {
@@ -679,14 +687,7 @@ UInt Timer_getNumTimers()
  */
 UInt32 Timer_getPeriod(Timer_Object *obj)
 {
-    UInt32 tldr = ((TimerRegs *)Timer_module->device[obj->id].baseAddr)->tldr;
-
-    if (obj->runMode != Timer_RunMode_DYNAMIC) {
-        return (Timer_MAX_PERIOD - tldr);
-    }
-    else {
-        return (obj->period);
-    }
+    return (obj->period);
 }
 
 /*

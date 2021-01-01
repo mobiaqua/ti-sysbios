@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,7 @@ function getAsmFiles(targetName)
         case "ti.targets.C28_large":
         case "ti.targets.C28_float":
         case "ti.targets.elf.C28_float":
+        case "ti.targets.elf.C28_float64":
             return (["Clobber_asm.s28"]);
             break;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2019 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +38,19 @@
 #define ti_posix_ccs_unistd__include
 
 /* compiler vendor check */
+/* short-term migration warning; ticlang users should migrate away */
+#if defined(__clang__)
+#warning ticlang users should migrate to the ti/posix/ticlang include path
+#endif
+
 #if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.
+#endif
+
+/* CODEGEN-6425 work-around; remove when bug is fixed */
+#if defined(__clang__) && defined(__ti_version__)
+#pragma clang system_header
 #endif
 
 #include "sys/types.h"

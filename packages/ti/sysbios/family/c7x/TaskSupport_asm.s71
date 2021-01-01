@@ -1,4 +1,35 @@
 ;
+;  Copyright (c) 2016-2020, Texas Instruments Incorporated
+;  All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions
+;  are met:
+;
+;  *  Redistributions of source code must retain the above copyright
+;     notice, this list of conditions and the following disclaimer.
+;
+;  *  Redistributions in binary form must reproduce the above copyright
+;     notice, this list of conditions and the following disclaimer in the
+;     documentation and/or other materials provided with the distribution.
+;
+;  *  Neither the name of Texas Instruments Incorporated nor the names of
+;     its contributors may be used to endorse or promote products derived
+;     from this software without specific prior written permission.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+;  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+;  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+;  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+;  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+;  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+;  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+;  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+;  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+;
 ; ======== TaskSupport_asm.s71 ========
 ;
 ;
@@ -16,18 +47,22 @@ SWREGS  .set    10                      ; number of regs saved in _Task_switch
     .if __TI_ELFABI__
         .asg ti_sysbios_family_c7x_TaskSupport_buildTaskStack, _ti_sysbios_family_c7x_TaskSupport_buildTaskStack
         .asg ti_sysbios_family_c7x_TaskSupport_glue, _ti_sysbios_family_c7x_TaskSupport_glue
+        .asg ti_sysbios_family_c7x_TaskSupport_glueUnpriv, _ti_sysbios_family_c7x_TaskSupport_glueUnpriv
         .asg ti_sysbios_family_c7x_TaskSupport_swap__E, _ti_sysbios_family_c7x_TaskSupport_swap__E
     .endif
     .endif
 
         .global ti_sysbios_family_c7x_TaskSupport_buildTaskStack
         .global ti_sysbios_family_c7x_TaskSupport_glue
+        .global ti_sysbios_family_c7x_TaskSupport_glueUnpriv
         .global ti_sysbios_family_c7x_TaskSupport_swap__E
+        .global ti_sysbios_knl_Task_exit__E
+        .global ti_sysbios_BIOS_mpeEnabled__C
 
 
 ;
 ;
-;  Here is a pseudo image of the initial C64 task stack:
+;  Here is a pseudo image of the initial C7x task stack:
 ;
 ;   saved-by-callee registers
 ;   Task enter()
@@ -70,9 +105,9 @@ SWREGS  .set    10                      ; number of regs saved in _Task_switch
 ;
 
 ;
-;  ======== Task_buildTaskStack ========
+;  ======== TaskSupport_buildTaskStack ========
 ;
-;  Task_buildTaskStack(stack, fxn, argv, exit, entry, TCSP)
+;  TaskSupport_buildTaskStack(stack, fxn, argv, exit, entry, TCSP, privileged)
 ;
 ;
 ;
@@ -90,6 +125,7 @@ ENTRY   .set    a7                      ; 4th argument
 ARG0    .set    a8                      ; 5th argument
 ARG1    .set    a9                      ; 6th argument
 TCSP    .set    a10                     ; 7th argument
+PRIV    .set    a11                     ; 8th argument
 RETVAL  .set    a4                      ; return value
 
 ;
@@ -132,7 +168,13 @@ ti_sysbios_family_c7x_TaskSupport_buildTaskStack:
 
         ; allocate frame for swap
         addd.d1    STACK, -Task_SWITCHFRAMESIZE*8, STACK
-        addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_TaskSupport_glue), a3
+
+        addkpc.d1  $PCR_OFFSET(ti_sysbios_BIOS_mpeEnabled__C), a0
+        lduh.d1    *a0, a0
+  [ a0] mv.d1      PRIV, a0                      ; if mpeEnabled, use priv flag
+||[!a0] mvku32.l1  1, a0                         ; if !mpeEnabled, use glue fxn
+  [ a0] addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_TaskSupport_glue), a3
+  [!a0] addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_TaskSupport_glueUnpriv), a3
 
         std.d1     ENTRY, *STACK[Task_SWITCHRET]      ; entry addr (Task_enter)
         std.d1     a3,    *STACK[Task_SWITCHRP]       ; glue addr
@@ -175,6 +217,13 @@ ti_sysbios_family_c7x_TaskSupport_swap__E:
 
         mvc.s1     tcsp, a3
         mvc.s1     tsr, a2
+
+; research if we should do automatically for task (would save user from a
+; difficult debug situation). problem could happen if last valid se read from
+; valid memory ends up spilling into invalid memory.
+; flush out any pending cache operations (that use SE)
+;;if SE is open in TSR
+;;	vmv.l2     *se0|1
 
         mv.d1      SP, a0
         std.d1     SP, *a4
@@ -267,87 +316,46 @@ ti_sysbios_family_c7x_TaskSupport_glue:
         nop
         ba.s1      a1                      ; "return" to new task
 
-  .if 0 ; just playing around below
-        mvc.s1     efr, a2
-        mvku32.l1  3, a0
-        mvku32.l1  1, a2
-        revt.s1    a2
-        mvc.s1     tsr, a2
-        mvc.s1     a0, eeset
-        mvc.s1     a0, efset
-        mvc.s1     eer, a2
-        mvc.s1     a0, TCR
-        mvc.s1     TCR, a0
-        mvc.s1     TCR, a0
-        mvc.s1     TCR, a0
-        mvc.s1     TCR, a0
-        mvc.s1     ahpee, a0  ; active highest priority enabled event
-        nop
-        nop
-        nop
-        nop
-        nop
-        nop
-        mvc.s1     efr, a2
+        .endasmfunc
 
-        mvc.s1     a1, spbr
-        mvc.s1     a1, umer
-        mvc.s1     a1, tcsp
-        mvc.s1     tsc, a2
-        mvc.s1     tsc, a2
-        mvc.s1     tsr, a2
-        mvk64.l1   -1, a3
-        mvc.s1     eer, a2
-        mvc.s1     a3, eeset
-        mvc.s1     eer, a2
-        mvc.s1     efr, a3
-        mvk64.l1   -1, a3
-        revt.s1    a3
-        nop
-        mvc.s1     tsr, a2
-        nop
-        devt.s1    a2
-        nop
-        mvc.s1     tsr, a3
-        nop
-        revt.s1    a2
-        nop
-        mvc.s1     tsc, a2
-        mvc.s1     a2, estp_ss
-        mvc.s1     a2, ecsp_ss
-        mvc.s1     a2, tcsp
-        mvk64.l1   -1, a0
-        mvc.s1     efr, a3
-        mvc.s1     a0, efset
-        mvc.s1     efr, a3
+;
+;  ======== TaskSupport_glueUnpriv ========
+;
+;  This glue function is executed immediately before the executing "fxn"
+;  passed to Task_start.  This function loads the parameters to "fxn" into
+;  registers - necessary for the C71 register passing model.
+;
+        .sect ".text:ti_sysbios_family_c7x_TaskSupport_glueUnpriv"
+        .clink
 
-;; recognized by assembler
-;;        mvc.s1     tsc, a0    ; time stamp counter
-;;        mvc.s1     efr, a0    ; event flag register
-;;        mvc.s1     eer, a0    ; event enable register
-;;        mvc.s1     tcsp, a0   ; task context save pointer
-;;        mvc.s1     spbr, a0   ; stack pointer boundary register
-;;        mvc.s1     ahpee, a0  ; active highest priority enabled event
-;;        mvc.s1     phpee, a0  ; pending highest priority enabled event
-;;        mvc.s1     ierr, a0
+ti_sysbios_family_c7x_TaskSupport_glueUnpriv:
+        .asmfunc
 
-;; not recognized by assembler
-;;        mvc.c2     cucr0, a0  ; .C unit control register 0
-;;        mvc.s1     cucr1, a0  ; .C unit control register 1
-;;        mvc.s1     cucr2, a0  ; .C unit control register 2
-;;        mvc.s1     cucr3, a0  ; .C unit control register 3
-;;        mvc.s1     a2, eclr
-;;        mvc.s1     a2, esr
-;;        mvc.s1     a0, ISTP
-;;        mvc.s1     a0, IER
-;;        mvc.s1     a0, IFR
-;;        mvc.s1     a0, ier
-;;        mvc.s1     a0, irp
-;;        mvc.s1     a0, irp_srs
-;;        mvc.s1     a0, ICLM_SRS
-;;        mvc.s1     a0, ICSP_SRS
-;;        mvc.s1     a0, CRINDEX
+        ;
+        ; syscallHandler uses a8 to validate calling fxn.
+        ; Would normally save/restore it but doesn't apply here.
+        ;
+        addkpc.d1  $PCR_OFFSET(ti_sysbios_family_c7x_TaskSupport_glueUnpriv), a8
+        syscall.b1 1                               ; enter unpriv mode
 
-  .endif
+syscall_ret:
+
+; We must maintain 8-byte stack alignment, so do a one-time even-word
+; adjustment after loading registers from the stack frame.
+
+        ldd.d1     *SP[Task_GLUEFXN], a1           ; start address of new task
+        ldd.d1     *SP[Task_GLUEARGV1], a5         ; arg 1
+        ldd.d1     *SP[Task_GLUEARGV0], a4         ; arg 0
+        addd.d1    SP, Task_GLUEFRAMESIZE*8, SP
+
+        calla.s1   a1                              ; call user task
+
+        ;
+        ; syscallHandler uses a8 to validate calling fxn which should
+        ; still be valid from above (just needs to be somewhere in this fxn).
+        ;
+        syscall.b1 0                               ; enter priv mode
+
+        b.b1       ti_sysbios_knl_Task_exit__E
 
         .endasmfunc

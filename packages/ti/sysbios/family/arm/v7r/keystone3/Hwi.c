@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -582,7 +582,12 @@ Void Hwi_reconfig(Hwi_Object *hwi, Hwi_FuncPtr fxn, const Hwi_Params *params)
         hwi->priority = Hwi_DEFAULT_INT_PRIORITY;
     }
     else {
-        hwi->priority = params->priority;
+        if (params->priority == 0 && intNum != Hwi_dummyIRQ) {
+            Error_raise(0, Hwi_E_reservedPriority, 0, 0);
+        }
+        else {
+            hwi->priority = params->priority;
+        }
     }
 
     if (params->enableInt) {
@@ -655,7 +660,12 @@ Void Hwi_setHookContext(Hwi_Object *hwi, Int id, Ptr hookContext)
 Void Hwi_setPriority(UInt intNum, UInt priority)
 {
     if (intNum < Hwi_NUM_INTERRUPTS) {
-        Hwi_vim.PRIORITY[intNum] = priority;
+        if (priority == 0 && intNum != Hwi_dummyIRQ) {
+            Error_raise(0, Hwi_E_reservedPriority, 0, 0);
+        }
+        else {
+            Hwi_vim.PRIORITY[intNum] = priority;
+        }
     }
     else {
         Error_raise(0, Hwi_E_badIntNum, intNum, 0);
@@ -701,6 +711,34 @@ Void interrupt Hwi_dispatchFIQC()
 
     /* Ack end of interrupt */
     Hwi_vim.FIQVECADDRESS = intNum;
+}
+
+/*
+ *  ======== dummyFxn ========
+ *  Doesn't actually execute but is needed for the Hwi.create that's invoked
+ *  for the workaround for SYSBIOS-1422
+ */
+Void dummyFxn(UArg arg)
+{
+}
+
+/*
+ *  ======== preemptionWA ========
+ *  Function implementing the workaround for SYSBIOS-1422
+ */
+static Void preemptionWA(Void)
+{
+    Hwi_post(Hwi_dummyIRQ);
+
+    /* de-assert IRQ */
+    Hwi_vim.IRQVECADDRESS;
+
+    /* clear the dummyIRQ status */
+    Hwi_vim.GROUP[Hwi_dummyIRQ >> 5].ENABLEDSTATUSCLEAR =
+        (UInt)(1 << (Hwi_dummyIRQ & 0x1f));
+
+    /* Ack end of interrupt */
+    Hwi_vim.IRQVECADDRESS = Hwi_dummyIRQ;
 }
 
 /*
@@ -754,6 +792,8 @@ Void Hwi_dispatchIRQC(Hwi_Irp irp)
         Hwi_vim.GROUP[intNum >> 5].ENABLEDSTATUSCLEAR =
             (UInt)(1 << (intNum & 0x1f));
     }
+
+    preemptionWA();
 
     if (Hwi_dispatcherAutoNestingSupport) {
         Hwi_enable();

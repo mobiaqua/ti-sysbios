@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -507,9 +507,14 @@ function module$validate()
      * Verify that the user did not set a BIOS cpuFreq which is different from
      * what's configured in the Boot module.
      *
-     * For 28x devices...
+     * For 28x devices using ti.catalog.c2800.init.Boot ...
      */
-    if (Program.build.target.name.match(/28/)) {
+    if ((Program.build.target.name.match(/28/)) &&
+        (!Program.cpu.deviceName.match(/F2838/)) &&
+        (!Program.cpu.deviceName.match(/F2807/)) &&
+        (!Program.cpu.deviceName.match(/F2837/)) &&
+        (!Program.cpu.deviceName.match(/F28004/))) {
+
         var Boot28 = xdc.module('ti.catalog.c2800.init.Boot');
 
         /* Only do this check if the Boot module is configuring the PLL. */

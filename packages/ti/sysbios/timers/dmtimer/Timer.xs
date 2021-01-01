@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -103,7 +103,7 @@ function getAsmFiles(targetName)
             return (["Timer_asm.sarp32"]);
             break;
 
-	default:
+        default:
             return (null);
             break;
     }
@@ -1348,7 +1348,7 @@ used by linux */
                     },
                     {
                         name: "GPTimer10",
-                        baseAddr: 0x48086000,  /* L4 address */ 
+                        baseAddr: 0x48086000,  /* L4 address */
                         intNum:  78,
                         eventId: -1,
                         intFreq: {
@@ -1476,6 +1476,130 @@ used by linux */
                         name: "DMTimer11",
                         baseAddr: 0x024B0000,
                         intNum:  267,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                ]
+            },
+            "AM64.*": {
+                timer: [
+                    {
+                        name: "DMTimer0",
+                        baseAddr: 0x02400000,
+                        intNum: 152,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer1",
+                        baseAddr: 0x02410000,
+                        intNum:  153,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer2",
+                        baseAddr: 0x02420000,
+                        intNum:  154,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer3",
+                        baseAddr: 0x02430000,
+                        intNum:  155,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer4",
+                        baseAddr: 0x02440000,
+                        intNum:  156,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer5",
+                        baseAddr: 0x02450000,
+                        intNum:  157,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer6",
+                        baseAddr: 0x02460000,
+                        intNum:  158,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer7",
+                        baseAddr: 0x02470000,
+                        intNum:  159,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer8",
+                        baseAddr: 0x02480000,
+                        intNum:  160,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer9",
+                        baseAddr: 0x02490000,
+                        intNum:  161,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer10",
+                        baseAddr: 0x024A0000,
+                        intNum:  162,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer11",
+                        baseAddr: 0x024B0000,
+                        intNum:  163,
                         eventId: -1,
                         intFreq: {
                             lo: 25000000,
@@ -1646,6 +1770,50 @@ used by linux */
                         name: "DMTimer3",
                         baseAddr: 0x40430000,
                         intNum:  41,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                ]
+            },
+            "AM64.*": {
+                timer: [
+                    {
+                        name: "DMTimer0",
+                        baseAddr: 0x02400000,
+                        intNum:  152,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer1",
+                        baseAddr: 0x02410000,
+                        intNum:  153,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer2",
+                        baseAddr: 0x02420000,
+                        intNum:  154,
+                        eventId: -1,
+                        intFreq: {
+                            lo: 25000000,
+                            hi: 0,
+                        },
+                    },
+                    {
+                        name: "DMTimer3",
+                        baseAddr: 0x02430000,
+                        intNum:  155,
                         eventId: -1,
                         intFreq: {
                             lo: 25000000,
@@ -1936,7 +2104,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer4",
-                        baseAddr: 0x48036000,  /* L3 address */ 
+                        baseAddr: 0x48036000,  /* L3 address */
                         intNum:  54,
                         eventId: -1,
                         intFreq: {
@@ -1946,7 +2114,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer9",
-                        baseAddr: 0x4803e000,  /* L3 address */ 
+                        baseAddr: 0x4803e000,  /* L3 address */
                         intNum:  55,
                         eventId: -1,
                         intFreq: {
@@ -1956,7 +2124,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer11",
-                        baseAddr: 0x48088000,  /* L3 address */ 
+                        baseAddr: 0x48088000,  /* L3 address */
                         intNum:  56,
                         eventId: -1,
                         intFreq: {
@@ -1982,7 +2150,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer4",
-                        baseAddr: 0x48036000,  /* L3 address */ 
+                        baseAddr: 0x48036000,  /* L3 address */
                         intNum:  54,
                         eventId: -1,
                         intFreq: {
@@ -1992,7 +2160,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer9",
-                        baseAddr: 0x4803e000,  /* L3 address */ 
+                        baseAddr: 0x4803e000,  /* L3 address */
                         intNum:  55,
                         eventId: -1,
                         intFreq: {
@@ -2002,7 +2170,7 @@ used by DSP */
                     },
                     {
                         name: "GPTimer11",
-                        baseAddr: 0x48088000,  /* L3 address */ 
+                        baseAddr: 0x48088000,  /* L3 address */
                         intNum:  56,
                         eventId: -1,
                         intFreq: {
@@ -2426,7 +2594,7 @@ used by DSP */
                     },
                 ]
            },
-	   "TDA3XX" : {
+           "TDA3XX" : {
                 timer: [
                     {
                         name: "GPTimer1",
@@ -2519,67 +2687,67 @@ used by DSP */
     deviceTable["ti.catalog.arm.nda"]["Ducati"] =
         deviceTable["ti.catalog.arm.cortexm3"]["OMAP4430"];
 
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI811X"] = 
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI811X"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI811X"] = 
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI811X"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.c6000"]["TMS320TI811X"] = 
+    deviceTable["ti.catalog.c6000"]["TMS320TI811X"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI813X"] = 
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI813X"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI814X"];
-    
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI813X"] = 
+
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI813X"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320DM8148"] = 
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320DM8148"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI814X"];
-    
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320DM8148"] = 
+
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320DM8148"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.c6000"]["TMS320DM8148"] = 
+    deviceTable["ti.catalog.c6000"]["TMS320DM8148"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI814X"];
-    
-    deviceTable["ti.catalog.arm"]["TMS320CDM740"] = 
+
+    deviceTable["ti.catalog.arm"]["TMS320CDM740"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI816X"];
 
-    deviceTable["ti.catalog.c6000"]["TMS320CDM740"] = 
+    deviceTable["ti.catalog.c6000"]["TMS320CDM740"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI816X"];
 
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320C6A8168"] = 
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320C6A8168"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI816X"];
 
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320C6A8168"] = 
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320C6A8168"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI816X"];
 
-    deviceTable["ti.catalog.c6000"]["TMS320C6A8168"] = 
+    deviceTable["ti.catalog.c6000"]["TMS320C6A8168"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI816X"];
-    
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320DM8168"] = 
+
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320DM8168"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI816X"];
-    
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320DM8168"] = 
+
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320DM8168"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI816X"];
-    
-    deviceTable["ti.catalog.c6000"]["TMS320DM8168"] = 
+
+    deviceTable["ti.catalog.c6000"]["TMS320DM8168"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI816X"];
-    
-    deviceTable["ti.catalog.arm.cortexm3"]["TMS320C6A8149"] = 
+
+    deviceTable["ti.catalog.arm.cortexm3"]["TMS320C6A8149"] =
         deviceTable["ti.catalog.arm.cortexm3"]["TMS320TI814X"];
-    
-    deviceTable["ti.catalog.arm.cortexa8"]["TMS320C6A8149"] = 
+
+    deviceTable["ti.catalog.arm.cortexa8"]["TMS320C6A8149"] =
         deviceTable["ti.catalog.arm.cortexa8"]["TMS320TI814X"];
 
-    deviceTable["ti.catalog.c6000"]["TMS320C6A8149"] = 
+    deviceTable["ti.catalog.c6000"]["TMS320C6A8149"] =
         deviceTable["ti.catalog.c6000"]["TMS320TI814X"];
-    
-    deviceTable["ti.catalog.arm.cortexa8"]["AM3359"] = 
+
+    deviceTable["ti.catalog.arm.cortexa8"]["AM335.*"] =
         deviceTable["ti.catalog.arm.cortexa8"]["AM335X"];
 
-    deviceTable["ti.catalog.arm.cortexm3"]["OMAP5430"] = 
+    deviceTable["ti.catalog.arm.cortexm3"]["OMAP5430"] =
         deviceTable["ti.catalog.arm.cortexm4"]["OMAP5430"];
 
     deviceTable["ti.catalog.arm.cortexm4"]["Vayu"] =
@@ -2775,7 +2943,7 @@ function module$static$init(mod, params)
     }
 
     mod.handles.length = mod.device.length;
-        
+
     /* init the module state fields for each timer */
     for (var i=0; i < mod.device.length; i++) {
         mod.device[i].baseAddr = Timer.timerSettings[i].baseAddr;
@@ -2790,7 +2958,7 @@ function module$static$init(mod, params)
         mod.handles[i] = null;
     }
 
-    /* 
+    /*
      * plug Timer.startup into BIOS.startupFxns array
      */
     BIOS.addUserStartupFunction(Timer.startup);
@@ -2803,7 +2971,7 @@ function instance$static$init(obj, id, tickFxn, params)
 {
     var modObj = this.$module.$object;
     var device = deviceTable[catalogName][deviceTableName];
- 
+
     /* set flag because static instances need to be started */
     Timer.startupNeeded = true;
 
@@ -2862,7 +3030,7 @@ function instance$static$init(obj, id, tickFxn, params)
     obj.periodType = params.periodType;
     obj.arg = params.arg;
     obj.tickFxn = tickFxn;
-    
+
     if (params.intNum == -1) {
         if (Timer.timerSettings[obj.id].intNum == -1) {
             Timer.$logFatal("Timer intNum is not valid. Please use DMTimer " +
@@ -2876,16 +3044,16 @@ function instance$static$init(obj, id, tickFxn, params)
     else {
         obj.intNum = params.intNum;
     }
-    
+
     if (params.eventId == -1) {
         obj.useDefaultEventId = true;
         obj.eventId = Timer.timerSettings[obj.id].eventId;
     }
     else {
-        obj.useDefaultEventId = false; 
+        obj.useDefaultEventId = false;
         obj.eventId = params.eventId;
     }
-    
+
     obj.extFreq.lo = params.extFreq.lo;
     obj.extFreq.hi = 0;
 
@@ -2936,7 +3104,7 @@ function getEnumString(enumProperty)
     /*
      *  Split the string into tokens in order to get rid of the huge package
      *  path that precedes the enum string name. Return the last 2 tokens
-     *  concatenated with "_" 
+     *  concatenated with "_"
      */
     var enumStrArray = String(enumProperty).split(".");
     var len = enumStrArray.length;

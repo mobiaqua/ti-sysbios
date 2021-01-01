@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2014-2018, Texas Instruments Incorporated
+@  Copyright (c) 2014-2020, Texas Instruments Incorporated
 @  All rights reserved.
 @ 
 @  Redistribution and use in source and binary forms, with or without
@@ -36,92 +36,9 @@
         .arm
 
         .global ti_sysbios_family_arm_TaskSupport_swap__E
-        .global ti_sysbios_family_arm_TaskSupport_buildTaskStack
         .global ti_sysbios_family_arm_TaskSupport_glue
 
         .align  4
-
-
-@
-@  ======== Task_buildTaskStack ========
-@
-@  Task_buildTaskStack(stack, fxn, exit, entry, arg0, arg1)
-@                                     r0,  r1,   r2,    r3,  [0],  [4]
-@
-@  initial stack image:
-@
-@               d8-d15 = 0      if vfp supported
-@               r4  = -1
-@               r5  = -1 
-@               r6  = -1     
-@               r7  = -1     
-@               r8  = -1     
-@               r9  = -1     
-@               r10 = -1     
-@               r11 = -1     
-@               glue    
-@               arg0    
-@               arg1    
-@               fxn    
-@               exit    
-@               enter    
-@
-
-STACK   .req     r0     @ 1st argument, return value
-FXN     .req     r1     @ 2nd argument
-EXIT    .req     r2     @ 3rd argument
-ENTER   .req     r3     @ 4th argument
-.set    ARG0,    0      @ 5th argument (stack offset)
-.set    ARG1,    4      @ 6th argument (stack offset)
-
-        .section .text.ti_sysbios_family_arm_TaskSupport_buildTaskStack
-        .func ti_sysbios_family_arm_TaskSupport_buildTaskStack
-
-ti_sysbios_family_arm_TaskSupport_buildTaskStack:
-
-        str     ENTER, [STACK,#-4]!
-        str     EXIT, [STACK,#-4]!
-        str     FXN, [STACK,#-4]!
-
-        ldr     r1, [sp, #ARG1]
-        str     r1, [STACK,#-4]!
-        ldr     r1, [sp, #ARG0]
-        str     r1, [STACK,#-4]!
-
-        ldr     r1, glueAddr
-        str     r1, [STACK,#-4]!
-
-        eor     r1, r1, r1          @ set r1 to 0
-        sub     r1, r1, #1
-
-        str     r1, [STACK,#-4]!    @ init r4-r11, lr with -1
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-        str     r1, [STACK,#-4]!
-
-#if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-        eor     r2, r2, r2
-        eor     r3, r3, r3
-        strd    r2, [STACK,#-8]!        @ make room for 8 vfp
-        strd    r2, [STACK,#-8]!        @ saved by parent regs
-        strd    r2, [STACK,#-8]!        @ d8-d15
-        strd    r2, [STACK,#-8]!
-        strd    r2, [STACK,#-8]!
-        strd    r2, [STACK,#-8]!
-        strd    r2, [STACK,#-8]!
-        strd    r2, [STACK,#-8]!
-#endif
-        bx      lr
-
-        .endfunc
-
-        .align 2
-glueAddr:
-        .word   ti_sysbios_family_arm_TaskSupport_glue
 
 @
 @  ======== TaskSupport_swap ========

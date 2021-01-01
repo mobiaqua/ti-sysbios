@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
@@ -13,7 +13,7 @@ Pkg.otherFiles = Pkg.otherSrcs;
 var cobjs = RtsBuild.c_objs.concat(KnlBuild.c_objs);
 for (var i = 0; i < Build.targets.length; i++) {
     var targ = Build.targets[i];
-    if (targ.isa == '28' || targ.isa == '28FP') {
+    if (targ.isa == '28' || targ.isa == '28FP' || targ.isa == '28FP64') {
         Pkg.addLibrary("lib/" + Pkg.name, targ,
             {
                 profile: "release",

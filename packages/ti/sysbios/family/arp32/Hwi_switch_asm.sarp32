@@ -104,7 +104,7 @@ _dispatch:
         add 4, SP           ; pop
 
         cmpu 0x0, R0        ; is taskSP == 0?
-        bne _exit           ; got to _exit if taskSP != 0
+        bne _exit3          ; got to _exit3 if taskSP != 0
         nop
 
         mvk  ti_sysbios_family_arp32_Hwi_Module__state__V, R1
@@ -115,7 +115,7 @@ _dispatch:
         stw R3, *+R1(ti_sysbios_family_arp32_Hwi_Module_State.taskSP)
         mvc R0, SP          ; set SP to taskSP
 
-_exit:
+_exit3:
         ret
         nop
 

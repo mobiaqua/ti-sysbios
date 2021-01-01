@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -419,6 +419,18 @@ module Hwi inherits ti.sysbios.interfaces.IHwi
      *      
      */
     config Bits16 zeroLatencyIERMask = 0x0;
+
+    /*!
+     *  ======== regsVCRC ========
+     *  Enables save/restore of VCRC registers during interrupt dispatch.
+     *
+     *  This functionality is available only for devices with FPU64 support.
+     *  Additionally, the "--vcu_support=vcrc" Assembler option is needed to
+     *  to accept VCU instructions.
+     *
+     *  By default this option is disabled.
+     */
+    config Bool regsVCRC = false;
 
     /*!
      *  Issued just prior to Hwi function invocation (with interrupts disabled)

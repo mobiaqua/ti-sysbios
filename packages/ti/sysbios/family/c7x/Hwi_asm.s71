@@ -3,6 +3,53 @@
 ;
 ;
 
+        .global ti_sysbios_family_c7x_Hwi_switchToNS__E
+        .global _c_int00
+
+        .sect ".text:ti_sysbios_family_c7x_Hwi_switchToNS__E"
+        .clink
+ti_sysbios_family_c7x_Hwi_switchToNS__E:
+        .asmfunc
+
+        MVK32 .L1 0, A0
+        MVC   .S1 A0, ECLMR
+
+        MVK64 .L1 0x7ce01000, a0 ; CLEC register for event 1248
+        MVK32 .L1 0x7fffffff, a2
+        ldw   .d1 *a0, a1
+        andw  .m1 a1, a2, a1
+        stw   .d1 a1, *a0        ; turn off Secure Claim bit
+
+        MVK64 .L1 0x7ce11000, a0 ; CLEC register for event 1249
+        ldw   .d1 *a0, a1
+        andw  .m1 a1, a2, a1
+        stw   .d1 a1, *a0        ; turn off Secure Claim bit
+
+        MVK64 .L1 0x7ce21000, a0 ; CLEC register for event 1250
+        ldw   .d1 *a0, a1
+        andw  .m1 a1, a2, a1
+        stw   .d1 a1, *a0        ; turn off Secure Claim bit
+
+        MVK64 .L1 0x7ce31000, a0 ; CLEC register for event 1251
+        ldw   .d1 *a0, a1
+        andw  .m1 a1, a2, a1
+        stw   .d1 a1, *a0        ; turn off Secure Claim bit
+
+        MVC   .S1 TSR, A2
+        MVK64 .L1 0xfffffffffffffff8, A1 
+        ANDD  .S1 A2 , A1, A2
+        MVK64 .L1 0x3, A1
+        ORD   .S1 A2 , A1, A2   ; set the lower 3 bits of the TSR to 011 (root supervisor)
+
+        .global ti_sysbios_family_c7x_Mmu_tlbInvAll__E
+        mvk64.l1 0, a4
+        call.b1 $PCR_OFFSET(ti_sysbios_family_c7x_Mmu_tlbInvAll__E)
+
+        MVK64 .L1 _c_int00, A1 ; set the destination of the RETE to the non-secure entry point
+        RETE  .S1 A1 , A2      ; switch to NS root supervisor mode
+
+	.endasmfunc
+
         .global ti_sysbios_family_c7x_Hwi_disable__E
 
         .sect ".text:ti_sysbios_family_c7x_Hwi_disable__E"
@@ -50,11 +97,24 @@ ti_sysbios_family_c7x_Hwi_restore__E:
 ti_sysbios_family_c7x_Hwi_setCOP__E:
         .asmfunc
 
-        shlw.l1    a4, 5, a4
         setcop.s1  a4
 ||      ret.b1
 
 	.endasmfunc
+
+        .global ti_sysbios_family_c7x_Hwi_getCXM__E
+
+        .sect ".text:ti_sysbios_family_c7x_Hwi_getCXM__E"
+        .clink
+ti_sysbios_family_c7x_Hwi_getCXM__E:
+        .asmfunc
+
+        mvc.s1   TSR, a5
+        andd.l1  a5, 0x7, a4
+||      ret.b1
+
+	.endasmfunc
+
 ;
 ; ======== Hwi_plug ========
 ;! Plug an interrupt vector with an ISR address.

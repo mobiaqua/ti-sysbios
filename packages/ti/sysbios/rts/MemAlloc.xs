@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2015-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,7 @@ function module$use()
 
     if (Program.build.target.$name.match(/gnu/) &&
        (BIOS.taskEnabled == true) &&
-       (BIOS.heapSize != 0) &&
-       !Program.build.target.$name.match(/A53F/) &&
-       !Program.build.target.$name.match(/M33F/)) {
+       (BIOS.heapSize != 0)) {
         xdc.useModule('ti.sysbios.rts.gnu.ReentSupport');
     }
     else if (Program.build.target.$name.match(/ti/) &&

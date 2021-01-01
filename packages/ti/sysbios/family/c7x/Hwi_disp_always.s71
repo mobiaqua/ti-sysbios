@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2017-2018, Texas Instruments Incorporated
+;  Copyright (c) 2017-2020, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,11 @@
 ;  ======== Hwi_disp_always.s71 ========
 ;
 ;
+        .if $isdefed("__TI_ASSEMBLER_VERSION__")
+        .if __TI_ASSEMBLER_VERSION__ < 1003000
+            .emsg "Compiler version must be 1.3.0 STS or higher"
+        .endif
+        .endif
 
         .cdecls C,NOLIST,"package/internal/Hwi.xdc.h"
 
@@ -79,18 +84,24 @@ Hwi_SFD12     .set    37
 Hwi_SFD13     .set    38
 Hwi_SFD14     .set    39
 
-;;Hwi_SFERP      .set    40
 Hwi_SFRP      .set    40
-Hwi_SFEER     .set    41
-Hwi_SFTSR     .set    42
-Hwi_SFETSR    .set    43
-Hwi_SFBPCR    .set    44
-Hwi_SFFPCR    .set    45
-Hwi_SFFSR     .set    46
+Hwi_SFFPCR    .set    41
+Hwi_SFFSR     .set    42
+Hwi_SFGFPGFR  .set    43
+Hwi_SFGPLY    .set    44
+Hwi_SFP0      .set    45
+Hwi_SFP1      .set    46
+Hwi_SFP2      .set    47
+Hwi_SFP3      .set    48
+Hwi_SFP4      .set    49
+Hwi_SFP5      .set    50
+Hwi_SFP6      .set    51
+Hwi_SFP7      .set    52
+Hwi_SFRXMR    .set    53
 
 
 ; 512 bit (64 byte) offsets
-Hwi_SFVB0     .set    47
+Hwi_SFVB0     .set    54
 Hwi_SFVB1     .set    Hwi_SFVB0 + (8*1)
 Hwi_SFVB2     .set    Hwi_SFVB0 + (8*2)
 Hwi_SFVB3     .set    Hwi_SFVB0 + (8*3)
@@ -122,8 +133,28 @@ Hwi_SFVBM4    .set    Hwi_SFVB0 + (8*28)
 Hwi_SFVBM5    .set    Hwi_SFVB0 + (8*29)
 Hwi_SFVBM6    .set    Hwi_SFVB0 + (8*30)
 Hwi_SFVBM7    .set    Hwi_SFVB0 + (8*31)
+Hwi_SFCUCR0   .set    Hwi_SFVB0 + (8*32)
+Hwi_SFCUCR1   .set    Hwi_SFVB0 + (8*33)
+Hwi_SFCUCR2   .set    Hwi_SFVB0 + (8*34)
+Hwi_SFCUCR3   .set    Hwi_SFVB0 + (8*35)
+Hwi_SFSTRACNTR0 .set  Hwi_SFVB0 + (8*36)
+Hwi_SFSTRACNTR1 .set  Hwi_SFVB0 + (8*37)
+Hwi_SFSTRACNTR2 .set  Hwi_SFVB0 + (8*38)
+Hwi_SFSTRACNTR3 .set  Hwi_SFVB0 + (8*39)
+Hwi_SFSTRACR0 .set    Hwi_SFVB0 + (8*40)
+Hwi_SFSTRACR1 .set    Hwi_SFVB0 + (8*41)
+Hwi_SFSTRACR2 .set    Hwi_SFVB0 + (8*42)
+Hwi_SFSTRACR3 .set    Hwi_SFVB0 + (8*43)
+Hwi_SFSE0_0   .set    Hwi_SFVB0 + (8*44)
+Hwi_SFSE0_1   .set    Hwi_SFVB0 + (8*45)
+Hwi_SFSE0_2   .set    Hwi_SFVB0 + (8*46)
+Hwi_SFSE0_3   .set    Hwi_SFVB0 + (8*47)
+Hwi_SFSE1_0   .set    Hwi_SFVB0 + (8*48)
+Hwi_SFSE1_1   .set    Hwi_SFVB0 + (8*49)
+Hwi_SFSE1_2   .set    Hwi_SFVB0 + (8*50)
+Hwi_SFSE1_3   .set    Hwi_SFVB0 + (8*51)
 
-Hwi_STACKFRAMESIZE      .set    Hwi_SFVBM7 + 8      ; DW (8 byte) size
+Hwi_STACKFRAMESIZE      .set    Hwi_SFSE1_3 + 8      ; DW (8 byte) size
 
 
 SP              .set    d15
@@ -138,6 +169,7 @@ SP              .set    d15
 
         .global ti_sysbios_family_c7x_Hwi_dispatchC__I
         .global ti_sysbios_family_c7x_Hwi_dispatchAlways
+        .global ti_sysbios_family_c7x_SysCall_syscallHandler__I
 
 ti_sysbios_family_c7x_Hwi_Module__state__V .tag ti_sysbios_family_c7x_Hwi_Module_State
 
@@ -164,6 +196,47 @@ nme:
 evt:
         b.b1      $PCR_OFFSET(ti_sysbios_family_c7x_Hwi_dispatchAlways)
 
+    .if $isdefed("ti_sysbios_family_c7x_SysCall_vector__D")
+
+        .align 0x1000
+scall:
+        .align 0x40
+        mvk64.l1  0, a0    ; used for enterPrivMode
+        b.b1      $PCR_OFFSET(ti_sysbios_family_c7x_SysCall_syscallHandler__I)
+
+        .align 0x40
+        mvk64.l1  1, a0    ; used for enterUnprivMode
+        b.b1      $PCR_OFFSET(ti_sysbios_family_c7x_SysCall_syscallHandler__I)
+
+        .align 0x40
+        mvk64.l1  2, a0    ; used for restorePrivMode
+        b.b1      $PCR_OFFSET(ti_sysbios_family_c7x_SysCall_syscallHandler__I)
+
+    .endif
+
+        .sect .secure_vecs
+
+        .global secure_soft_reset
+
+secure_soft_reset:
+	b.b1      $PCR_OFFSET(secure_soft_reset)
+
+        .align 0x200
+secure_int_exc:
+	b.b1      $PCR_OFFSET(secure_int_exc)
+
+        .align 0x200
+secure_page_fault:
+	b.b1      $PCR_OFFSET(secure_page_fault)
+
+        .align 0x200
+secure_nme:
+	b.b1      $PCR_OFFSET(secure_nme)
+
+        .align 0x200
+secure_evt:
+        b.b1      $PCR_OFFSET(ti_sysbios_family_c7x_Hwi_dispatchAlways)
+
         .sect ".text:ti_sysbios_family_c7x_Hwi_dispatchAlways"
 
         .clink
@@ -176,8 +249,8 @@ ti_sysbios_family_c7x_Hwi_dispatchAlways:
 
         addd.d1   SP, -Hwi_STACKFRAMESIZE*8, SP     ; alloc stack frame
 
-;;        std.d1    a0, *SP[Hwi_SFA0]
-;;||      std.d2x   a1, *SP[Hwi_SFA1]
+;;        std.d1    a0, *SP[Hwi_SFA0]    ; already saved
+;;||      std.d2x   a1, *SP[Hwi_SFA1]    ; already saved
         std.d1    a2, *SP[Hwi_SFA2]
 ||      std.d2x   a3, *SP[Hwi_SFA3]
         std.d1    a4, *SP[Hwi_SFA4]
@@ -277,35 +350,160 @@ ti_sysbios_family_c7x_Hwi_dispatchAlways:
 ||      vmv.m2    vbm5, vb0
         vst8d.d2  vb0, *SP[Hwi_SFVBM5]
 ||      vmv.m2    vbm6, vb0
+||      mvc.c2    cucr0, vb1                  ; 2 cycle latency for CUCR regs
         vst8d.d2  vb0, *SP[Hwi_SFVBM6]
 ||      vmv.m2    vbm7, vb0
+||      mvc.c2    cucr1, vb2
         vst8d.d2  vb0, *SP[Hwi_SFVBM7]
-
 ||      mvc.s1    rp, a0
+||      mvc.c2    cucr2, vb3
         std.d1    a0, *SP[Hwi_SFRP]
-;;||      mvc.s1    eer, a0
-;;        std.d1    a0, *SP[Hwi_SFEER]
-;;||      mvc.s1    bpcr, a0
-;;        std.d1    a0, *SP[Hwi_SFBPCR]
-;;||      mvc.s1    fpcr, a0
-;;        std.d1    a0, *SP[Hwi_SFFPCR]
-;;||      mvc.s1    fsr, a0
-;;        std.d1    a0, *SP[Hwi_SFFSR]
+||      vst8d.d2  vb1, *SP[Hwi_SFCUCR0]
+||      mvc.s1    fpcr, a0
+||      mvc.c2    cucr3, vb4
+        std.d1    a0, *SP[Hwi_SFFPCR]
+||      vst8d.d2  vb2, *SP[Hwi_SFCUCR1]
+||      mvc.s1    fsr, a0
+        std.d1    a0, *SP[Hwi_SFFSR]
+||      vst8d.d2  vb3, *SP[Hwi_SFCUCR2]
+||      mvc.s1    gfpgfr, a0
+        std.d1    a0, *SP[Hwi_SFGFPGFR]
+||      vst8d.d2  vb4, *SP[Hwi_SFCUCR3]
+||      mvc.s1    gply, a0
+        std.d1    a0, *SP[Hwi_SFGPLY]
+||      mvpb.l2   p0, b0
+||      mvpb.s2   p1, b1
+        std.d1x   b0, *SP[Hwi_SFP0]
+||      std.d2    b1, *SP[Hwi_SFP1]
+||      mvpb.l2   p2, b2
+||      mvpb.s2   p3, b3
+        std.d1x   b2, *SP[Hwi_SFP2]
+||      std.d2    b3, *SP[Hwi_SFP3]
+||      mvpb.l2   p4, b4
+||      mvpb.s2   p5, b5
+        std.d1x   b4, *SP[Hwi_SFP4]
+||      std.d2    b5, *SP[Hwi_SFP5]
+||      mvpb.l2   p6, b6
+||      mvpb.s2   p7, b7
+        std.d1x   b6, *SP[Hwi_SFP6]
+||      std.d2    b7, *SP[Hwi_SFP7]
+||      mvc.s1    rxmr_s, a0
+        std.d1    a0, *SP[Hwi_SFRXMR]
+||      mvc.c2    sa0cntr0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACNTR0]
+||      mvc.c2    sa1cntr0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACNTR1]
+||      mvc.c2    sa2cntr0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACNTR2]
+||      mvc.c2    sa3cntr0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACNTR3]
+||      mvc.c2    sa0cr, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACR0]
+||      mvc.c2    sa1cr, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACR1]
+||      mvc.c2    sa2cr, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACR2]
+||      mvc.c2    sa3cr, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSTRACR3]
+||      sesave.l2 3, 1, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE1_3]
+||      sesave.l2 2, 1, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE1_2]
+||      sesave.l2 1, 1, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE1_1]
+||      sesave.l2 0, 1, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE1_0]
+||      sesave.l2 3, 0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE0_3]
+||      sesave.l2 2, 0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE0_2]
+||      sesave.l2 1, 0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE0_1]
+||      sesave.l2 0, 0, vb15
+        vst8d.d2 vb15, *SP[Hwi_SFSE0_0]
 
         mvc.s1    AHPEE, a4
         addkpc.d1 $PCR_OFFSET(ti_sysbios_family_c7x_Hwi_dispatchC__I), a3
         calla.s1     a3
 
+        seclose.d2 0
+        seclose.d2 1
+
+        vld8d.d1 *SP[Hwi_SFSE0_3], vb15
+        serstr.d2 3, 0, vb15
+||      vld8d.d1 *SP[Hwi_SFSE0_2], vb15
+        serstr.d2 2, 0, vb15
+||      vld8d.d1 *SP[Hwi_SFSE0_1], vb15
+        serstr.d2 1, 0, vb15
+||      vld8d.d1 *SP[Hwi_SFSE0_0], vb15
+        serstr.d2 0, 0, vb15
+||      vld8d.d1 *SP[Hwi_SFSE1_3], vb15
+        serstr.d2 3, 1, vb15
+||      vld8d.d1 *SP[Hwi_SFSE1_2], vb15
+        serstr.d2 2, 1, vb15
+||      vld8d.d1 *SP[Hwi_SFSE1_1], vb15
+        serstr.d2 1, 1, vb15
+||      vld8d.d1 *SP[Hwi_SFSE1_0], vb15
+        serstr.d2 0, 1, vb15
+
+        saclose.c2 0
+        saclose.c2 1
+        saclose.c2 2
+        saclose.c2 3
+
+        vld8d.d1 *SP[Hwi_SFSTRACNTR0], vb15
+        mvc.c2    vb15, sa0cntr0
+||      vld8d.d1 *SP[Hwi_SFSTRACNTR1], vb15
+        mvc.c2    vb15, sa1cntr0
+||      vld8d.d1 *SP[Hwi_SFSTRACNTR2], vb15
+        mvc.c2    vb15, sa2cntr0
+||      vld8d.d1 *SP[Hwi_SFSTRACNTR3], vb15
+        mvc.c2    vb15, sa3cntr0
+||      vld8d.d1 *SP[Hwi_SFSTRACR0], vb15
+        mvc.c2    vb15, sa0cr
+||      vld8d.d1 *SP[Hwi_SFSTRACR1], vb15
+        mvc.c2    vb15, sa1cr
+||      vld8d.d1 *SP[Hwi_SFSTRACR2], vb15
+        mvc.c2    vb15, sa2cr
+||      vld8d.d1 *SP[Hwi_SFSTRACR3], vb15
+        mvc.c2    vb15, sa3cr
+
+        ldd.d1    *SP[Hwi_SFRXMR], a0
+        ldd.d1    *SP[Hwi_SFP7], b7
+||      mvc.s1    a0, rxmr_s
+        ldd.d1    *SP[Hwi_SFP6], b6
+||      mv.l2     b7, p7
+        ldd.d1    *SP[Hwi_SFP5], b5
+||      mv.l2     b6, p6
+        ldd.d1    *SP[Hwi_SFP4], b4
+||      mv.l2     b5, p5
+        ldd.d1    *SP[Hwi_SFP3], b3
+||      mv.l2     b4, p4
+        ldd.d1    *SP[Hwi_SFP2], b2
+||      mv.l2     b3, p3
+        ldd.d1    *SP[Hwi_SFP1], b1
+||      mv.l2     b2, p2
+        ldd.d1    *SP[Hwi_SFP0], b0
+||      mv.l2     b1, p1
+        vld8d.d1  *SP[Hwi_SFCUCR3], vb0
+||      mv.l2     b0, p0
+        vld8d.d1  *SP[Hwi_SFCUCR2], vb0
+||      mvc.c2    vb0, cucr3
+        vld8d.d1  *SP[Hwi_SFCUCR1], vb0
+||      mvc.c2    vb0, cucr2
+        vld8d.d1  *SP[Hwi_SFCUCR0], vb0
+||      mvc.c2    vb0, cucr1
+        ldd.d1    *SP[Hwi_SFGPLY], a0
+||      mvc.c2    vb0, cucr0
+        ldd.d1    *SP[Hwi_SFGFPGFR], a0
+||      mvc.s1    a0, gply
         ldd.d1    *SP[Hwi_SFRP], a0
-        mvc.s1    a0, rp
-;;||      ldd.d1    *SP[Hwi_SFEER], a0
-;;        mvc.s1    a0, eer
-;;||      ldd.d1    *SP[Hwi_SFBPCR], a0
-;;        mvc.s1    a0, bpcr
-;;||      ldd.d1    *SP[Hwi_SFFPCR], a0
-;;        mvc.s1    a0, fpcr
-;;||      ldd.d1    *SP[Hwi_SFFSR], a0
-;;        mvc.s1    a0, fsr
+||      mvc.s1    a0, gfpgfr
+        ldd.d1    *SP[Hwi_SFFPCR], a0
+||      mvc.s1    a0, rp
+        ldd.d1    *SP[Hwi_SFFSR], a0
+||      mvc.s1    a0, fpcr
+        mvc.s1    a0, fsr
 
         vld8d.d1  *SP[Hwi_SFVBM7], vb0
         vmv.m2    vb0, vbm7
@@ -409,8 +607,8 @@ ti_sysbios_family_c7x_Hwi_dispatchAlways:
         ldd.d1    *SP[Hwi_SFA4], a4
         ldd.d1    *SP[Hwi_SFA3], a3
         ldd.d1    *SP[Hwi_SFA2], a2
-;;        ldd.d1    *SP[Hwi_SFA1], a1
-;;        ldd.d1    *SP[Hwi_SFA0], a0
+;;        ldd.d1    *SP[Hwi_SFA1], a1    ; restored below
+;;        ldd.d1    *SP[Hwi_SFA0], a0    ; restored below
 
         addd.d1   SP, Hwi_STACKFRAMESIZE*8, SP     ; free stack frame
 

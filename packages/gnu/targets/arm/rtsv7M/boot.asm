@@ -1,5 +1,5 @@
 @ --COPYRIGHT--,EPL
-@   Copyright (c) 2011 Texas Instruments and others.
+@   Copyright (c) 2011-2020 Texas Instruments and others.
 @   All rights reserved. This program and the accompanying materials
 @   are made available under the terms of the Eclipse Public License v1.0
 @   which accompanies this distribution, and is available at
@@ -50,8 +50,13 @@ _c_int00:
 
     @ align to 64-bits for EABI
     mov r7, sp
+#if (xdc_target_name__ == M0)
+    movs r0, #0x07
+    bics r7, r0
+#else
     mov r0, #0x07
     bic r7, r0
+#endif
     mov sp, r7
 
     @ run any reset functions

@@ -239,14 +239,14 @@ module Timer inherits ti.sysbios.interfaces.ITimer
      *  Timer_create() is called with an id equal to
      *  {@link Timer#ANY Timer_ANY}.
      */
-    config UInt anyMask = 0x3;
+    config UInt anyMask = 0x7;
 
     /*!
      *  ======== stopFreeRun ========
      *  @_nodoc
      *  Stop timer during debug halt.
      */
-    config Bool stopFreeRun = true;
+    config Bool stopFreeRun = false;
 
     /*!
      *  ======== getAvailMask ========

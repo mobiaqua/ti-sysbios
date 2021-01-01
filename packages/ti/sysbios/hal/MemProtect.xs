@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,11 @@ function getCFiles(targetName)
          * the API implementation for these targets.
          */
         case "ti.targets.arm.elf.M3":
+        case "gnu.targets.arm.M3":
         case "ti.targets.arm.elf.M4F":
+        case "ti.targets.arm.elf.R5F":
+        case "ti.targets.arm.elf.R5Ft":
+        case "ti.targets.elf.C71":
             return (null);
         /*
          * MemProtectNull.c has a dummy implementation of all
@@ -93,11 +97,22 @@ function module$use()
             "BIOS.mpeEnabled is true.");
     }
 
-    if (Program.build.target.$name == "ti.targets.arm.elf.M3") {
+    /* REQ_TAG(SYSBIOS-1019) */
+    if ((Program.build.target.$name == "ti.targets.arm.elf.M3") ||
+        (Program.build.target.$name == "gnu.targets.arm.M3")) {
         xdc.useModule('ti.sysbios.family.arm.v7m.keystone3.MemProtect');
     }
 
     if (Program.build.target.$name == "ti.targets.arm.elf.M4F") {
         xdc.useModule('ti.sysbios.family.arm.v7m.MemProtect');
+    }
+
+    if ((Program.build.target.$name == "ti.targets.arm.elf.R5F") ||
+        (Program.build.target.$name == "ti.targets.arm.elf.R5Ft")) {
+        xdc.useModule('ti.sysbios.family.arm.v7r.MemProtect');
+    }
+
+    if (Program.build.target.$name == "ti.targets.elf.C71") {
+        xdc.useModule('ti.sysbios.family.c7x.MemProtect');
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,9 @@ function getAsmFiles(targetName)
 if (xdc.om.$name == "cfg") {
     var deviceTable = {
         "AM65.*": {
+            timerFrequency     : 200000000
+        },
+        "AM64.*": {
             timerFrequency     : 200000000
         },
         "J7.*": {

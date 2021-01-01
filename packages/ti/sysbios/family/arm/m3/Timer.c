@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 /*
  *  ======== Timer.c ========
  */
+/* REQ_TAG(SYSBIOS-1042), REQ_TAG(SYSBIOS-1020) */
 
 #include <xdc/std.h>
 #include <xdc/runtime/Error.h>
@@ -44,8 +45,8 @@
 
 #include "package/internal/Timer.xdc.h"
 
-/* 
- * TIMER_DELETED (0) is passed in when you call Timer_delete 
+/*
+ * TIMER_DELETED (0) is passed in when you call Timer_delete
  * BAD_PERIOD is currently not used
  */
 #define TIMER_DELETED   0
@@ -72,8 +73,8 @@ UInt Timer_getNumTimers()
 Timer_Status Timer_getStatus(UInt timerId)
 {
     Assert_isTrue(timerId < Timer_NUM_TIMER_DEVICES, NULL);
-    
-    if (Timer_module->availMask & (0x1 << timerId)) {
+
+    if ((Timer_module->availMask & ((UInt)0x1U << timerId)) != 0U) {
         return (Timer_Status_FREE);
     }
     else {
@@ -107,7 +108,7 @@ Int Timer_Module_startup(Int status)
 
     obj = Timer_module->handle;
     /* if timer was statically created/constructed */
-    if ((obj != NULL) && (obj->staticInst)) {
+    if ((obj != NULL) && (obj->staticInst != FALSE)) {
         /* This function currently only returns 0. Adjust if this changes */
         Timer_postInit(obj, NULL);
     }
@@ -123,10 +124,10 @@ Void Timer_startup()
     Timer_Object *obj;
 
     /* If TimestampProvider is used, it's Module_startup will start the Timer */
-    if (Timer_startupNeeded) { 
+    if (Timer_startupNeeded != FALSE) {
         obj = Timer_module->handle;
         /* if timer was statically created/constructed */
-        if ((obj != NULL) && (obj->staticInst)) {
+        if ((obj != NULL) && (obj->staticInst != FALSE)) {
             if (obj->startMode == Timer_StartMode_AUTO) {
                 Timer_start(obj);
             }
@@ -161,34 +162,37 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
     Hwi_Params hwiParams;
     UInt tempId = 0xffff;
 
-    if ((id != 0) && (id != Timer_ANY)) {
+    if ((id != 0) && ((UInt)id != Timer_ANY)) {
         Error_raise(eb, Timer_E_invalidTimer, id, 0);
         return (1);
     }
 
     key = Hwi_disable();
 
-    if (id == Timer_ANY) {
-        if ((Timer_anyMask & 1) && (Timer_module->availMask & 1)) {
-            Timer_module->availMask &= ~(1);
+    if ((UInt)id == Timer_ANY) {
+        if (((Timer_anyMask & 1U) != 0U) &&
+                ((Timer_module->availMask & 1U) != 0U)) {
+            Timer_module->availMask &= ~(1U);
             tempId = 0;
         }
     }
-    else if (Timer_module->availMask & 1) {
-        Timer_module->availMask &= ~(1);
-        tempId = id;
+    else {
+        if ((Timer_module->availMask & 1U) != 0U) {
+            Timer_module->availMask &= ~(1U);
+            tempId = (UInt)id;
+        }
     }
 
     Hwi_restore(key);
 
     obj->staticInst = FALSE;
 
-    if (tempId == 0xffff) {
+    if (tempId == 0xffffU) {
         Error_raise(eb, Timer_E_notAvailable, id, 0);
         return (NO_TIMER_AVAIL);
     }
     else {
-        obj->id = tempId;
+        obj->id = (Int)tempId;
     }
 
     Timer_module->handle = obj;
@@ -204,13 +208,13 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
         /* This function currently only returns TRUE. Adjust if this changes */
         Timer_setPeriodMicroSecs(obj, obj->period);
     }
-  
+
     obj->arg = params->arg;
     obj->intNum = 15;
     obj->tickFxn = tickFxn;
 
-    if (obj->tickFxn) {
-        if (params->hwiParams) {
+    if ((obj->tickFxn) != NULL) {
+        if ((params->hwiParams) != NULL) {
             Hwi_Params_copy(&hwiParams, (params->hwiParams));
         }
         else {
@@ -220,11 +224,11 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
         hwiParams.arg = (UArg)obj;
 
         if (obj->runMode == Timer_RunMode_CONTINUOUS) {
-            obj->hwi = Hwi_create (obj->intNum, Timer_periodicStub, 
+            obj->hwi = Hwi_create ((Int)obj->intNum, Timer_periodicStub,
                 &hwiParams, eb);
         }
         else {
-            obj->hwi = Hwi_create (obj->intNum, Timer_oneShotStub, 
+            obj->hwi = Hwi_create ((Int)obj->intNum, Timer_oneShotStub,
                 &hwiParams, eb);
         }
 
@@ -255,7 +259,7 @@ Int Timer_Instance_init(Timer_Object *obj, Int id, Timer_FuncPtr tickFxn, const 
  *  5. Timer_setPeriod()
  *  6. Timer_start()
  */
-Void Timer_reconfig (Timer_Object *obj, Timer_FuncPtr tickFxn, const Timer_Params *params, 
+Void Timer_reconfig (Timer_Object *obj, Timer_FuncPtr tickFxn, const Timer_Params *params,
     Error_Block *eb)
 {
     Hwi_Params hwiParams;
@@ -267,14 +271,14 @@ Void Timer_reconfig (Timer_Object *obj, Timer_FuncPtr tickFxn, const Timer_Param
 
     if (obj->periodType == Timer_PeriodType_MICROSECS) {
         /* This function currently only returns TRUE. Adjust if this changes */
-        Timer_setPeriodMicroSecs(obj, obj->period);        
+        Timer_setPeriodMicroSecs(obj, obj->period);
     }
 
     obj->arg = params->arg;
     obj->tickFxn = tickFxn;
 
-    if (obj->tickFxn) {
-        if (params->hwiParams) {
+    if (obj->tickFxn != NULL) {
+        if (params->hwiParams != NULL) {
             Hwi_Params_copy(&hwiParams, (params->hwiParams));
         }
         else {
@@ -307,7 +311,7 @@ Int Timer_postInit(Timer_Object *obj, Error_Block *eb)
     UInt hwiKey;
 
     hwiKey = Hwi_disable();
-    
+
     Timer_initDevice(obj);
 
     Timer_setPeriod(obj, obj->period);
@@ -328,30 +332,15 @@ Void Timer_Instance_finalize(Timer_Object *obj, Int status)
 {
     UInt key;
 
-    /* fall through in switch below is intentional */
-    switch (status) {
-        /* Timer_delete() */
-        case TIMER_DELETED:
-            Timer_initDevice(obj);
-            if (obj->hwi) {
-                Hwi_delete(&obj->hwi);
-            }
-        
-        /* Hwi create failed */
-        case NO_HWI_OBJ:
-
-        /* timer not available */
-        case NO_TIMER_AVAIL:
-
-        /* invalid timer id */
-        case BAD_TIMER_ID:
-
-        default:
-            break;
+    if (status == TIMER_DELETED) {
+        Timer_initDevice(obj);
+        if (obj->hwi != NULL) {
+            Hwi_delete(&obj->hwi);
+        }
     }
 
     key = Hwi_disable();
-    Timer_module->availMask |= 1;
+    Timer_module->availMask |= 1U;
     Timer_module->handle = NULL;
     Hwi_restore(key);
 }
@@ -369,12 +358,12 @@ Void Timer_initDevice(Timer_Object *obj)
     UInt key;
 
     key = Hwi_disable();
-    
+
     Hwi_nvic.STCSR = 0; /* stop the timer */
     Hwi_nvic.STRVR = 0; /* reset reload value */
     Hwi_nvic.STCVR = 0; /* reset current value */
 
-    if (obj->hwi) {
+    if (obj->hwi != NULL) {
         Hwi_disableInterrupt(obj->intNum);
         Hwi_clearInterrupt(obj->intNum);
     }
@@ -392,24 +381,25 @@ Void Timer_initDevice(Timer_Object *obj)
  *  5. Start timer
  *  6. Hwi_restore()
  */
+/* REQ_TAG(SYSBIOS-1021) */
 Void Timer_start(Timer_Object *obj)
 {
     UInt key;
 
     key = Hwi_disable();
 
-    if (obj->hwi) {
+    if (obj->hwi != NULL) {
         Hwi_clearInterrupt(obj->intNum);
         Hwi_enableInterrupt(obj->intNum);
     }
 
     Hwi_nvic.STCVR = 0; /* reset counter, forces reload of period value */
 
-    if (obj->extFreq.lo) {
-        Hwi_nvic.STCSR |= 0x1;  /* start timer, select ext clock */
+    if (obj->extFreq.lo != 0U) {
+        Hwi_nvic.STCSR |= 0x1U;  /* start timer, select ext clock */
     }
     else {
-        Hwi_nvic.STCSR |= 0x5;  /* start timer, select int clock */
+        Hwi_nvic.STCSR |= 0x5U;  /* start timer, select int clock */
     }
 
     Hwi_restore(key);
@@ -431,7 +421,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
     Hwi_clearInterrupt(obj->intNum);    /* clear any pending interrupts */
     Hwi_nvic.STRVR = insts;             /* set the period */
     Hwi_nvic.STCVR = 0; /* reset counter, forces reload of period value */
-    if (obj->extFreq.lo) {
+    if (obj->extFreq.lo != 0U) {
         Hwi_nvic.STCSR = 0x3;   /* start timer, select ext clock */
     }
     else {
@@ -448,7 +438,7 @@ Void Timer_trigger(Timer_Object *obj, UInt32 insts)
 Void Timer_stop(Timer_Object *obj)
 {
     Hwi_nvic.STCSR = 0;
-    if (obj->hwi) {
+    if (obj->hwi != NULL) {
         Hwi_disableInterrupt(obj->intNum);
     }
 }
@@ -464,9 +454,9 @@ Void Timer_setPeriod(Timer_Object *obj, UInt32 period)
     obj->period = period;
 
     if (obj->runMode == Timer_RunMode_CONTINUOUS) {
-        period = period - 1;
+        period = period - 1U;
     }
-    if (period & 0xff000000) {
+    if ((period & 0xff000000U) != 0U) {
         Error_raise(NULL, Timer_E_cannotSupport, obj->period, 0);
     }
     Hwi_nvic.STRVR = period;
@@ -487,14 +477,14 @@ Bool Timer_setPeriodMicroSecs(Timer_Object *obj, UInt32 period)
     Timer_stop(obj);
 
     Timer_getFreq(obj, &freqHz);
-    freqKHz = freqHz.lo / 1000;
+    freqKHz = freqHz.lo / 1000U;
 
     counts = ((UInt64)freqKHz * (UInt64)period) / (UInt64)1000;
 
-    obj->period = counts;
+    obj->period = (UInt)counts;
     obj->periodType = Timer_PeriodType_COUNTS;
 
-    Timer_setPeriod(obj, counts);
+    Timer_setPeriod(obj, (UInt32)counts);
 
     /*
      *  Several places in this file assume that only TRUE is returned.
@@ -531,14 +521,14 @@ UInt32 Timer_getCount(Timer_Object *obj)
  *
  *  The TimestampProvider uses a 32-bit timer and 32-bit tick count to track
  *  the timestamp. The tick count either comes from the Clock module or is
- *  stored in the TimestampProvider's module state and incremented by an ISR 
- *  when the timer expires. 
- *  
+ *  stored in the TimestampProvider's module state and incremented by an ISR
+ *  when the timer expires.
+ *
  *  This approach has a difficult edge case which this API addresses.
  *  Timestamp_get64 may be called while interrupts are disabled, and while they
  *  are disabled, the timer may expire and reset to its initial period. Because
  *  interrupts are disabled, the tick count isr has not run yet to increment
- *  the tick count. This can result in the occassional timestamp value going 
+ *  the tick count. This can result in the occassional timestamp value going
  *  backwards in time because the upper bits are out of date.
  *
  *  To work around this, we need to detect the timer "rollover" and account for
@@ -560,7 +550,7 @@ UInt32 Timer_getCount(Timer_Object *obj)
  *  directly, which means the count value is going *down* on the 28x. This
  *  means that most of the time count1 > count2.
  *
- *  The following table lists the possible values of count1, count2, and 
+ *  The following table lists the possible values of count1, count2, and
  *  ifrFlag. The third column states whether we would need to add the timer
  *  period to the result if we return count1. The fourth column states the
  *  same for count2. Count1 and count2 will be very close together, so either
@@ -573,10 +563,10 @@ UInt32 Timer_getCount(Timer_Object *obj)
  *  3. (count1 < count2)        0            NO             YES
  *  4. (count1 < count2)        1            NO             YES
  *
- *  1. Case 1 is by far the typical case. We're "in the middle" of the count, 
+ *  1. Case 1 is by far the typical case. We're "in the middle" of the count,
  *     not close to a counter rollover, and we just return the count.
  *  2. Case 2 means that the timer rolled over before we retrieved count1, but
- *     that interrupts were disabled, so the tick isr hasn't run yet. When an 
+ *     that interrupts were disabled, so the tick isr hasn't run yet. When an
  *     isr is serviced, the hardware clears the IFR bit immediately, so it is
  *     not possible that we are in the middle of servicing the tick isr.
  *  3. Case 3 is rare. This means that the timer rolled over after checking
@@ -585,7 +575,7 @@ UInt32 Timer_getCount(Timer_Object *obj)
  *     count1, but before we check the IFR flag.
  *
  *  Case 3 is the reason it's not sufficient to simply check the IFR flag, and
- *  case 2 is the reason it's not sufficient to simply compare count1 and 
+ *  case 2 is the reason it's not sufficient to simply compare count1 and
  *  count2.
  *
  *  Returning count1 appears to mean less additions, so why return count2?
@@ -604,19 +594,19 @@ UInt32 Timer_getExpiredCounts(Timer_Object *obj)
     stscr = Hwi_nvic.STCSR;
     count2 = Hwi_nvic.STCVR;
 
-    wrap = stscr & 0x00010000; /* wrap? */
+    wrap = stscr & 0x00010000U; /* wrap? */
 
-    if (stscr & 0x1) { /* if timer is running */
+    if ((stscr & 0x1U) != 0U) { /* if timer is running */
         /*
          * Reading the STCSR clears the WRAP bit!
          * bump tickCount so that subsequent Timestamp_get32()
          * calls will behave properly
          */
-        if (wrap) {
+        if (wrap != 0U) {
             Timer_module->tickCount++;
         }
 
-        if ((count1 > count2) && wrap) {
+        if ((count1 > count2) && (wrap != 0U)) {
             return ((obj->period - count1) + obj->period);
         }
         else {
@@ -650,7 +640,7 @@ UInt32 Timer_getCurrentTick(Timer_Object *obj, Bool saveFlag)
  */
 Void Timer_getFreq(Timer_Object *obj, Types_FreqHz *freq)
 {
-    if (obj->extFreq.lo != NULL) {
+    if (obj->extFreq.lo != 0U) {
         *freq = obj->extFreq;
     }
     else {
@@ -672,6 +662,7 @@ Timer_FuncPtr Timer_getFunc(Timer_Object *obj, UArg *arg)
  */
 Void Timer_setFunc(Timer_Object *obj, Timer_FuncPtr fxn, UArg arg)
 {
+    Assert_isTrue((fxn != NULL), NULL);
     obj->tickFxn = fxn;
     obj->arg = arg;
 }
@@ -710,14 +701,14 @@ Void Timer_periodicStub(UArg arg)
 
     dummy = Hwi_nvic.STCSR; /* read to ack the interrupt */
 
-    /* 
+    /*
      * Reading the STCSR clears the WRAP bit!
-     * if getExpiredCounts got here first, 
+     * if getExpiredCounts got here first,
      * the rollover bit will have been cleared
      * and the tickCount incremented
      */
 
-    if (dummy & 0x10000) {
+    if ((dummy & 0x10000U) != 0U) {
         Timer_module->tickCount++;
     }
 

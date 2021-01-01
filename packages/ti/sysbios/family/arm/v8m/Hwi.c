@@ -53,6 +53,12 @@
 
 #include "package/internal/Hwi.xdc.h"
 
+/*
+ *  Below pointer to swiTaskKeys is provided to immunize asm code
+ *  from changes in Hwi module state
+ */
+UInt *const ti_sysbios_family_arm_v8m_Hwi_swiTaskKeyAddress = &Hwi_module->swiTaskKeys;
+
 extern Char *ti_sysbios_family_xxx_Hwi_switchToIsrStack();
 extern Void ti_sysbios_family_xxx_Hwi_switchToTaskStack(Char *oldTaskSP);
 extern Void ti_sysbios_family_xxx_Hwi_switchAndRunFunc(Void (*func)());
@@ -446,7 +452,7 @@ Void Hwi_initNVIC()
     /* set CCR per user's preference */
     Hwi_nvic.CCR = Hwi_ccr;
 
-#if (defined(__TI_VFP_SUPPORT__) || \
+#if ((defined(__ti__) && defined(__ARM_FP)) || \
     (defined(__VFP_FP__) && !defined(__SOFTFP__)) || \
     defined(__ARMVFP__))
     /* disable lazy stacking mode fp indications in control register */

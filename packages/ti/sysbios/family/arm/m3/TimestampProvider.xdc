@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@ package ti.sysbios.family.arm.m3;
 @CustomHeader
 @ModuleStartup
 
+/* REQ_TAG(SYSBIOS-1042) */
 module TimestampProvider inherits ti.sysbios.interfaces.ITimestamp
 {
     /*

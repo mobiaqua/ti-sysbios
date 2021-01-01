@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2017-2019, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,14 +46,25 @@
 
 #pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_tableArray, "`Mmu.tableArraySection`");
 #pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_tableArray, `Mmu.granuleSize`);
+
+#pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_tableArray_NS, "`Mmu.tableArraySection_NS`");
+#pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_tableArray_NS, `Mmu.granuleSize`);
+
 UInt64 ti_sysbios_family_c7x_Mmu_tableArray[`Mmu.tableArrayLen`][`Mmu.configInfo.tableLength`];
+UInt64 ti_sysbios_family_c7x_Mmu_tableArray_NS[`Mmu.tableArrayLen`][`Mmu.configInfo.tableLength`];
 
 #pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_tableArraySlot, ".data.ti_sysbios_family_c7x_Mmu_tableArraySlot");
 #pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_tableArraySlot, `Mmu.granuleSize`);
 UInt64 ti_sysbios_family_c7x_Mmu_tableArraySlot;
+#pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_tableArraySlot_NS, ".data.ti_sysbios_family_c7x_Mmu_tableArraySlot_NS");
+#pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_tableArraySlot_NS, `Mmu.granuleSize`);
+UInt64 ti_sysbios_family_c7x_Mmu_tableArraySlot_NS;
 
 #pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_level1Table, ".data.ti_sysbios_family_c7x_Mmu_level1Table");
 #pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_level1Table, `Mmu.granuleSize`);
 UInt64* ti_sysbios_family_c7x_Mmu_level1Table;
+#pragma DATA_SECTION(ti_sysbios_family_c7x_Mmu_level1Table_NS, ".data.ti_sysbios_family_c7x_Mmu_level1Table_NS");
+#pragma DATA_ALIGN(ti_sysbios_family_c7x_Mmu_level1Table_NS, `Mmu.granuleSize`);
+UInt64* ti_sysbios_family_c7x_Mmu_level1Table_NS;
 
 #endif

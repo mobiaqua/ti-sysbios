@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Texas Instruments Incorporated
+ * Copyright (c) 2012-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ package ti.sysbios.family.c7x;
 /*!
  *  ======== IntrinsicsSupport ========
  *  @_nodoc
- *  C62 Intrinsics Support Module.
+ *  c7x Intrinsics Support Module.
  *
  */
 module IntrinsicsSupport inherits ti.sysbios.interfaces.IIntrinsicsSupport

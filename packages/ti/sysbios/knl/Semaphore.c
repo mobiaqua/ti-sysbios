@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,18 +58,23 @@
  *  BIOS_start() except for the user hooks.  Clock and Event APIs are
  *  therefore also safe. No startup needed in Semaphore.
  */
+/* REQ_TAG(SYSBIOS-500) */
 
 /*
  *  ======== Semaphore_Instance_init ========
  */
+/* REQ_TAG(SYSBIOS-501), REQ_TAG(SYSBIOS-502) */
 Void Semaphore_Instance_init(Semaphore_Object *sem, Int count,
         const Semaphore_Params *params)
 {
     Queue_Handle pendQ;
     UInt hwiKey;
 
+    Assert_isTrue((count >= 0) && (UInt)count <= 0xffffU,
+        Semaphore_A_overflow);
+
     /* CWARN.CONSTCOND.IF */
-    if (BIOS_mpeEnabled) {
+    if (BIOS_mpeEnabled != FALSE) {
         /* Check if Semaphore object in kernel memory space */
         /* UNREACH.GEN */
         if (MemProtect_isDataInKernelSpace((Ptr)sem,
@@ -97,7 +102,7 @@ Void Semaphore_Instance_init(Semaphore_Object *sem, Int count,
         sem->eventId = params->eventId;
 
         hwiKey = Hwi_disable();
-        if (count) {
+        if (count != 0) {
             /*
              *  In the unlikely case that a task is already
              *  pending on the event object waiting for this
@@ -120,6 +125,7 @@ Void Semaphore_Instance_init(Semaphore_Object *sem, Int count,
 /*
  *  ======== Semaphore_Instance_finalize ========
  */
+/* REQ_TAG(SYSBIOS-501) */
 Void Semaphore_Instance_finalize(Semaphore_Object *sem)
 {
     Queue_Handle pendQ;
@@ -166,6 +172,7 @@ Void Semaphore_pendTimeout(UArg arg)
 /*
  *  ======== Semaphore_pend ========
  */
+/* REQ_TAG(SYSBIOS-504) */
 Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
 {
     UInt hwiKey, tskKey;
@@ -319,6 +326,7 @@ Bool Semaphore_pend(Semaphore_Object *sem, UInt32 timeout)
 /*
  *  ======== Semaphore_post ========
  */
+/* REQ_TAG(SYSBIOS-503) */
 Void Semaphore_post(Semaphore_Object *sem)
 {
     UInt tskKey, hwiKey;
@@ -336,7 +344,7 @@ Void Semaphore_post(Semaphore_Object *sem)
 
     hwiKey = Hwi_disable();
 
-    if (Queue_empty(pendQ)) {
+    if (Queue_empty(pendQ) != FALSE) {
         if (((UInt)sem->mode & 0x1U) != 0U) {   /* if BINARY bit is set */
             sem->count = 1;
         }
@@ -379,6 +387,7 @@ Void Semaphore_post(Semaphore_Object *sem)
 /*
  *  ======== Semaphore_getCount ========
  */
+/* REQ_TAG(SYSBIOS-508) */
 Int Semaphore_getCount(Semaphore_Object *sem)
 {
     return ((Int)sem->count);
@@ -408,7 +417,7 @@ void Semaphore_reset(Semaphore_Object *sem, Int count)
  */
 void Semaphore_registerEvent(Semaphore_Object *sem, Event_Handle event, UInt eventId)
 {
-    if (Semaphore_supportsEvents) {
+    if (Semaphore_supportsEvents != FALSE) {
         UInt hwiKey = Hwi_disable();
         sem->event = event;
         sem->eventId = eventId;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <xdc/std.h>
 #include <xdc/runtime/Assert.h>
 #include <xdc/runtime/Diags.h>
+#include <xdc/runtime/IGateProvider.h>
 
 #include <ti/sysbios/BIOS.h>
 #include <ti/sysbios/knl/Semaphore.h>
@@ -127,10 +128,15 @@ Void GateMutex_leave(GateMutex_Object *obj, IArg key)
 }
 
 /*
- *  ======== query ========
- *  
+ *  ======== GateMutex_query ========
  */
 Bool GateMutex_query(Int qual)
 {
-    return (TRUE);
+    if (qual == IGateProvider_Q_BLOCKING ||
+            qual == IGateProvider_Q_PREEMPTING) {
+        return (TRUE);
+    }
+    else {
+        return (FALSE);
+    }
 }

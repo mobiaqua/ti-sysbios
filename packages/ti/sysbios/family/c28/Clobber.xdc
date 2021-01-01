@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Texas Instruments Incorporated
+ * Copyright (c) 2012-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@
  *
  *
  */
-
 package ti.sysbios.family.c28;
 
 /*!
@@ -96,4 +95,50 @@ module Clobber
      *  @b(returns)     Number of registers that had an incorrect value
      */
     UInt checkPreservedRegs(UInt32 value);
+
+    /*!
+     *  ======== checkVCRCRegs ========
+     *  Check VCRC registers hold a known sequence
+     *
+     *  Only useful for FPU64 target, when Hwi.regsVCRC=true
+     *
+     *  @param(start)   Starting value in sequence
+     *
+     *  @b(returns)     Zero if all registers have expected values
+     *
+     */
+    UInt checkVCRCRegs(UInt32 start);
+
+    /*!
+     *  ======== checkVCRCStatus ========
+     *  Check that VSTATUS register has an expected value
+     *
+     *  Only useful for FPU64 target, when Hwi.regsVCRC=true
+     *
+     *  @param(status)  Expected status value
+     *
+     *  @b(returns)     Zero if VSTATUS has the expected value
+     *
+     */
+    UInt checkVCRCStatus(UInt32 status);
+
+    /*!
+     *  ======== initVCRCRegs ========
+     *  Initialize VCRC registers to known sequence
+     *
+     *  Only useful for FPU64 target, when Hwi.regsVCRC=true
+     *
+     *  @param(start)   Starting value in sequence
+     */
+    Void initVCRCRegs(UInt32 start);
+
+    /*!
+     *  ======== initVCRCStatus ========
+     *  Initialize the VSTATUS registers to known value
+     *
+     *  Only useful for FPU64 target, when Hwi.regsVCRC=true
+     *
+     *  @param(value)   Value for VSTATUS
+     */
+    Void initVCRCStatus(UInt32 value);
 }

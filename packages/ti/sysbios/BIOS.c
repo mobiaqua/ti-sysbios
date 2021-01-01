@@ -58,7 +58,7 @@ Void BIOS_linkedWithIncorrectBootLibrary(Void)
      *  were not called. This can happen if the code gen tool's RTS library
      *  was before SYS/BIOS's generated linker cmd file on the link line.
      */
-    while (1);
+    for (;;) {}
 }
 
 /*!

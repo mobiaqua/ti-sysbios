@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -380,7 +380,7 @@ internal:
      *  handler - The high-level dispatcher, called by dispatch().
      *  Performs the following steps in order:
      *    a. records EFR/NRP/NTSR in a Status structure
-     *    b. logs EFR/NRP/NTSR.CXM with text output to module's logger
+     *    b. logs EFR/NRP/NTSR.CXM with System_printf()
      *    c. calls exceptionHook
      *    d. clears EFR
      *    e. calls into subhandlers
@@ -392,7 +392,7 @@ internal:
      *  internalHandler - Internal exception handler called by
      *  handler().  Performs the following steps in order:
      *    a. records IERR in a Status structure
-     *    b. logs IERR with text output to module's logger
+     *    b. logs IERR with System_printf()
      *    c. calls internalHook
      *    d. clears IERR
      */
@@ -401,7 +401,7 @@ internal:
     /*!
      *  externalHandler - External exception handler called by
      *  handler().  Performs the following steps in order:
-     *    a. logs text output to module's logger
+     *    a. logs text output with System_printf()
      *    b. calls externalHook
      */
     Void externalHandler();
@@ -409,7 +409,7 @@ internal:
     /*!
      *  nmiHandler - Legacy NMI handler called by handler().
      *  Performs the following steps in order:
-     *    a. logs text output to module's logger
+     *    a. logs text output with System_printf()
      *    b. calls nmiHook
      */
     Void nmiHandler();

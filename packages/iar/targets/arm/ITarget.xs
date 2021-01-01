@@ -1,5 +1,5 @@
 /* 
- *  Copyright (c) 2013 Texas Instruments and others.
+ *  Copyright (c) 2013-2020 Texas Instruments and others.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -40,6 +40,7 @@ var _versionCache = {};
  *  Set Architectures).  
  */
 var _isaChainMap = {
+    isa_v6M  : ["v6M"],
     isa_v7M4 : ["v7M", "v7M4"],
     isa_v7M  : ["v7M"],
     isa_v8M  : ["v8M", "v7M"]

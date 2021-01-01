@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019, Texas Instruments Incorporated
+ * Copyright (c) 2014-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,24 @@ var deviceTable = {
             syscallDelegate : null,
             coreDelegate : null,
             coreDelegateSmp : "ti.sysbios.family.arm.v8a.smp.Core",
+            mmuModule : "ti.sysbios.family.arm.v8a.Mmu",
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "gnu.targets.arm.A53F" ]
+        },
+        "AM64X": {
+            hwiDelegate : "ti.sysbios.family.arm.gicv3.Hwi",
+            timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
+            clockTimerDelegate : "ti.sysbios.family.arm.v8a.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.a15.TimerSupport",
+            timestampDelegate : "ti.sysbios.family.arm.v8a.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.v8a.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
+            cacheDelegate : "ti.sysbios.family.arm.v8a.Cache",
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : null,
+            coreDelegate : null,
             mmuModule : "ti.sysbios.family.arm.v8a.Mmu",
             bootModule : null,
             clockTickPeriod : 1000,
@@ -357,6 +375,24 @@ var deviceTable = {
             clockTickPeriod : 1000,
             targets : [ "ti.targets.arm.elf.M3" ]
         },
+        "AM64X": {
+            hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
+            timerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7m.keystone3.TimerSupport",
+            clockTimerDelegate : "ti.sysbios.family.arm.m3.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.m3.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.m3.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.m3.IntrinsicsSupport",
+            mmuModule : null,
+            cacheDelegate : null,
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : "ti.sysbios.family.arm.v7m.SysCall",
+            coreDelegate : null,
+            bootModule : null,
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.M3" ]
+        },
         "J721E": {
             hwiDelegate : "ti.sysbios.family.arm.m3.Hwi",
             timerDelegate : "ti.sysbios.family.arm.m3.Timer",
@@ -557,6 +593,24 @@ var deviceTable = {
             cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
             powerDelegate : null,
             secondsDelegate : null,
+            syscallDelegate : "ti.sysbios.family.arm.v7r.SysCall",
+            coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
+        },
+        "AM64X": {
+            hwiDelegate : "ti.sysbios.family.arm.v7r.keystone3.Hwi",
+            timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7r.keystone3.TimerSupport",
+            clockTimerDelegate: "ti.sysbios.timers.dmtimer.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.a15.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
+            bootModule : null,
+            mmuModule : "ti.sysbios.family.arm.MPU",
+            cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
+            powerDelegate : null,
+            secondsDelegate : null,
             syscallDelegate : null,
             coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
             clockTickPeriod : 1000,
@@ -567,6 +621,24 @@ var deviceTable = {
             timerDelegate : "ti.sysbios.timers.dmtimer.Timer",
             timerSupportDelegate : "ti.sysbios.family.arm.v7r.keystone3.TimerSupport",
             clockTimerDelegate: "ti.sysbios.timers.dmtimer.Timer",
+            timestampDelegate : "ti.sysbios.family.arm.a15.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.arm.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",
+            bootModule : null,
+            mmuModule : "ti.sysbios.family.arm.MPU",
+            cacheDelegate : "ti.sysbios.family.arm.v7r.Cache",
+            powerDelegate : null,
+            secondsDelegate : null,
+            syscallDelegate : null,
+            coreDelegate : "ti.sysbios.family.arm.v7r.keystone3.Core",
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.arm.elf.R5F", "ti.targets.arm.elf.R5Ft" ]
+        },
+        "TPR12": {
+            hwiDelegate : "ti.sysbios.family.arm.v7r.keystone3.Hwi",
+            timerDelegate : "ti.sysbios.timers.rti.Timer",
+            timerSupportDelegate : "ti.sysbios.family.arm.v7r.keystone3.TimerSupport",
+            clockTimerDelegate: "ti.sysbios.timers.rti.Timer",
             timestampDelegate : "ti.sysbios.family.arm.a15.TimestampProvider",
             taskSupportDelegate : "ti.sysbios.family.arm.TaskSupport",
             intrinsicsSupportDelegate : "ti.sysbios.family.arm.IntrinsicsSupport",

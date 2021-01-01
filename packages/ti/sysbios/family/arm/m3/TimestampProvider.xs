@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018, Texas Instruments Incorporated
+ * Copyright (c) 2012-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -131,6 +131,17 @@ function module$static$init(mod, params)
     }
     else {
         mod.timer = null;
+    }
+}
+
+/*
+ *  ======== module$validate ========
+ */
+function module$validate()
+{
+    /* ensure non-NULL timer handle for TimestampProvider_Module_startup() */
+    if ((!TimestampProvider.configTimer) && (Timer.timerInUse == false)) {
+        TimestampProvider.$logError("Timer is not configured", "configTimer");
     }
 }
 

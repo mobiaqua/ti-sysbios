@@ -1,5 +1,5 @@
 @
-@  Copyright (c) 2013-2018, Texas Instruments Incorporated
+@  Copyright (c) 2013-2019, Texas Instruments Incorporated
 @  All rights reserved.
 @
 @  Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 @  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @
 @
-@ ======== TaskSupport_asm.S ========
+@ ======== TaskSupport_asm_gnu.sv7M ========
 @
 
         .syntax unified
@@ -116,16 +116,49 @@ ti_sysbios_family_arm_m3_TaskSupport_glue:
 @
 @  ======== TaskSupport_glueUnpriv ========
 @
+@  This glue function is executed immediately before executing the "fxn"
+@  passed to Task_start.  This function loads the parameters to "fxn" into
+@  registers - necessary for the m3 register passing model. This function
+@  alse switches execution state to unprivileged before jumping to "fxn" and
+@  switches execution state back to privileged when "fxn" returns.
+@
 
         .section .text.ti_sysbios_family_arm_m3_TaskSupport_glueUnpriv
         .thumb_func
 ti_sysbios_family_arm_m3_TaskSupport_glueUnpriv:
 
-@ This is an empty stub for targets not supporting
-@ memory protection extensions. It is added to
-@ resolve code references at build time and will
-@ never be invoked.
+        ldr     r0, [sp, #16]   @ Task enter function
+        blx     r0              @ call Task enter function
 
-        bx      lr
+@ return from Task enter function here
+        svc     #1              @ Enter unprivileged mode
+
+        ldr     r0, [sp, #0]    @ task arg0
+        ldr     r1, [sp, #4]    @ task arg1
+        ldr     r2, [sp, #8]    @ task fxn
+        mov     r3, #0          @ clear register to prevent data leak
+        mov     r4, #0          @ clear register to prevent data leak
+        mov     r5, #0          @ clear register to prevent data leak
+        mov     r6, #0          @ clear register to prevent data leak
+        mov     r7, #0          @ clear register to prevent data leak
+        mov     r8, #0          @ clear register to prevent data leak
+        mov     r9, #0          @ clear register to prevent data leak
+        mov     r10, #0         @ clear register to prevent data leak
+        mov     r11, #0         @ clear register to prevent data leak
+        mov     r12, #0         @ clear register to prevent data leak
+        blx     r2              @ call task fxn
+
+@ Below code reads Task_exit() address from code memory. This is
+@ unlike the Task_glue() function which reads the Task_exit() address
+@ from the stack. This is to prevent an attacker from directly
+@ jumping to the svc instruction below and inserting a custom
+@ function address on the stack so the attacker's code is
+@ executed in privileged mode
+        svc     #0              @ Enter priv mode
+        ldr     r0, ti_sysbios_knl_Task_exit
+        bx      r0
+ti_sysbios_knl_Task_exit:
+        .word          ti_sysbios_knl_Task_exit__E
+
 
         .end

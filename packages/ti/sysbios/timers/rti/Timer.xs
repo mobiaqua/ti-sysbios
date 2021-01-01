@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -99,6 +99,24 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                     }
                 ]
             },
+            "TPR12": {
+                timer : [
+                    {
+                        name: "MSS_RTIA",
+                        baseAddr: 0x2F7A000,
+                        intNum: 3,
+                        eventId: -1,
+                        intFreqDivFactor: 2
+                    },
+                    {
+                        name: "MSS_RTIB",
+                        baseAddr: 0x2F7A000,
+                        intNum: 4,
+                        eventId: -1,
+                        intFreqDivFactor: 2
+                    }
+                ]
+            },
         },
         "ti.catalog.c6000": {
             "AWR16XX": {
@@ -116,6 +134,24 @@ if (xdc.om.$name == "cfg" || typeof(genCdoc) != "undefined") {
                         intNum: 15,
                         eventId: 76,
                         intFreqDivFactor: 3
+                    }
+                ]
+            },
+            "TPR12": {
+                timer : [
+                    {
+                        name: "DSS_RTIA",
+                        baseAddr: 0x6F7A000,
+                        intNum: 14,
+                        eventId: 66,
+                        intFreqDivFactor: 2.25
+                    },
+                    {
+                        name: "DSS_RTIB",
+                        baseAddr: 0x6F7A000,
+                        intNum: 15,
+                        eventId: 67,
+                        intFreqDivFactor: 2.25
                     }
                 ]
             }

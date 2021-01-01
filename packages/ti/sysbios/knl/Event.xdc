@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -389,6 +389,11 @@ instance:
      *                          time units
      *
      *  @b(returns)             All consumed events or zero if timeout.
+     *
+     *  @a(CONSTRAINT)
+     *  It is a fatal error to invoke Event_pend() with a non-zero timeout
+     *  while the Task scheduler is disabled.
+     *  See {@link ti.sysbios.knl.Task#disable Task_disable} for more details.
      */
     UInt pend(UInt andMask, UInt orMask, UInt32 timeout);
 

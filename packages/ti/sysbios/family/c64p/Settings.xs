@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,6 +126,19 @@ var settings = {
             coreDelegate : null,
             clockTickPeriod : 1000,
             targets : [ "ti.targets.elf.C66" ] 
+        },
+        "TPR12": {
+            hwiDelegate : "ti.sysbios.family.c64p.Hwi",
+            timerDelegate : "ti.sysbios.timers.rti.Timer",
+            clockTimerDelegate : "ti.sysbios.timers.rti.Timer",
+            timerSupportDelegate : "ti.sysbios.family.c64p.tci6488.TimerSupport",
+            timestampDelegate : "ti.sysbios.family.c64p.TimestampProvider",
+            taskSupportDelegate : "ti.sysbios.family.c62.TaskSupport",
+            intrinsicsSupportDelegate : "ti.sysbios.family.c62.IntrinsicsSupport",
+            cacheDelegate : "ti.sysbios.family.c66.Cache",
+            coreDelegate : null,
+            clockTickPeriod : 1000,
+            targets : [ "ti.targets.elf.C66" ]
         },
     }
 }

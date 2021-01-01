@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,4 +40,6 @@ requires ti.sysbios.interfaces;
  */
 package ti.sysbios.family.arm.v7r [2,0,0,0] {
     module Cache;
+    module MemProtect;
+    module SysCall;
 }

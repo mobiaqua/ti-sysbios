@@ -48,13 +48,29 @@ dispatchMain    .macro      ; body of dispatcher
         push    xt
 
     .if  (.TMS320C2800_FPU32 == 1)
-        ; Save 28FP registers
+        ; Save FPU32 registers (also applies for FPU64)
         mov32   *sp++, stf      ; Save FPU status reg
         mov32   *sp++, r0h      ; Save floating point regs
         mov32   *sp++, r1h      ; only r0h-r3h required here
         mov32   *sp++, r2h
         mov32   *sp++, r3h
         setflg  rndf32=1
+    .endif
+    .if  (.TMS320C2800_FPU64 == 1)
+        ; Save additional FPU64-only registers
+        mov32   *sp++, r0l
+        mov32   *sp++, r1l
+        mov32   *sp++, r2l
+        mov32   *sp++, r3l
+    .if (.TMS320C2800_VCRC == 1)
+    .if (ti_sysbios_family_c28_Hwi_regsVCRC__D)
+        ; Save VCRC registers
+        vmov32  *sp++, VCRC
+        vmov32  *sp++, VSTATUS
+        vmov32  *sp++, VCRCPOLY
+        vmov32  *sp++, VCRCSIZE
+    .endif
+    .endif
     .endif
 
         ; align sp since acc is two words
@@ -82,8 +98,24 @@ dispatchRet    .macro      ; epilog of dispatcher where we return
         ; After dispatchC is called, restore C context
         pop     @sp
 
+    .if (.TMS320C2800_FPU64 == 1)
+    .if (.TMS320C2800_VCRC == 1)
+    .if (ti_sysbios_family_c28_Hwi_regsVCRC__D)
+        ; Restore VCRC registers
+        vmov32  VCRCSIZE, *--sp
+        vmov32  VCRCPOLY, *--sp
+        vmov32  VSTATUS, *--sp
+        vmov32  VCRC, *--sp
+    .endif
+    .endif
+        ; Restore FPU64-only registers
+        mov32   r3l, *--sp
+        mov32   r2l, *--sp
+        mov32   r1l, *--sp
+        mov32   r0l, *--sp
+    .endif
     .if (.TMS320C2800_FPU32 == 1)
-        ; Restore 28FP registers
+        ; Restore FPU32 registers (also applies for FPU64)
         mov32   r3h, *--sp
         mov32   r2h, *--sp
         mov32   r1h, *--sp

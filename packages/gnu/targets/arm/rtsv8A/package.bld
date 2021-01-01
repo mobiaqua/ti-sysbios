@@ -1,10 +1,10 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ var RtsBuild = xdc.loadCapsule('xdc/runtime/build.xs');
 var KnlBuild = xdc.loadCapsule('xdc/runtime/knl/build.xs');
 
 Pkg.makePrologue = RtsBuild.makePrologue;
-Pkg.otherFiles = ['boot.asm', 'startup.c', 'syscalls.c', 'package.bld'];
+Pkg.otherFiles = ['boot.asm', 'startup.c', 'package.bld'];
 Pkg.otherSrcs = Pkg.otherFiles;
 
 var cobjs = RtsBuild.c_objs.concat(KnlBuild.c_objs);
@@ -55,7 +55,6 @@ for (var i = 0; i < Build.targets.length; i++) {
             continue;
         }
         Pkg.addLibrary("lib/boot", targ).addObjects(["boot", "startup"]);
-        Pkg.addLibrary("lib/syscalls", targ).addObjects(["syscalls"]);
     }
 }
 /*

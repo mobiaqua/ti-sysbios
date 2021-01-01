@@ -43,7 +43,7 @@
 #include <ti/sysbios/family/arm/v8m/Hwi.h>
 #include <ti/sysbios/family/arm/v8m/mtl/Core.h>
 
-#include <ti/devices/mtxx/mtl1.h>
+#include <ti/devices/mtxx/mtl1/mtl1.h>
 #include <ti/devices/mtxx/hwpi/hwpi_sysrtc.h>
 
 #include "package/internal/Timer.xdc.h"
@@ -402,10 +402,7 @@ Void Timer_start(Timer_Object *obj)
 
     /* reset the channel */
     SYSRTC_setActiveStatus(SYSRTC, obj->channelId,
-        SYSRTC_CHANNEL_CTL_ACTIVE_NOTACTIVE);
-
-    /* clear any pending events */
-    /* !!! TODO? */
+        SYSRTC_CTL_ACTIVE_NOTACTIVE);
 
     /* enable events from channel */
     if (Core_getId() == 0) {
@@ -415,7 +412,7 @@ Void Timer_start(Timer_Object *obj)
         SYSRTC_connectEvent0ToCPUSS1(SYSRTC, obj->channelId);
     }
     SYSRTC_setInterruptMask(SYSRTC, obj->channelId,
-        SYSRTC_CHANNEL_INT_EVENT_IMASK_EVT_SET);
+        SYSRTC_IMASK_EVT_SET);
 
     /* compute and save thresholds, set compare value to start channel */
     obj->prevThreshold = SYSRTC_getUTIME(SYSRTC);
@@ -431,9 +428,9 @@ Void Timer_start(Timer_Object *obj)
 Void Timer_stop(Timer_Object *obj)
 {
     SYSRTC_setActiveStatus(SYSRTC, obj->channelId,
-        SYSRTC_CHANNEL_CTL_ACTIVE_NOTACTIVE);
+        SYSRTC_CTL_ACTIVE_NOTACTIVE);
     SYSRTC_setInterruptMask(SYSRTC, obj->channelId,
-        SYSRTC_CHANNEL_INT_EVENT_IMASK_EVT_CLR);
+        SYSRTC_IMASK_EVT_CLR);
 }
 
 /*

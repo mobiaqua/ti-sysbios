@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 
 #define TaskSupport_buildTaskStack ti_sysbios_family_c7x_TaskSupport_buildTaskStack
 
-extern Ptr TaskSupport_buildTaskStack(Ptr stack, Task_FuncPtr fxn, TaskSupport_FuncPtr exit, TaskSupport_FuncPtr enter, UArg arg0, UArg arg1, Ptr TCSP);
+extern Ptr TaskSupport_buildTaskStack(Ptr stack, Task_FuncPtr fxn, TaskSupport_FuncPtr exit, TaskSupport_FuncPtr enter, UArg arg0, UArg arg1, Ptr TCSP, Bool privileged);
 
 /*
  *
@@ -132,7 +132,7 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
     /* subtract 16 from size to account for 16-byte free area @SP */
     sp = TaskSupport_buildTaskStack((Ptr)((SizeT)tcspBase - 16), tsk->fxn,
                                     exit, enter, tsk->arg0, tsk->arg1,
-                                    tcspBase);
+                                    tcspBase, tsk->privileged);
 
     return (sp);
 }

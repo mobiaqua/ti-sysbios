@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ var family = {
     "ti.targets.elf.C67P" :                     "c67p",
     "ti.targets.elf.C71" :                      "c7x",
     "ti.targets.elf.C28_float" :                "c28",
+    "ti.targets.elf.C28_float64" :              "c28",
     "ti.targets.arm.elf.Arm9" :                 "arm",
     "ti.targets.arm.elf.A8Fnv" :                "arm",
     "ti.targets.arm.elf.M3" :                   "arm",

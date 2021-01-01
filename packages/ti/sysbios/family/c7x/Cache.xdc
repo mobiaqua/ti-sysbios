@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Texas Instruments Incorporated
+ * Copyright (c) 2019-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,9 +41,9 @@ import xdc.rov.ViewInfo;
  *  ======== Cache ========
  *  Cache Module
  *
- *  This Cache module provides C66 family-specific implementations of the
+ *  This Cache module provides c7x family-specific implementations of the
  *  APIs defined in {@link ti.sysbios.interfaces.ICache ICache}.  It also
- *  provides additional C66 specific cache functions.
+ *  provides additional c7x specific cache functions.
  *
  *  Unconstrained Functions
  *  All functions
@@ -97,6 +97,8 @@ import xdc.rov.ViewInfo;
  *  @p
  */
 
+@ModuleStartup
+
 module Cache inherits ti.sysbios.interfaces.ICache
 {
     // -------- Module Types --------
@@ -106,12 +108,8 @@ module Cache inherits ti.sysbios.interfaces.ICache
      *  @_nodoc
      */
     metaonly struct ModuleView {
-        String  L1PCacheSize;
-        String  L1PMode;
         String  L1DCacheSize;
-        String  L1DMode;
         String  L2CacheSize;
-        String  L2Mode;
     };
 
     /*!
@@ -284,4 +282,9 @@ internal:
      *  startup function to enable cache early during climb-up
      */
     Void startup();
+
+    struct Module_State {
+        UInt64 L1DCFG;
+        UInt64 L2CFG;
+    };
 }

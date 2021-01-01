@@ -1,10 +1,10 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2018-2019, Texas Instruments Incorporated
+ * Copyright (c) 2018-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,19 +39,11 @@
  *  ======== M3.xdc ========
  *  Cortex M3 with no floating point unit, little endian thumb2 (ELF)
  */
-metaonly module M3 inherits ti.targets.arm.elf.IArm {
+metaonly module M3 inherits ti.targets.arm.clang.ITarget {
     override readonly config string name        = "M3";
     override readonly config string suffix      = "m3";
     override readonly config string isa         = "v7M";
-    override readonly config string rts         = "ti.targets.arm.rtsarm";
     override config string platform   = "ti.platforms.tiva:TM4C1294NCPDT:1";
-    override config String stdInclude = "ti/targets/arm/clang/std.h";
-
-    override readonly config xdc.bld.ITarget.Model model = {
-        endian: "little",
-        codeModel: "thumb2",
-        shortEnums: true
-    };
 
     override readonly config xdc.bld.ITarget2.Command cc = {
         cmd:  "tiarmclang -c",
@@ -67,79 +59,6 @@ metaonly module M3 inherits ti.targets.arm.elf.IArm {
         cmd:  "tiarmclang",
         opts: "-mcpu=cortex-m3 -mfloat-abi=soft -mfpu=none"
     };
-
-    override readonly config xdc.bld.ITarget2.Command ar = {
-        cmd:  "tiarmar -c",
-        opts: "-q"
-    };
-
-    /*!
-     *  ======== ccOpts ========
-     *  User configurable compiler options.
-     */
-    override config xdc.bld.ITarget2.Options ccOpts = {
-        prefix: "",
-        suffix: ""
-    };
-
-    /*!
-     *  ======== ccConfigOpts ========
-     *  User configurable compiler options for the generated config C file.
-     */
-    override config xdc.bld.ITarget2.Options ccConfigOpts = {
-        prefix: "$(ccOpts.prefix)",
-        suffix: "$(ccOpts.suffix)"
-    };
-
-    /*!
-     *  ======== asmOpts ========
-     *  User configurable assembler options.
-     */
-    override config xdc.bld.ITarget2.Options asmOpts = {
-        prefix: "",
-        suffix: ""
-    };
-
-    /*!
-     *  ======== lnkOpts ========
-     *  Linker options
-     */
-    override config xdc.bld.ITarget2.Options lnkOpts = {
-        prefix: "-Wl,-q -Wl,-u,_c_int00",
-        suffix: "-Wl,-w -Wl,-c -Wl,-m,$(XDCCFGDIR)/$@.map -l $(rootDir)/lib/generic/libc.a"
-    };
-
-    override readonly config xdc.bld.ITarget2.Command vers = {
-        cmd:  "tiarmclang",
-        opts: "--version"
-    };
-
-    override config string includeOpts = "";
-
-    /*
-     *  ======== profiles ========
-     */
-    /*
-     * The compiler option -gdwarf-3 needs to be passed to workaround a
-     * known bug in TI LLVM compiler generation of debug information.
-     * See JIRA CODEGEN-4536 for more info.
-     */
-    override config xdc.bld.ITarget.OptionSet profiles[string] = [
-        ["debug", {
-            compileOpts: {
-                copts: "-gdwarf-3",
-                defs:  "-D_DEBUG_=1",
-            },
-            linkOpts: "-gdwarf-3",
-        }],
-
-        ["release", {
-            compileOpts: {
-                copts: " -O2 ",
-            },
-            linkOpts: " ",
-        }],
-    ];
 }
 /*
 

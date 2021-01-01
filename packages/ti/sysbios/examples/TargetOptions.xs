@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -374,9 +374,9 @@ var targetOptions = {
             },
             "C28_Float_ELF": {
                 cfgPrefix: "c28/",
-                target: "ti.targets.elf.C28_float",
+                target: "ti.targets.elf.C28_float64",
                 compilerBuildOptions:
-                    " -ml --float_support=fpu32 --gen_func_subsections=on" +
+                    " -ml --float_support=fpu64 --gen_func_subsections=on" +
                     " --display_error_number --diag_warning=255" +
                     " --diag_wrap=off" +
                     " --include_path=${xdc_find:ti/posix/ccs:${ProjName}} ",

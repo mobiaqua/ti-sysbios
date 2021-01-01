@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Texas Instruments Incorporated
+ * Copyright (c) 2012-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,35 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/*
+ *  ======== TimestampProvider.xs ========
+ */
+
+var BIOS = null;
+
+/*
+ * ======== getCFiles ========
+ * return the array of C language files associated
+ * with targetName (ie Program.build.target.$name)
+ */
+function getCFiles(targetName)
+{
+    switch(targetName) {
+        case "ti.targets.elf.C71":
+            if (BIOS.mpeEnabled) {
+                return (["TimestampProvider.c", "TimestampProvider_svc.c"]);
+            }
+            else {
+                return (["TimestampProvider.c"]);
+            }
+            break;
+
+        default:
+            return (null);
+    }
+}
+
 /*
  *  ======== module$meta$init ========
  */
@@ -38,6 +67,10 @@ function module$meta$init()
     if (xdc.om.$name != "cfg") {
         return;
     }
+
+    /* provide getCFiles() for Build.getCFiles() */
+    this.$private.getCFiles = getCFiles;
+
     /* set fxntab default */
     this.common$.fxntab = false;
 }
@@ -47,6 +80,7 @@ function module$meta$init()
  */
 function module$use()
 {
+    BIOS = xdc.module('ti.sysbios.BIOS');
     var Diags = xdc.useModule('xdc.runtime.Diags');
     for (var dl in this.common$) {
         if (dl.match(/^diags_/) && dl != 'diags_ASSERT') {

@@ -1,5 +1,5 @@
 ;
-;  Copyright (c) 2013-2017, Texas Instruments Incorporated
+;  Copyright (c) 2013-2019, Texas Instruments Incorporated
 ;  All rights reserved.
 ;
 ;  Redistribution and use in source and binary forms, with or without
@@ -43,51 +43,6 @@
 
 
         .align  4
-
-;
-;  ======== ti_sysbios_family_xxx_Hwi_switchToIsrStack ========
-;  Char *ti_sysbios_family_xxx_Hwi_switchToIsrStack();
-;
-;  If not already on the isr stack (MSP), switch to it.
-;
-;  Returns:
-;        old control register value
-;
-
-        .sect ".text:ti_sysbios_family_xxx_Hwi_switchToIsrStack"
-
-ti_sysbios_family_xxx_Hwi_switchToIsrStack:
-        .asmfunc
-        mrs     r0, control     ; on ISR stack already?
-        cmp     r0, #0
-        itt     NE
-        movne   r1, #0          ; no,
-        msrne   control, r1     ; force thread mode to use MSP
-        bx      lr
-        .endasmfunc
-
-;
-;  ======== ti_sysbios_family_xxx_Hwi_switchToTaskStack ========
-;  ti_sysbios_family_xxx_Hwi_switchToTaskStack(Char *oldTaskSP);
-;
-;  If at bottom of ISR stack, switch to Task stack.
-;
-;  If passed control register token is not zero, then this is
-;  the thread that switched to the ISR stack first and therefore
-;  it is safe to switch back to the task stack (PSP)
-;
-;
-
-        .sect ".text:ti_sysbios_family_xxx_Hwi_switchToTaskStack"
-
-ti_sysbios_family_xxx_Hwi_switchToTaskStack:
-        .asmfunc
-        cmp     r0, #0          ; lowest order ISR?
-        itt     NE
-        movne   r1, #2          ; yes
-        msrne   control, r1     ; force thread mode to use PSP
-        bx      lr
-        .endasmfunc
 
 ;
 ;  ======== ti_sysbios_family_xxx_Hwi_switchAndRunFunc ========

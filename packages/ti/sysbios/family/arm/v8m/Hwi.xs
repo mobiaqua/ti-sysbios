@@ -1044,7 +1044,7 @@ function viewInitDetailed(view, obj)
     else {
         switch(view.intNum) {
             case 15: /* SysTick */
-                pending = this.ICSR & 0x100000000;
+                pending = this.ICSR & 0x04000000;
                 enabled = this.STCSR & 0x00000002;
                 active = this.SHCSR & 0x00000800;
                 break;
@@ -1608,6 +1608,55 @@ function viewInitException()
 }
 
 /*
+ *  ======== viewCheckVector ========
+ *  Depending on ROV/ROV2 and the toolchain used to build the
+ * .out file, the vale for a function symbol address may or may
+ *  not have its LSB set. This function attempts to normalize
+ *  the ROV view behavior for ALL permutations of toolchains
+ *  and ROV/ROV2.
+ */
+function viewCheckVector(vectorObj, expected, errorPrefix)
+{
+    var val = Program.lookupSymbolValue(expected);
+    var vector = vectorObj.vector;
+    var match = Number(vector&~1) == Number(val&~1);
+    if (match) {
+        vectorObj.vectorLabel = expected;
+    }
+    else {
+        vectorObj.vectorLabel = "error";
+        if (errorPrefix) {
+            vectorObj.$status["vector"] =
+            vectorObj.$status["vectorLabel"] =
+                errorPrefix + " vector is not as configured!\n" +
+                "Should be: " + expected;
+        }
+    }
+    return (match);
+}
+
+/*
+ *  ======== viewTagStatus ========
+ */
+function viewTagStatus(vector, pending, enabled, active)
+{
+	if (enabled) {
+		vector.status = "Enabled";
+	}
+	else {
+		vector.status = "Disabled";
+	}
+
+	if (active) {
+		vector.status += ", Active";
+	}
+
+	if (pending) {
+		vector.status += ", Pending";
+	}
+}
+
+/*
  *  ======== viewInitVectorTable ========
  */
 function viewInitVectorTable(view)
@@ -1616,6 +1665,7 @@ function viewInitVectorTable(view)
     var Hwi = xdc.useModule('ti.sysbios.family.arm.v8m.Hwi');
     var halHwi = xdc.useModule('ti.sysbios.hal.Hwi');
     var hwiModCfg = Program.getModuleConfig(Hwi.$name);
+    var correctLabel;
 
     var numInts = hwiModCfg.NUM_INTERRUPTS;
 
@@ -1645,18 +1695,6 @@ function viewInitVectorTable(view)
         var vector = Program.newViewStruct('ti.sysbios.family.arm.v8m.Hwi', 'Vector Table');
         vector.vectorNum = i;
         vector.vector = "0x" + Number(vectorTable[i]).toString(16);
-        /* try with the funcptr lsb set to 1 first (ROV2 likes this) */
-        var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]));
-        if (vectorLabel.length == 0) {
-            /* clear LSB if label not found with LSB set (legacy ROV likes this) */
-            vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
-        }
-        if (vectorLabel.length > 1) {
-            vector.vectorLabel = vectorLabel[1]; /* blow off FUNC16/32 */
-        }
-        else {
-            vector.vectorLabel = vectorLabel[0];
-        }
 
         /* Tag priority info */
         if (i >= 4) {
@@ -1689,11 +1727,12 @@ function viewInitVectorTable(view)
                 vector.hwiArg = hwi.arg;
                 vector.hwiIrp = hwi.irp;
 
-                if (vector.vectorLabel != "ti_sysbios_family_arm_v8m_Hwi_dispatch__I") {
+                if (!viewCheckVector(vector, "ti_sysbios_family_arm_v8m_Hwi_dispatch__I")) {
                     vector.$status["vector"] = vector.$status["vectorLabel"] =
                         "The vector for this dispatched interrupt is not correct!\n" +
                         "Should be: \"ti_sysbios_family_arm_v8m_Hwi_dispatch__I\"";
                 }
+
                 if (vector.priority < hwiModCfg.disablePriority) {
                     vector.$status["type"] = vector.$status["priority"] =
                         "Unsafe! This dispatched interrupt " +
@@ -1702,11 +1741,26 @@ function viewInitVectorTable(view)
                 }
             }
             else {
-                if (vector.vectorLabel == "ti_sysbios_family_arm_v8m_Hwi_excHandlerAsm__I") {
+                if (viewCheckVector(vector, "ti_sysbios_family_arm_v8m_Hwi_excHandlerAsm__I")) {
                     vector.type = "Unused";
                 }
                 else {
                     vector.type = "Unmanaged";
+                    /*
+                     * Attempt to find a matching symbol for the vector
+                     * try with the LSB set to 1 first (ROV2 likes this)
+                     */
+                    var vectorLabel = Program.lookupFuncName(Number(vectorTable[i]));
+                    if (vectorLabel.length == 0) {
+                        /* clear LSB if label not found with LSB set (legacy ROV likes this) */
+                        vectorLabel = Program.lookupFuncName(Number(vectorTable[i]&0xfffffffe));
+                    }
+                    if (vectorLabel.length == 0) {
+                        vector.vectorLabel = "";
+                    }
+                    else {
+                        vector.vectorLabel = vectorLabel[0];
+                    }
                     /* check for non-dispatched interrupts created with Hwi.create */
                     for (var j in rawView.instStates) {
                         /* non-dispatched interrupts are encoded with 2's complemented intNums */
@@ -1745,7 +1799,7 @@ function viewInitVectorTable(view)
             else {
                 switch(i) {
                     case 15: /* SysTick */
-                        pending = this.ICSR & 0x100000000;
+                        pending = this.ICSR & 0x04000000;
                         enabled = this.STCSR & 0x00000002;
                         active = this.SHCSR & 0x00000800;
                         break;
@@ -1756,88 +1810,68 @@ function viewInitVectorTable(view)
                 }
             }
 
-            if (enabled) {
-                vector.status = "Enabled";
-            }
-            else {
-                vector.status = "Disabled";
-            }
-
-            if (active) {
-                vector.status += ", Active";
-            }
-
-            if (pending) {
-                vector.status += ", Pending";
-            }
+            viewTagStatus(vector, pending, enabled, active);
         }
         vectors[vectors.length] = vector;
     }
+
+    vectors[0].type = "MSP";
+    vectors[0].vectorLabel = "";
 
     /* check exception handlers */
 
     vectors[1].type = "Reset";
     vectors[1].preemptPriority = -3;
-    if (vectors[1].vectorLabel != String(hwiModCfg.resetFunc).substring(1)) {
-        vectors[1].$status["vector"] =
-        vectors[1].$status["vectorLabel"] = "Reset vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.resetFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.resetFunc).substring(1);
+    viewCheckVector(vectors[1], correctLabel, "Reset");
+
     vectors[2].type = "NMI";
     vectors[2].preemptPriority = -2;
-    if (vectors[2].vectorLabel != String(hwiModCfg.nmiFunc).substring(1)) {
-        vectors[2].$status["vector"] =
-        vectors[2].$status["vectorLabel"] = "NMI vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.nmiFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.nmiFunc).substring(1);
+    viewCheckVector(vectors[2], correctLabel, "NMI");
+
     vectors[3].type = "HardFault";
     vectors[3].preemptPriority = -1;
-    if (vectors[3].vectorLabel != String(hwiModCfg.hardFaultFunc).substring(1)) {
-        vectors[3].$status["vector"] =
-        vectors[3].$status["vectorLabel"] = "Hard Fault vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.hardFaultFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.hardFaultFunc).substring(1);
+    viewCheckVector(vectors[3], correctLabel, "Hard Fault");
+
     vectors[4].type = "MemFault";
-    if (vectors[4].vectorLabel != String(hwiModCfg.memFaultFunc).substring(1)) {
-        vectors[4].$status["vector"] =
-        vectors[4].$status["vectorLabel"] = "Mem Fault vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.memFaultFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.memFaultFunc).substring(1);
+    viewCheckVector(vectors[4], correctLabel, "Mem Fault");
+
     vectors[5].type = "BusFault";
-    if (vectors[5].vectorLabel != String(hwiModCfg.busFaultFunc).substring(1)) {
-        vectors[5].$status["vector"] =
-        vectors[5].$status["vectorLabel"] = "Bus Fault vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.busFaultFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.busFaultFunc).substring(1);
+    viewCheckVector(vectors[5], correctLabel, "Bus Fault");
+
     vectors[6].type = "UsageFault";
-    if (vectors[6].vectorLabel != String(hwiModCfg.usageFaultFunc).substring(1)) {
-        vectors[6].$status["vector"] =
-        vectors[6].$status["vectorLabel"] = "Usage Fault vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.usageFaultFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.usageFaultFunc).substring(1);
+    viewCheckVector(vectors[6], correctLabel, "Usage Fault");
+
     vectors[7].type = "Reserved";
+    vectors[7].vectorLabel = "";
     vectors[8].type = "Reserved";
+    vectors[8].vectorLabel = "";
     vectors[9].type = "Reserved";
+    vectors[9].vectorLabel = "";
     vectors[10].type = "Reserved";
+    vectors[10].vectorLabel = "";
+
     vectors[11].type = "SVCall";
-    if (vectors[11].vectorLabel != String(hwiModCfg.svCallFunc).substring(1)) {
-        vectors[11].$status["vector"] =
-        vectors[11].$status["vectorLabel"] = "SVCall vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.svCallFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.svCallFunc).substring(1);
+    viewCheckVector(vectors[11], correctLabel, "SVCall");
+    viewTagStatus(vectors[11], this.SHCSR & 0x00008000, 1, this.SHCSR & 0x00000080);
+
     vectors[12].type = "DebugMon";
-    if (vectors[12].vectorLabel != String(hwiModCfg.debugMonFunc).substring(1)) {
-        vectors[12].$status["vector"] =
-        vectors[12].$status["vectorLabel"] = "Debug Mon vector is not as configured!\n" +
-        "Should be: " + String(hwiModCfg.debugMonFunc).substring(1);
-    }
+    correctLabel = String(hwiModCfg.debugMonFunc).substring(1);
+    viewCheckVector(vectors[12], correctLabel, "Debug Mon");
+
     vectors[13].type = "Reserved";
+    vectors[13].vectorLabel = "";
+
     vectors[14].type = "PendSV";
-    if (vectors[14].vectorLabel != "ti_sysbios_family_arm_v8m_Hwi_pendSV__I") {
-        vectors[14].$status["vector"] =
-        vectors[14].$status["vectorLabel"] = "PendSV vector is not as configured!\n" +
-        "Should be: " + "ti_sysbios_family_arm_v8m_Hwi_pendSV__I";
-    }
+    correctLabel = "ti_sysbios_family_arm_v8m_Hwi_pendSV__I";
+    viewCheckVector(vectors[14], correctLabel, "PendSV");
+    viewTagStatus(vectors[14], this.ICSR & 0x10000000, 1, this.SHCSR & 0x00000400);
 
     view.elements = vectors;
 }

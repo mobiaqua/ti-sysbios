@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,7 @@
 #include <ti/sysbios/knl/Clock.h>
 #include <ti/sysbios/knl/Queue.h>
 #include <ti/sysbios/hal/Hwi.h>
+#include <inttypes.h>
 
 #include "package/internal/HeapTrack.xdc.h"
 
@@ -63,14 +64,14 @@ Bool HeapTrack_printTrack(HeapTrack_Tracker *tracker, HeapTrack_Handle handle)
 
     /* Print task name if it's there */
     if (name != Text_nameEmpty) {
-        System_printf("HeapTrack: HeapTrack_Obj: 0x%x, addr = 0x%x, "
-                      "taskHandle: 0x%x, taskName: %s, size = %d, tick = %d\n",
+        System_printf("HeapTrack: HeapTrack_Obj: 0x%" PRIxPTR ", addr = 0x%" PRIxPTR ", "
+                      "taskHandle: 0x%" PRIxPTR ", taskName: %s, size = %d, tick = %d\n",
                       handle, buf, tracker->taskHandle, name,
                       tracker->size, tracker->tick);
     }
     else {
-        System_printf("HeapTrack: HeapTrack_Obj: 0x%x, addr = 0x%x, "
-                      "taskHandle: 0x%x, size = %d, tick = %d\n",
+        System_printf("HeapTrack: HeapTrack_Obj: 0x%" PRIxPTR ", addr = 0x%" PRIxPTR ", "
+                      "taskHandle: 0x%" PRIxPTR ", size = %d, tick = %d\n",
                       handle, buf, tracker->taskHandle,
                       tracker->size, tracker->tick);
     }

@@ -24,7 +24,7 @@
 /****************************************************************************/
 -c
 -heap  0x20000
--stack 0x60000
+-stack 0x20000
 --args 0x1000
 
 MEMORY
@@ -42,7 +42,7 @@ SECTIONS
 
     .cinit      >       BMEM  /* could be part of const */
     .init_array >       BMEM  /* C++ initializations */
-    .stack      >       BMEM
+    .stack      >       BMEM ALIGN(0x10000)
     .args       >       BMEM
     .cio        >       BMEM
     .const      >       BMEM

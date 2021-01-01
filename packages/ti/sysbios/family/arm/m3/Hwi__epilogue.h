@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ extern "C" {
 #if defined(__ti__) && !defined(__clang__)
 
 /* declare compiler intrinsic function since compiler doesn't have prototype */
-extern unsigned int _set_interrupt_priority(unsigned int);
+extern unsigned int _set_interrupt_priority(unsigned int priority);
 
 /*
  *  ======== Hwi_disable ========

@@ -98,6 +98,11 @@ extern Void ti_sysbios_family_arm_m3_TaskSupport_glueUnpriv();
  *
  */
 
+Ptr ti_sysbios_family_arm_m3_TaskSupport_buildTaskStack(Ptr stackBase,
+        SizeT stackSize, Task_FuncPtr fxn, TaskSupport_FuncPtr exit,
+        TaskSupport_FuncPtr enter, UArg arg0, UArg arg1,
+        Bool privileged);
+
 /*
  *  ======== TaskSupport_buildTaskStack ========
  *
@@ -134,8 +139,8 @@ Ptr TaskSupport_buildTaskStack(Ptr stackBase, SizeT stackSize, Task_FuncPtr fxn,
     stack[--idx] = (UInt32)arg1;
     stack[--idx] = (UInt32)arg0;
 
-    if (BIOS_mpeEnabled) {
-        if (privileged) {
+    if (BIOS_mpeEnabled != FALSE) {
+        if (privileged != FALSE) {
             stack[--idx] = (UInt32)&TaskSupport_glue;
         }
         else {
@@ -147,16 +152,16 @@ Ptr TaskSupport_buildTaskStack(Ptr stackBase, SizeT stackSize, Task_FuncPtr fxn,
     }
 
     /* Init r4-r11 with -1 */
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
-    stack[--idx] = (~0);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
+    stack[--idx] = (~0U);
 
-#if (defined(__ti__) && defined(__TI_VFP_SUPPORT__)) || \
+#if (defined(__ti__) && defined(__ARM_FP)) || \
     (defined(__IAR_SYSTEMS_ICC__) && defined(__ARMVFP__)) || \
     (defined(__GNUC__) && !defined(__ti__) && \
      defined(__VFP_FP__) && !defined(__SOFTFP__)) || \
@@ -207,17 +212,20 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
     Char *sptr;
     Task_Object *tsk = (Task_Object *)(currTsk);
 
-    if (Task_initStackFlag) {
+    if (Task_initStackFlag != FALSE) {
         sptr = (Char *)tsk->stack;
         size = tsk->stackSize;
-        while (size--) {
-            *sptr++ = 0xbe;     /* fill stack with known cookie */
+        while (size > 0U) {
+            *sptr++ = (Char)0xbe;     /* fill stack with known cookie */
+            size--;
         }
     }
     /* Still allow for stack overflow checking */
-    else if (Task_checkStackFlag) {
-        sptr = (Char *)tsk->stack;
-        *sptr = 0xbe;
+    else {
+        if (Task_checkStackFlag != FALSE) {
+            sptr = (Char *)tsk->stack;
+            *sptr = (Char)0xbe;
+        }
     }
 
     /*
@@ -231,7 +239,8 @@ Ptr TaskSupport_start(Ptr currTsk, ITaskSupport_FuncPtr enter, ITaskSupport_Func
      * With this change, the stack will be 8-byte aligned
      * on Task func entry.
      */
-    sp = TaskSupport_buildTaskStack((Ptr)tsk->stack, tsk->stackSize - 4, tsk->fxn, exit, enter, tsk->arg0, tsk->arg1, tsk->privileged);
+    sp = TaskSupport_buildTaskStack((Ptr)tsk->stack, tsk->stackSize - 4U,
+            tsk->fxn, exit, enter, tsk->arg0, tsk->arg1, tsk->privileged);
 
     return (sp);
 }
@@ -265,7 +274,7 @@ SizeT TaskSupport_stackUsed(Char *stack, SizeT size)
     do {
     } while(*sp++ == (Char)0xbe);
 
-    return (size - (--sp - stack));
+    return (size - (SizeT)(--sp - (UInt32)stack));
 }
 
 /*

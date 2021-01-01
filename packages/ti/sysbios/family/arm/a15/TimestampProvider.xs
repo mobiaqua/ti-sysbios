@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,12 @@ function getAsmFiles(targetName)
         case "ti.targets.arm.elf.R5F":
         case "ti.targets.arm.elf.R5Ft":
         case "ti.targets.arm.elf.R5F_big_endian":
-            return (["TimestampProvider_asm.asm"]);
+            if (BIOS.mpeEnabled) {
+                return (["TimestampProvider_asm.asm", "TimestampProvider_svc.c"]);
+            }
+            else {
+                return (["TimestampProvider_asm.asm"]);
+            }
             break;
 
         default:

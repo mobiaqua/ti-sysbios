@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,10 +45,14 @@ import xdc.runtime.Assert;
  *  GateMutex uses a Semaphore as the resource locking mechanism. Each
  *  GateMutex instance has its own unique Semaphore. This gate can only be
  *  used by a Task as a gate can potentially block. This gate cannot be used
- *  by a Hwi or Swi. 
+ *  by a Hwi or Swi.
+ *
+ *  Priority inversion is possible if threads of differing priority use a
+ *  common GateMutex. See the Priority Inversion section of the SYS/BIOS
+ *  Users Guide for additional information about priority inversion.
  *
  *  The task that uses a gate can call enter() any number of times without risk
- *  of being blocked, although relinquishing ownership of the gate requires a 
+ *  of being blocked, although relinquishing ownership of the gate requires a
  *  balanced number of calls to leave().
  *
  *  @p(html)
@@ -73,9 +77,9 @@ import xdc.runtime.Assert;
  *    <tr><td> {@link #destruct}    </td><td>   N    </td><td>   N    </td>
  *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
  *    <tr><td> {@link #enter}       </td><td>   N    </td><td>   N    </td>
- *    <td>   Y    </td><td>   N    </td><td>   N    </td></tr>
+ *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
  *    <tr><td> {@link #leave}       </td><td>   N    </td><td>   N    </td>
- *    <td>   Y    </td><td>   N    </td><td>   N    </td></tr>
+ *    <td>   Y    </td><td>   Y    </td><td>   N    </td></tr>
  *    <tr><td colspan="6"> Definitions: <br />
  *       <ul>
  *         <li> <b>Hwi</b>: API is callable from a Hwi thread. </li>
@@ -83,7 +87,7 @@ import xdc.runtime.Assert;
  *         <li> <b>Task</b>: API is callable from a Task thread. </li>
  *         <li> <b>Main</b>: API is callable during any of these phases: </li>
  *           <ul>
- *             <li> In your module startup after this module is started 
+ *             <li> In your module startup after this module is started
  *    (e.g. GateMutex_Module_startupDone() returns TRUE). </li>
  *             <li> During xdc.runtime.Startup.lastFxns. </li>
  *             <li> During main().</li>
@@ -92,7 +96,7 @@ import xdc.runtime.Assert;
  *         <li> <b>Startup</b>: API is callable during any of these phases:</li>
  *           <ul>
  *             <li> During xdc.runtime.Startup.firstFxns.</li>
- *             <li> In your module startup before this module is started 
+ *             <li> In your module startup before this module is started
  *    (e.g. GateMutex_Module_startupDone() returns FALSE).</li>
  *           </ul>
  *       <li> <b>*</b>:  Assuming blocking Heap is used for creation. </li>
@@ -101,7 +105,7 @@ import xdc.runtime.Assert;
  *    </td></tr>
  *
  *  </table>
- *  @p 
+ *  @p
  */
 
 @InstanceFinalize       /* destruct semaphore */
@@ -118,21 +122,21 @@ module GateMutex inherits xdc.runtime.IGateProvider
         String owner;
         String pendedTasks[];
     }
-    
+
     /*!
      *  ======== rovViewInfo ========
      *  @_nodoc
      */
     @Facet
-    metaonly config ViewInfo.Instance rovViewInfo = 
+    metaonly config ViewInfo.Instance rovViewInfo =
         ViewInfo.create({
             viewMap: [
-                ['Basic', {type: ViewInfo.INSTANCE, 
-                   viewInitFxn: 'viewInitBasic', 
+                ['Basic', {type: ViewInfo.INSTANCE,
+                   viewInitFxn: 'viewInitBasic',
                    structName: 'BasicView'}]
             ]
         });
-    
+
     /*!
      *  Assert when GateMutex_enter() is not called from correct context.
      *  GateMutex_enter() can only be called from main() or Task context (not
@@ -147,9 +151,9 @@ module GateMutex inherits xdc.runtime.IGateProvider
      *  - Calling System_printf() from a Hwi or Swi thread when using SysStd.
      *  @p(blist)
      *          - Use xdc.runtime.SysMin instead of xdc.runtume.SysStd.
-     *          - Use a different type of Gate for 
-     *            {@link ti.sysbios.BIOS#rtsGateType BIOS.rtsGateType} 
-     *            (ie {@link ti.sysbios.BIOS#GateHwi BIOS.GateHwi} 
+     *          - Use a different type of Gate for
+     *            {@link ti.sysbios.BIOS#rtsGateType BIOS.rtsGateType}
+     *            (ie {@link ti.sysbios.BIOS#GateHwi BIOS.GateHwi}
      *            or {@link ti.sysbios.BIOS#GateSwi BIOS.GateSwi})
      *  @p
      *  - Calling Memory_alloc() from a Hwi or Swi thread.

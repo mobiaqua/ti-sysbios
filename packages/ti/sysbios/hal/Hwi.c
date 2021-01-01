@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 /*
  *  ======== Hwi.c ========
  */
+/* REQ_TAG(SYSBIOS-543) */
 
 #include <xdc/std.h>
 #include <xdc/runtime/Error.h>
@@ -47,7 +48,7 @@ Int Hwi_Module_startup(Int phase)
 {
 
     /* must wait for these modules to initialize first */
-    if (!Hwi_HwiProxy_Module_startupDone()) {
+    if (Hwi_HwiProxy_Module_startupDone() == FALSE) {
         return Startup_NOTDONE;
     }
 
@@ -59,6 +60,7 @@ Int Hwi_Module_startup(Int phase)
 /*
  *  ======== Hwi_disableInterrupt ========
  */
+/* REQ_TAG(SYSBIOS-552) */
 UInt Hwi_disableInterrupt(UInt intNum)
 {
     return (Hwi_HwiProxy_disableInterrupt(intNum));
@@ -67,6 +69,7 @@ UInt Hwi_disableInterrupt(UInt intNum)
 /*
  *  ======== Hwi_enableInterrupt ========
  */
+/* REQ_TAG(SYSBIOS-552) */
 UInt Hwi_enableInterrupt(UInt intNum)
 {
     return (Hwi_HwiProxy_enableInterrupt(intNum));
@@ -75,6 +78,7 @@ UInt Hwi_enableInterrupt(UInt intNum)
 /*
  *  ======== Hwi_RestoreInterrupt ========
  */
+/* REQ_TAG(SYSBIOS-552) */
 Void Hwi_restoreInterrupt(UInt intNum, UInt key)
 {
     Hwi_HwiProxy_restoreInterrupt(intNum, key);
@@ -133,6 +137,7 @@ Void Hwi_switchFromBootStack()
 /*
  *  ======== Hwi_Instance_init ========
  */
+/* REQ_TAG(SYSBIOS-544), REQ_TAG(SYSBIOS-545) */
 Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum, Hwi_FuncPtr fxn, const Hwi_Params *params, Error_Block *eb)
 {
     hwi->pi = Hwi_HwiProxy_create(intNum, fxn, (Hwi_HwiProxy_Params *)params, eb);
@@ -146,6 +151,7 @@ Int Hwi_Instance_init(Hwi_Object *hwi, Int intNum, Hwi_FuncPtr fxn, const Hwi_Pa
 /*
  *  ======== Hwi_Instance_finalize ========
  */
+/* REQ_TAG(SYSBIOS-544) */
 Void Hwi_Instance_finalize(Hwi_Object *hwi, Int status)
 {
     /*

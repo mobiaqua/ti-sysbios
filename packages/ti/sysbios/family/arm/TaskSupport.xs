@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -123,6 +123,10 @@ function getCallStack$view(taskRawView, taskState, threadType)
         case "A9F":
         case "A8Fnv":
         case "A15F":
+        case "R5F":
+        case "R5Ft":
+        case "R4F":
+        case "R4Ft":
             var contextStackOffset = 16;
             break;
 

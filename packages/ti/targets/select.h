@@ -1,5 +1,5 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
@@ -135,14 +135,21 @@
 #  endif
 
 /*
- *  ======== LLVM ========
- *  Arm devices
+ *  ======== TIARMCLANG ========
  */
-#elif defined(__clang__)
-#  if defined(__ARM_ARCH_8M_MAIN__)
-#    define xdc_target_name__ M33F
-#    define xdc_target_types__ ti/targets/arm/clang/std.h
+#elif defined(__ti_version__)
+#  if (__ARM_ARCH == 8) && defined(__ARM_FP)
+#      define xdc_target_name__ M33F
+#  elif (__ARM_ARCH == 8)
+#      define xdc_target_name__ M33
+#  elif (__ARM_ARCH == 7) && defined(__ARM_FP)
+#      define xdc_target_name__ M4F
+#  elif (__ARM_ARCH == 7)
+#      define xdc_target_name__ M4
+#  else
+#      error unknown TIARMCLANG target
 #  endif
+#  define xdc_target_types__ ti/targets/arm/clang/std.h
 
 /*
  *  ======== TMS320C28XX ========

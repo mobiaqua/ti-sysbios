@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Texas Instruments Incorporated
+ * Copyright (c) 2013-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,6 +60,7 @@ import xdc.rov.ViewInfo;
  *
  */
 
+/* REQ_TAG(SYSBIOS-514) */
 @DirectCall
 module Idle
 {
@@ -142,6 +143,7 @@ module Idle
      *  Void func(Void);
      *  @p
      */
+    /* REQ_TAG(SYSBIOS-515) */
     metaonly Void addFunc(FuncPtr func);
     
     /*!
@@ -187,6 +189,7 @@ module Idle
      *  @see Task#enableIdleTask
      *  @see Task#allBlockedFunc
      */
+    /* REQ_TAG(SYSBIOS-516), REQ_TAG(SYSBIOS-517) */
     Void run();
 
 }

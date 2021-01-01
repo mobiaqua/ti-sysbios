@@ -1,10 +1,10 @@
 /*
- *  Copyright 2019 by Texas Instruments Incorporated.
+ *  Copyright 2020 by Texas Instruments Incorporated.
  *
  */
 
 /*
- * Copyright (c) 2017, Texas Instruments Incorporated
+ * Copyright (c) 2017-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
 #include <sys/types.h>
 #include <xdc/runtime/Startup.h>
 
-extern int * xdc_runtime_Startup__EXECFXN__C;
+extern char xdc_runtime_Startup__EXECFXN__C;
 
 extern unsigned int __bss_start__, __bss_end__;
 extern unsigned int __data_load__, __data_start__, __data_end__;
@@ -90,7 +90,9 @@ void startupC(void)
     }
 
     /* run Startup_exec */
-    xdc_runtime_Startup_exec__E();
+    if (&xdc_runtime_Startup__EXECFXN__C == (char *)0x1) {
+        xdc_runtime_Startup_exec__E();
+    }
 
     /* run any constructors */
     count = __init_array_end - __init_array_start;

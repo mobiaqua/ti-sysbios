@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -197,6 +197,11 @@ function instance$meta$init(name)
             this.CPU.catalogName = "ti.catalog.c6000";
             this.CPU.deviceName = "C674";
             this.CPU.clockRate = 600;
+        }
+        else if (this.deviceName.match(/^TPR12/)) {
+            this.CPU.catalogName = "ti.catalog.c6000";
+            this.CPU.deviceName = "C66";
+            this.CPU.clockRate = 450;
         }
     }
 }

@@ -39,6 +39,11 @@
 #define ti_posix_ccs_sys__internal__include
 
 /* compiler vendor check */
+/* short-term migration warning; ticlang users should migrate away */
+#if defined(__clang__)
+#warning ticlang users should migrate to the ti/posix/ticlang include path
+#endif
+
 #if !defined(__TI_COMPILER_VERSION__) && !defined(__clang__)
 #error Incompatible compiler: use this include path (.../ti/posix/ccs) only \
 with a Texas Instruments compiler. You appear to be using a different compiler.

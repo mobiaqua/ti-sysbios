@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ metaonly module Platform inherits xdc.platform.IPlatform
      *  @p
      */
      readonly config string nameFormat
-         = "$(deviceName):$(includeLinkCmdFile):$(clockRate)";
+         = "$(deviceName):$(coreGroup):$(includeLinkCmdFile):$(clockRate)";
 
 instance:
 

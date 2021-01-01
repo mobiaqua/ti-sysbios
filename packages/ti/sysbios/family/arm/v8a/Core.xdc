@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018, Texas Instruments Incorporated
+ * Copyright (c) 2016-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,20 @@ module Core inherits ti.sysbios.interfaces.ICore
      *  running in an AMP system.
      */
     metaonly config Bool bootMaster = true;
+
+    /*!
+     *  ======== setL2DataRamLatency ========
+     *  Value to set in L2CTRL[2:0] for Data RAM latency
+     *
+     *  Faster CPUs need higher cycle latency for Data RAM accesses.
+     *  For A72 CPUs running at 2 GHz, a value of 0x2 (3 cycles) is needed.
+     *  If the A72 CPU is running slower than 2 GHz, you can set a lower
+     *  value for fewer cycles of latency, but take care to ensure that this
+     *  lower latency is sufficient for stable Data RAM values.
+     *
+     *  This can be set to -1 to prevent any programming of L2CTRL[2:0] at all.
+     */
+    metaonly config Int setL2DataRamLatency = 0x2;
 
     /*!
      *  ======== getClusterId ========

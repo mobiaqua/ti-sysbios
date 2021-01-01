@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Texas Instruments Incorporated
+ * Copyright (c) 2015-2020, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
  */
 
 var Hwi = null;
+var Build = null;
 var instanceName = [];
 
 /*
@@ -62,7 +63,7 @@ function getAsmFiles(targetName)
  */
 function getCFiles(targetName)
 {
-    return (["Hwi.c", "Hwi_startup.c"]);
+    return (["Hwi.c", "Hwi_startup.c", "boot.c"]);
 }
 
 /*
@@ -122,12 +123,9 @@ function module$use()
 
     xdc.useModule("ti.sysbios.family.c7x.Cache");
 
-    var BIOS = xdc.useModule("ti.sysbios.BIOS");
+    Build = xdc.module("ti.sysbios.Build");
 
-    if (BIOS.useSK && BIOS.setupSecureContext) {
-        var Startup = xdc.useModule('xdc.runtime.Startup');
-        Startup.lastFxns.$add(Hwi.setupSC);
-    }
+    var BIOS = xdc.useModule("ti.sysbios.BIOS");
 
     if (Hwi.dispatcherSwiSupport == undefined) {
         Hwi.dispatcherSwiSupport = BIOS.swiEnabled;
@@ -183,6 +181,10 @@ function module$use()
         Program.sectMap[".resetVector"] = new Program.SectionSpec();
         Program.sectMap[".resetVector"].loadAddress = Hwi.resetVectorAddress;
     }
+
+    /* add -D to compile line */
+    Build.ccArgs.$add("-Dti_sysbios_family_c7x_Hwi_bootToNonSecure__D=" +
+            (Hwi.bootToNonSecure ? "TRUE" : "FALSE"));
 }
 
 /*
@@ -190,6 +192,14 @@ function module$use()
  */
 function module$static$init(mod, params)
 {
+    Hwi.vectorTableBase = $externPtr('soft_reset');
+    if (Hwi.bootToNonSecure) {
+        Hwi.vectorTableBase_SS = $externPtr('secure_soft_reset');
+    }
+    else {
+        Hwi.vectorTableBase_SS = $externPtr('soft_reset');
+    }
+
     mod.ierMask = 2;    // enable NMI
     mod.intNum = 0;
     mod.taskSP = null;
@@ -202,7 +212,6 @@ function module$static$init(mod, params)
      * at the time the ROM assembly is made.
      */
     mod.isrStack = null;
-    mod.vectorTableBase = $externPtr('soft_reset');
 
     for (var intNum = 0; intNum < Hwi.NUM_INTERRUPTS; intNum++) {
         mod.dispatchTable[intNum] = null;
@@ -490,7 +499,10 @@ function viewGetStackInfo()
         else {
             var size = Program.getSymbolValue("__STACK_SIZE");
         }
-        var stackBase = Program.getSymbolValue("__stack");
+        var stackBase = Program.getSymbolValue("_stack");
+        /* bottom 64K+8K is for HW stack, SW stack starts at base + 64K+8K */
+        stackBase += 0x12000;
+        size -= 0x12000;
         var stackData = Program.fetchArray({type: 'xdc.rov.support.ScalarStructs.S_UChar', isScalar: true}, stackBase, size);
     }
     catch (e) {

@@ -80,7 +80,7 @@ requires ti.sysbios.family;
  *  <i>SYS/BIOS 6.x User's Guide</i></a></li>
  *  <li><a href=http://www-s.ti.com/sc/techlit/spraas7>
  *  <i>Migrating a DSP/BIOS 5 Application to SYS/BIOS 6</i></a></li>
- *  <li><a href=http://rtsc.eclipse.org/docs-tip/Main_Page>
+ *  <li><a href=http://rtsc.eclipseprojects.io/docs-tip/Main_Page>
  *  RTSC-pedia wiki</a></li>
  *  <li><a href=http://processors.wiki.ti.com/index.php/Category:SYSBIOS>
  *  SYS/BIOS Information Wiki</a></li>

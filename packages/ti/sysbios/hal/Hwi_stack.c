@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Texas Instruments Incorporated
+ * Copyright (c) 2015-2019, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,11 @@
 #include <ti/sysbios/hal/Core.h>
 
 #include "package/internal/Hwi.xdc.h"
+
+Void ti_sysbios_hal_Hwi_initStack(Void);
+Void ti_sysbios_hal_Hwi_initStackMin(Void);
+Void ti_sysbios_hal_Hwi_checkStack(Void);
+
 
 #if defined(xdc_target__isaCompatible_430)    \
     || defined(xdc_target__isaCompatible_430X)
@@ -104,7 +109,7 @@ Void ti_sysbios_hal_Hwi_initStack(Void)
     UArg curStack;
 
     /* Get stack base and size */
-    if (BIOS_smpEnabled) {
+    if (BIOS_smpEnabled != FALSE) {
         Hwi_getCoreStackInfo(&stkInfo, FALSE, Core_getId());
     }
     else {
@@ -161,7 +166,7 @@ Void ti_sysbios_hal_Hwi_initStackMin(Void)
     UArg curStack;
 
     /* Get stack base and size */
-    if (BIOS_smpEnabled) {
+    if (BIOS_smpEnabled != FALSE) {
         Hwi_getCoreStackInfo(&stkInfo, FALSE, Core_getId());
     }
     else {
@@ -191,14 +196,14 @@ Void ti_sysbios_hal_Hwi_checkStack(Void)
     Bool overflow;
     Hwi_StackInfo stkInfo;
 
-    if (BIOS_smpEnabled) {
+    if (BIOS_smpEnabled != FALSE) {
         overflow = Hwi_getCoreStackInfo(&stkInfo, FALSE, Core_getId());
     }
     else {
         overflow = Hwi_getStackInfo(&stkInfo, FALSE);
     }
 
-    if (overflow) {
+    if (overflow != FALSE) {
         Error_raise(NULL, Hwi_E_stackOverflow, 0, 0);
     }
 }
